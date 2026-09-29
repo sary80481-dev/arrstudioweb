@@ -13,8 +13,12 @@ function createApp(): App {
 
   const projectId = process.env.FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  // private key di .env biasanya berisi "\n" literal
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+  // private key di .env biasanya berisi "\n" literal; di dashboard Vercel sering ikut
+  // tertempel dengan tanda kutip pembungkus — keduanya dinormalkan di sini
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.trim()
+    .replace(/^(['"])([\s\S]*)\1$/, "$2")
+    .replace(/\\r/g, "")
+    .replace(/\\n/g, "\n");
 
   if (!projectId || !clientEmail || !privateKey) {
     throw new Error(
