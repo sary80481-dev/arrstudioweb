@@ -55,7 +55,10 @@ export async function exchangeDiscordCode(code: string, redirectUri: string): Pr
       redirect_uri: redirectUri,
     }),
   });
-  if (!res.ok) throw new ApiError(401, "DISCORD_EXCHANGE_FAILED", "Discord sign-in failed.");
+  if (!res.ok) {
+    console.error("[discord] token exchange", res.status, await res.text().catch(() => ""), { redirectUri });
+    throw new ApiError(401, "DISCORD_EXCHANGE_FAILED", "Discord sign-in failed.");
+  }
   const body = (await res.json()) as { access_token: string };
   return body.access_token;
 }
