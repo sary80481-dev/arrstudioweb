@@ -55,7 +55,7 @@ export default function Services({ t }: { t: T }) {
             if (!w) return null;
             return (
               <figure key={p.url} className={p.device === "phone" ? "mx-auto w-full max-w-[300px]" : ""}>
-                <SitePreview url={p.url} title={w.name} device={p.device} interactive hint={t.hint} />
+                <SitePreview url={p.url} title={w.name} device={p.device} poster={p.poster} hint={t.hint} />
                 <figcaption className="mt-5 flex items-start justify-between gap-4">
                   <span>
                     <span className="block font-mono text-[11px] uppercase tracking-wider text-gold">{w.kind}</span>

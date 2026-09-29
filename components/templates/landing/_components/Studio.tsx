@@ -42,7 +42,13 @@ export default function Studio({ t: { studio: t } }: SectionProps) {
         <Reveal delay={80} className="relative">
           {/* blok emas bergeser di belakang jendela — aksen editorial, bukan glow */}
           <div aria-hidden className="absolute -bottom-5 -right-5 left-10 top-10 rounded-2xl bg-gold-grad opacity-90 lg:-right-8" />
-          <SitePreview url={STUDIO_URL} title="ARRR Studio — HTML to Roblox UI Converter" interactive hint={t.hint} className="relative" />
+          <SitePreview
+            url={STUDIO_URL}
+            title="ARRR Studio — HTML to Roblox UI Converter"
+            poster="/previews/arrr-studio.png"
+            hint={t.hint}
+            className="relative"
+          />
           <p className="relative mt-8 flex items-center gap-2 font-mono text-xs text-muted">
             <span className="h-1.5 w-1.5 rounded-full bg-green" /> {t.live}
           </p>

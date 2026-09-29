@@ -45,10 +45,17 @@ export function Reveal({
 
 /** Sorot emas lembut yang mengikuti kursor di dalam kartu (pakai utility `spotlight`). */
 export function Spotlight({ className = "", children }: { className?: string; children: ReactNode }) {
+  const frame = useRef(0);
+  // maksimal satu update per frame — pointermove bisa terpicu ratusan kali per detik
   const onMove = (e: PointerEvent<HTMLDivElement>) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
-    e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
+    const el = e.currentTarget;
+    const { clientX, clientY } = e;
+    cancelAnimationFrame(frame.current);
+    frame.current = requestAnimationFrame(() => {
+      const r = el.getBoundingClientRect();
+      el.style.setProperty("--mx", `${clientX - r.left}px`);
+      el.style.setProperty("--my", `${clientY - r.top}px`);
+    });
   };
   return (
     <div onPointerMove={onMove} className={`spotlight ${className}`}>

@@ -100,7 +100,7 @@ export function Button({ variant = "gold", size = "md", href, className = "", ch
       </span>
     ) : (
       <span
-        className={`flex w-full items-center justify-center gap-2.5 rounded-xl border border-line-strong bg-surface/60 text-fg backdrop-blur transition-colors group-hover/btn:border-gold group-hover/btn:bg-gold-soft ${sizeClass[size]}`}
+        className={`flex w-full items-center justify-center gap-2.5 rounded-xl border border-line-strong bg-surface/60 text-fg transition-colors group-hover/btn:border-gold group-hover/btn:bg-gold-soft ${sizeClass[size]}`}
       >
         {children}
       </span>

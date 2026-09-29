@@ -1,91 +1,86 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ExternalLink, Lock, MousePointerClick, RotateCw } from "lucide-react";
+import Image from "next/image";
+import { ExternalLink, Lock, Play, RotateCw } from "lucide-react";
 
 /** Viewport virtual — situs dirender di ukuran aslinya lalu diperkecil */
 const DEVICES = {
-  desktop: { w: 1280, ratio: 10 / 16 },
-  phone: { w: 390, ratio: 844 / 390 },
+  desktop: { w: 1280, ratio: 10 / 16, sizes: "(min-width: 1024px) 720px, 100vw" },
+  phone: { w: 390, ratio: 844 / 390, sizes: "300px" },
 } as const;
 
 /**
- * Jendela browser berisi situs lain secara live.
- * `interactive` = iframe bisa diklik setelah pengguna mengetuk overlay;
- * tanpa itu seluruh bingkai menjadi link ke situsnya.
+ * Jendela browser / ponsel berisi situs lain.
+ * Yang tampil awalnya hanya poster (gambar statis) — iframe situs aslinya baru
+ * dimuat saat pengunjung mengetuk "coba live". Tanpa ini setiap kunjungan ikut
+ * memuat 3 situs eksternal utuh dan terus memakan CPU selama terlihat.
  */
 export function SitePreview({
   url,
   title,
+  poster,
   device = "desktop",
-  interactive = false,
-  eager = false,
   hint,
   className = "",
 }: {
   url: string;
   title: string;
+  /** screenshot di /public, mis. "/previews/arrr-studio.png" */
+  poster: string;
   device?: keyof typeof DEVICES;
-  interactive?: boolean;
-  eager?: boolean;
   hint?: string;
   className?: string;
 }) {
-  const { w: VIRTUAL_W, ratio } = DEVICES[device];
+  const { w: VIRTUAL_W, ratio, sizes } = DEVICES[device];
   const boxRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
+  const [live, setLive] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const [active, setActive] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
+  // skala iframe hanya perlu diukur setelah iframe benar-benar dipasang
   useEffect(() => {
     const el = boxRef.current;
-    if (!el) return;
+    if (!live || !el) return;
     const ro = new ResizeObserver(([e]) => setScale(e.contentRect.width / VIRTUAL_W));
     ro.observe(el);
     return () => ro.disconnect();
-  }, [VIRTUAL_W]);
+  }, [live, VIRTUAL_W]);
 
   const host = url.replace(/^https?:\/\//, "").replace(/\/$/, "");
-  const virtualH = VIRTUAL_W * ratio;
 
   const frame = (
     <div ref={boxRef} className="relative w-full overflow-hidden bg-surface-2" style={{ aspectRatio: `${1 / ratio}` }}>
-      {!loaded && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="h-6 w-6 animate-spin rounded-full border-2 border-line-strong border-t-gold" />
-        </div>
-      )}
-      <iframe
-        key={reloadKey}
-        src={url}
-        title={title}
-        loading={eager ? "eager" : "lazy"}
-        onLoad={() => setLoaded(true)}
-        tabIndex={interactive && active ? 0 : -1}
-        className={`absolute left-0 top-0 origin-top-left border-0 transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"} ${
-          interactive && active ? "" : "pointer-events-none"
-        }`}
-        style={{ width: VIRTUAL_W, height: virtualH, transform: `scale(${scale})` }}
-      />
-      {interactive && !active && (
+      {/* poster tetap ada di bawah iframe → tidak ada layar kosong saat iframe memuat */}
+      <Image src={poster} alt={title} fill sizes={sizes} className="object-cover object-top" />
+
+      {live ? (
+        <>
+          {!loaded && (
+            <span className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 animate-spin rounded-full border-2 border-white/30 border-t-gold" />
+          )}
+          <iframe
+            key={reloadKey}
+            src={url}
+            title={title}
+            onLoad={() => setLoaded(true)}
+            className={`absolute left-0 top-0 origin-top-left border-0 bg-surface-2 transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"}`}
+            style={{ width: VIRTUAL_W, height: VIRTUAL_W * ratio, transform: `scale(${scale})` }}
+          />
+        </>
+      ) : (
         <button
           type="button"
-          onClick={() => setActive(true)}
-          className="group/ov absolute inset-0 flex items-end justify-center bg-gradient-to-t from-black/40 via-transparent to-transparent pb-5 opacity-0 transition-opacity hover:opacity-100 focus-visible:opacity-100"
+          onClick={() => setLive(true)}
+          className="group/ov absolute inset-0 flex items-end justify-center bg-gradient-to-t from-black/50 via-transparent to-transparent pb-5"
         >
-          <span className="inline-flex items-center gap-2 rounded-full bg-bg/90 px-4 py-2 text-sm font-medium text-fg shadow-card backdrop-blur">
-            <MousePointerClick size={15} className="text-gold" /> {hint ?? "Click to interact"}
+          <span className="inline-flex items-center gap-2 bg-bg/95 px-4 py-2 text-sm font-medium text-fg shadow-card transition-transform group-hover/ov:-translate-y-0.5">
+            <Play size={14} className="fill-gold text-gold" /> {hint ?? "Try it live"}
           </span>
         </button>
       )}
     </div>
-  );
-
-  const link = interactive ? frame : (
-    <a href={url} target="_blank" rel="noreferrer" aria-label={title} className="block">
-      {frame}
-    </a>
   );
 
   if (device === "phone") {
@@ -94,7 +89,7 @@ export function SitePreview({
       <div className={`rounded-[2.4rem] bg-[#15120c] p-2.5 shadow-card ring-1 ring-line-strong ${className}`}>
         <div className="relative overflow-hidden rounded-[1.9rem]">
           <span aria-hidden className="absolute left-1/2 top-2 z-10 h-5 w-20 -translate-x-1/2 rounded-full bg-[#15120c]" />
-          {link}
+          {frame}
         </div>
       </div>
     );
@@ -113,7 +108,7 @@ export function SitePreview({
           <Lock size={10} className="shrink-0 text-dim" />
           <span className="truncate">{host}</span>
         </span>
-        {interactive && (
+        {live && (
           <button
             type="button"
             onClick={() => {
@@ -137,7 +132,7 @@ export function SitePreview({
         </a>
       </div>
 
-      {link}
+      {frame}
     </div>
   );
 }

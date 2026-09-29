@@ -19,7 +19,8 @@ export const metadata: Metadata = {
   title: "ArrStudio — Premium Roblox Kits",
   description:
     "ClubKit Pro and Summit Kit: licensed Roblox systems that plug straight into the DataStore, group ranks and gamepasses your place already uses.",
-  icons: { icon: "/logo.png" },
+  // ikon kecil khusus — logo.png asli 934 KB terlalu berat untuk favicon
+  icons: { icon: [{ url: "/icon-64.png", sizes: "64x64" }, { url: "/icon-192.png", sizes: "192x192" }], apple: "/icon-192.png" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

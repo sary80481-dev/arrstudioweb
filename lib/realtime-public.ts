@@ -2,11 +2,11 @@ import { collection, doc, onSnapshot, query, where } from "firebase/firestore";
 import { firebaseConfigured, firestore } from "./firebase/client";
 import { docToKit } from "./firestore-convert";
 import { toPricing } from "./pricing";
-import { kitsReceived, pricingReceived, statsReceived } from "./store/slices";
+import { kitsReceived, pricingReceived } from "./store/slices";
 import type { AppDispatch } from "./store/store";
 
 /**
- * Listener realtime untuk landing (katalog kit publik + statistik).
+ * Listener realtime untuk landing (katalog kit publik + harga).
  * Modul ini di-import secara dinamis oleh PublicSync, jadi SDK Firestore
  * (~100 KB) tidak ikut bundle awal landing — halaman tetap ringan.
  */
@@ -27,14 +27,7 @@ export function subscribePublic(dispatch: AppDispatch): () => void {
     (err) => console.warn("[realtime] kits:", err.code)
   );
 
-  const unsubStats = onSnapshot(
-    doc(db, "stats", "public"),
-    (snap) => {
-      const d = snap.data();
-      if (d) dispatch(statsReceived({ licensesIssued: d.licensesIssued ?? 0, placesActive: d.placesActive ?? 0 }));
-    },
-    (err) => console.warn("[realtime] stats:", err.code)
-  );
+  // statistik tidak lagi ditampilkan di landing → tidak perlu listener stats/public di sini
 
   const unsubPricing = onSnapshot(
     doc(db, "settings", "pricing"),
@@ -44,7 +37,6 @@ export function subscribePublic(dispatch: AppDispatch): () => void {
 
   return () => {
     unsubKits();
-    unsubStats();
     unsubPricing();
   };
 }

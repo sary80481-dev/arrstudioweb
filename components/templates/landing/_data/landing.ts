@@ -29,8 +29,9 @@ export const serviceTags = [
 
 /** Portofolio yang dipreview live — urutan sama dengan dict.services.work */
 export const portfolio = [
-  { url: "https://portfoliosigit.vercel.app/", device: "desktop" },
-  { url: "https://penilaian-mobileteknologi.vercel.app/", device: "phone" },
+  // poster = screenshot statis di /public/previews; iframe live baru dimuat saat diklik
+  { url: "https://portfoliosigit.vercel.app/", device: "desktop", poster: "/previews/portfolio-sigit.png" },
+  { url: "https://penilaian-mobileteknologi.vercel.app/", device: "phone", poster: "/previews/penilaian-mobile.png" },
 ] as const;
 
 /** Sistem yang sudah ada di place dan langsung dipakai oleh kit */

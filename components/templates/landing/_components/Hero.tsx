@@ -1,6 +1,5 @@
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import type { SectionProps } from "@/components/type/landing";
-import { Reveal } from "./Motion";
 import { Container, LogoImage } from "./ui";
 
 /**
@@ -30,23 +29,18 @@ export default function Hero({ t, kits }: SectionProps) {
 
       {/* ─── COPY + KEY VISUAL: satu grid, tepi sejajar dengan navbar ─── */}
       <Container className="grid flex-1 items-center gap-10 pb-12 pt-28 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:gap-16 lg:pb-16">
-        <div className="order-2 lg:order-1">
-          <Reveal>
-            <p className="font-display text-sm font-semibold uppercase tracking-[0.35em] text-gold">{t.hero.eyebrow}</p>
-          </Reveal>
+        {/* animasi masuk pakai CSS murni (bukan <Reveal>) — hero di atas lipatan tidak boleh
+            menunggu JavaScript untuk tampil, kalau tidak LCP di HP jadi lambat */}
+        <div className="order-2 animate-[pagein_0.7s_ease-out_both] lg:order-1">
+          <p className="font-display text-sm font-semibold uppercase tracking-[0.35em] text-gold">{t.hero.eyebrow}</p>
 
-          <Reveal delay={80}>
-            <h1 className="mt-5 font-display text-[3rem] font-bold uppercase leading-[0.9] tracking-[-0.01em] text-balance sm:text-6xl lg:text-7xl xl:text-[5.5rem]">
-              {t.hero.titleA} <span className="text-gold">{t.hero.titleB}</span>
-            </h1>
-          </Reveal>
+          <h1 className="mt-5 font-display text-[3rem] font-bold uppercase leading-[0.9] tracking-[-0.01em] text-balance sm:text-6xl lg:text-7xl xl:text-[5.5rem]">
+            {t.hero.titleA} <span className="text-gold">{t.hero.titleB}</span>
+          </h1>
 
-          <Reveal delay={160}>
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-muted md:text-lg">{t.hero.desc}</p>
-          </Reveal>
+          <p className="mt-6 max-w-xl text-base leading-relaxed text-muted md:text-lg">{t.hero.desc}</p>
 
-          <Reveal delay={240}>
-            <div className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-4">
+          <div className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-4">
             <a
               href="#kits"
               className="group inline-flex h-14 items-center gap-3 bg-gold px-8 font-display text-base font-bold uppercase tracking-[0.16em] text-on-gold transition-colors hover:bg-gold-hover"
@@ -60,17 +54,16 @@ export default function Hero({ t, kits }: SectionProps) {
             >
               {t.hero.ctaSecondary}
             </a>
-            </div>
-          </Reveal>
+          </div>
         </div>
 
-        <Reveal delay={120} className="order-1 flex justify-center lg:order-2 lg:justify-end">
+        <div className="order-1 flex animate-[pagein_0.9s_ease-out_both] justify-center lg:order-2 lg:justify-end">
           <LogoImage
-            size={560}
+            size={460}
             eager
             className="h-auto w-[58vw] max-w-[260px] drop-shadow-[0_30px_60px_rgba(0,0,0,0.6)] sm:max-w-[320px] lg:w-full lg:max-w-[460px]"
           />
-        </Reveal>
+        </div>
       </Container>
 
       {/* ─── REL: tiga lini bisnis ─── */}
