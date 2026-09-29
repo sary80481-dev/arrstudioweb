@@ -3,3 +3,8 @@ allowBuilds:
   protobufjs: false
   sharp: false
   unrs-resolver: false
+
+overrides:
+  # jwks-rsa@4 me-require() jose@6 (ESM-only) → gagal di runtime Vercel (ERR_REQUIRE_ESM).
+  # v3 memakai jose@4 (CommonJS) dengan API yang sama untuk firebase-admin.
+  jwks-rsa: 3.2.2
