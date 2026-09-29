@@ -96,3 +96,9 @@ export async function findUserByEmail(email: string): Promise<{ uid: string; ema
   const q = await users().where("email", "==", email.toLowerCase()).limit(1).get();
   return q.empty ? null : { uid: q.docs[0].id, email: q.docs[0].get("email") };
 }
+
+/** Semua user, terbaru dulu — untuk pemilih pembeli di /admin (skala kecil, dicari di client) */
+export async function listUsers(limit = 1000): Promise<UserDto[]> {
+  const snap = await users().orderBy("createdAt", "desc").limit(limit).get();
+  return snap.docs.map((d) => toUserDto(d.id, d.data() as UserDoc));
+}

@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Check, Copy, ExternalLink, Loader2, Plus, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Check, Copy, ExternalLink, Loader2, Plus, Search, X } from "lucide-react";
 import type { Kit } from "@/lib/kits";
 import type { LicenseDto } from "@/lib/server/licenses";
+import type { UserDto } from "@/lib/server/users";
 import { selectKits, selectLicenses, useAppSelector } from "@/lib/store/store";
 import { Btn, Card, FieldShell, PageHeader, Select, StatusPill, TextInput, api } from "../_components/fields";
 import { DataTable, columnHelper } from "../_components/DataTable";
@@ -194,7 +195,7 @@ function RevokeButton({ license }: { license: LicenseDto }) {
 function IssuePanel({ kits, onClose }: { kits: Kit[]; onClose: () => void }) {
   const issuable = kits.filter((k) => k.status !== "draft");
   const [kit, setKit] = useState(issuable[0]?.id ?? "");
-  const [email, setEmail] = useState("");
+  const [buyer, setBuyer] = useState<UserDto | null>(null);
   const [count, setCount] = useState(1);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
@@ -209,7 +210,7 @@ function IssuePanel({ kits, onClose }: { kits: Kit[]; onClose: () => void }) {
     try {
       const { keys } = await api<{ keys: string[] }>("POST", "/api/admin/licenses", {
         kit,
-        ownerEmail: email.trim(),
+        ownerUid: buyer?.uid,
         count,
         note: note.trim() || undefined,
       });
@@ -239,8 +240,8 @@ function IssuePanel({ kits, onClose }: { kits: Kit[]; onClose: () => void }) {
             ))}
           </Select>
         </FieldShell>
-        <FieldShell label="Buyer email" htmlFor="i-email">
-          <TextInput id="i-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="buyer@studio.com" autoFocus />
+        <FieldShell label="Buyer" htmlFor="i-buyer">
+          <BuyerPicker value={buyer} onChange={setBuyer} />
         </FieldShell>
         <FieldShell label="Qty" htmlFor="i-count">
           <TextInput
@@ -255,7 +256,7 @@ function IssuePanel({ kits, onClose }: { kits: Kit[]; onClose: () => void }) {
         <FieldShell label="Note (optional)" htmlFor="i-note">
           <TextInput id="i-note" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Order #1042" maxLength={200} />
         </FieldShell>
-        <Btn type="submit" variant="primary" disabled={busy || !kit || !email} className="sm:col-span-2 lg:col-span-1">
+        <Btn type="submit" variant="primary" disabled={busy || !kit || !buyer} className="sm:col-span-2 lg:col-span-1">
           {busy && <Loader2 size={14} className="animate-spin" />}
           Issue
         </Btn>
@@ -278,5 +279,112 @@ function IssuePanel({ kits, onClose }: { kits: Kit[]; onClose: () => void }) {
         </div>
       )}
     </Card>
+  );
+}
+
+/* ─── PEMILIH PEMBELI ───
+   Cari akun terdaftar berdasarkan nama, email, username Discord atau Roblox —
+   admin tidak perlu tahu email pembeli (akun Discord bisa saja tanpa email). */
+const buyerFields = (u: UserDto) => [u.displayName, u.email, u.discordUsername, u.robloxUsername];
+
+function BuyerPicker({ value, onChange }: { value: UserDto | null; onChange: (u: UserDto | null) => void }) {
+  const [users, setUsers] = useState<UserDto[] | null>(null);
+  const [loadError, setLoadError] = useState("");
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    api<{ users: UserDto[] }>("GET", "/api/admin/users")
+      .then((r) => setUsers(r.users))
+      .catch((e: Error) => setLoadError(e.message));
+  }, []);
+
+  const matches = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const list = users ?? [];
+    return (q ? list.filter((u) => buyerFields(u).some((f) => f?.toLowerCase().includes(q))) : list).slice(0, 8);
+  }, [users, query]);
+
+  const pick = (u: UserDto) => {
+    onChange(u);
+    setQuery("");
+    setOpen(false);
+  };
+
+  if (value) {
+    return (
+      <div className="flex h-9 items-center gap-2 rounded-md border border-line-strong bg-bg pl-2.5 pr-1 text-sm">
+        <span className="min-w-0 flex-1 truncate">
+          <span className="text-fg">{value.displayName}</span>
+          <span className="ml-1.5 text-dim">{value.email || (value.discordUsername && `@${value.discordUsername}`)}</span>
+        </span>
+        <button type="button" onClick={() => onChange(null)} aria-label="Change buyer" className="rounded p-1 text-dim hover:bg-surface-2 hover:text-fg">
+          <X size={14} />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative">
+      <Search size={14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-dim" />
+      <TextInput
+        id="i-buyer"
+        role="combobox"
+        aria-expanded={open}
+        aria-controls="i-buyer-list"
+        autoComplete="off"
+        autoFocus
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setActive(0);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowDown") setActive((i) => Math.min(i + 1, matches.length - 1));
+          else if (e.key === "ArrowUp") setActive((i) => Math.max(i - 1, 0));
+          else if (e.key === "Escape") setOpen(false);
+          else if (e.key === "Enter" && open && matches[active]) pick(matches[active]);
+          else return;
+          e.preventDefault();
+        }}
+        placeholder={users ? "Name, email, Discord or Roblox" : "Loading users…"}
+        className="pl-8"
+      />
+      {open && (
+        <ul
+          id="i-buyer-list"
+          role="listbox"
+          // mousedown sebelum blur, supaya klik pada opsi tidak menutup daftar duluan
+          onMouseDown={(e) => e.preventDefault()}
+          className="absolute left-0 right-0 top-full z-20 mt-1 max-h-72 overflow-y-auto rounded-md border border-line-strong bg-surface py-1 shadow-lg"
+        >
+          {loadError && <li className="px-3 py-2 text-[13px] text-red-500">{loadError}</li>}
+          {!loadError && !users && <li className="px-3 py-2 text-[13px] text-dim">Loading…</li>}
+          {users && matches.length === 0 && <li className="px-3 py-2 text-[13px] text-dim">No matching account — the buyer must sign in once first.</li>}
+          {matches.map((u, i) => (
+            <li
+              key={u.uid}
+              role="option"
+              aria-selected={i === active}
+              onMouseEnter={() => setActive(i)}
+              onClick={() => pick(u)}
+              className={`cursor-pointer px-3 py-2 text-sm ${i === active ? "bg-surface-2" : ""}`}
+            >
+              <p className="truncate text-fg">{u.displayName}</p>
+              <p className="truncate text-xs text-dim">
+                {[u.email || "no email", u.discordUsername && `Discord @${u.discordUsername}`, u.robloxUsername && `Roblox ${u.robloxUsername}`]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
