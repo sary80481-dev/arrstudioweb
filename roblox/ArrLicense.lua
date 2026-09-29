@@ -28,7 +28,7 @@ local RunService = game:GetService("RunService")
 local ArrLicense = {}
 
 -- Ganti ke domain produksi kamu (tanpa garis miring di akhir)
-ArrLicense.API_URL = "https://arrstudio.example.com"
+ArrLicense.API_URL = "https://arrstudioweb.vercel.app"
 
 -- Berapa kali mencoba ulang saat error jaringan / server (bukan saat key ditolak)
 ArrLicense.MAX_ATTEMPTS = 3

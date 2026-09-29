@@ -41,7 +41,7 @@ Lalu di **Vercel → Project → Settings → Environment Variables** tambahkan:
 
 | Nama | Nilai |
 | --- | --- |
-| `APP_URL` | domain produksi, mis. `https://arrstudio.vercel.app` (tanpa `/` di akhir) |
+| `APP_URL` | domain produksi, mis. `https://arrstudioweb.vercel.app` (tanpa `/` di akhir) |
 
 `FIREBASE_PRIVATE_KEY` boleh disimpan dalam satu baris dengan `\n` literal — kode sudah mengubahnya jadi baris baru.
 

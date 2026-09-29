@@ -2,7 +2,7 @@
 
 API untuk akun, lisensi, dan verifikasi kit dari server Roblox. Dibangun di atas Next.js Route Handlers + Firebase (Auth & Firestore).
 
-- **Base URL:** `https://<domain-kamu>` (lokal: `http://localhost:3000`)
+- **Base URL:** `https://arrstudioweb.vercel.app` (lokal: `http://localhost:3000`)
 - **Format:** JSON (`Content-Type: application/json`)
 - **Kode sumber:** `app/api/**`, logika di `lib/server/**`
 
@@ -335,7 +335,7 @@ ClubKit (Folder / Model)
 
 1. **Set URL API** di `ArrLicense.lua`:
    ```lua
-   ArrLicense.API_URL = "https://arrstudio.example.com"
+   ArrLicense.API_URL = "https://arrstudioweb.vercel.app"
    ```
 2. **Pembeli mengaktifkan HTTP:** Game Settings → Security → **Allow HTTP Requests**.
 3. **Pembeli menempel key** di `Config`:

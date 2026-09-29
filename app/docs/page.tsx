@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description: "Connect ArrStudio kits in Roblox to the license API: verify flow, Lua module, endpoints and error codes.",
 };
 
-const BASE = process.env.APP_URL ?? "https://arrstudio.example.com";
+const BASE = process.env.APP_URL ?? "https://arrstudioweb.vercel.app";
 
 const methodClass: Record<Endpoint["method"], string> = {
   GET: "bg-green/10 text-green",
