@@ -1,4 +1,5 @@
 import "server-only";
+import { configuredAppUrl } from "@/lib/site-url";
 import { ApiError } from "./http";
 
 const API = "https://discord.com/api/v10";
@@ -26,7 +27,7 @@ function config() {
 
 /** Redirect URI harus sama persis dengan yang didaftarkan di Discord Developer Portal */
 export const discordRedirectUri = (origin: string) =>
-  `${process.env.APP_URL ?? origin}/api/auth/discord/callback`;
+  `${configuredAppUrl() ?? origin}/api/auth/discord/callback`;
 
 export function discordAuthorizeUrl(state: string, redirectUri: string) {
   const url = new URL("https://discord.com/oauth2/authorize");

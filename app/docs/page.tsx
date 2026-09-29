@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import { LogoImage } from "@/components/templates/landing/_components/ui";
+import { siteUrl } from "@/lib/site-url";
 import CodeBlock from "./CodeBlock";
 import { ACCESS_LABEL, errorCodes, groups, luaConfig, luaQuickstart, luaResults, type Access, type Endpoint } from "./content";
 
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
   description: "Connect ArrStudio kits in Roblox to the license API: verify flow, Lua module, endpoints and error codes.",
 };
 
-const BASE = process.env.APP_URL ?? "https://arrstudioweb.vercel.app";
+const BASE = siteUrl();
 
 const methodClass: Record<Endpoint["method"], string> = {
   GET: "bg-green/10 text-green",
