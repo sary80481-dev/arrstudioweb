@@ -1,0 +1,200 @@
+@import "tailwindcss";
+
+/* ============================================================
+   0. VARIANT — `dark:` mengikuti <html data-theme="dark">
+   ============================================================ */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ============================================================
+   1. TOKENS — DARK (default, sinematik)
+   ============================================================ */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #07070a;
+  --surface: #0e0d10;
+  --surface-2: #17151a;
+
+  --fg: #f4f1ea;
+  --muted: #a8a39a;
+  --dim: #6f6a62;
+
+  --line: rgb(232 205 140 / 0.1);
+  --line-strong: rgb(232 205 140 / 0.24);
+
+  /* GOLD */
+  --gold: #e2b857;
+  --gold-hover: #f1cd73;
+  --gold-soft: rgb(226 184 87 / 0.12);
+  --on-gold: #1a1204;
+  --gold-grad: linear-gradient(180deg, #f8e09a 0%, #e0b24f 48%, #a97b22 100%);
+  --gold-text: linear-gradient(180deg, #fff3cf 0%, #e9c46a 45%, #b0842b 100%);
+
+  --green: #4ade80;
+  --silver: #c9c7c2;
+
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.5), 0 18px 40px -18px rgb(0 0 0 / 0.8);
+  --glow: rgb(226 184 87 / 0.18);
+}
+
+/* ============================================================
+   2. TOKENS — LIGHT (ivory)
+   ============================================================ */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: #f6f3ec;
+  --surface: #fffdf8;
+  --surface-2: #eee9dd;
+
+  --fg: #16130d;
+  --muted: #5b5548;
+  --dim: #857e6f;
+
+  --line: rgb(22 19 13 / 0.09);
+  --line-strong: rgb(22 19 13 / 0.2);
+
+  --gold: #9a7215;
+  --gold-hover: #7d5c0e;
+  --gold-soft: rgb(154 114 21 / 0.1);
+  --on-gold: #1a1204;
+  --gold-grad: linear-gradient(180deg, #f3d584 0%, #d7a93f 50%, #b08425 100%);
+  --gold-text: linear-gradient(180deg, #c4952d 0%, #9a7215 55%, #6e4f0b 100%);
+
+  --green: #15803d;
+  --silver: #6b6860;
+
+  --shadow: 0 1px 2px rgb(22 19 13 / 0.05), 0 18px 40px -20px rgb(22 19 13 / 0.2);
+  --glow: rgb(215 169 63 / 0.18);
+}
+
+/* ============================================================
+   3. MAPPING → utility Tailwind
+   ============================================================ */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-dim: var(--dim);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-gold: var(--gold);
+  --color-gold-hover: var(--gold-hover);
+  --color-gold-soft: var(--gold-soft);
+  --color-on-gold: var(--on-gold);
+  --color-green: var(--green);
+  --color-silver: var(--silver);
+
+  --shadow-card: var(--shadow);
+
+  --font-display: var(--font-barlow), ui-sans-serif, system-ui;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+}
+
+/* ============================================================
+   4. BASE
+   ============================================================ */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--gold);
+  color: var(--on-gold);
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   5. UTILITIES
+   ============================================================ */
+
+/* sudut terpotong ala UI game */
+@utility chamfer {
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+}
+@utility chamfer-sm {
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+
+@utility bg-gold-grad {
+  background-image: var(--gold-grad);
+}
+
+/* teks emas metalik — dipakai hemat, hanya untuk kata kunci */
+@utility text-gold-metal {
+  background-image: var(--gold-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* garis tipis emas yang memudar di kedua ujung */
+@utility hairline-gold {
+  background-image: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+/* butiran film halus */
+@utility grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+}
+
+/* ============================================================
+   6. ANIMATIONS
+   ============================================================ */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes scan {
+  0%   { top: -2%; }
+  100% { top: 102%; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-12px); }
+}
+@keyframes rise {
+  from { transform: translateY(0); opacity: 0; }
+  15%  { opacity: 0.9; }
+  to   { transform: translateY(-110vh); opacity: 0; }
+}
+@keyframes shine {
+  from { transform: translateX(-120%) skewX(-20deg); }
+  to   { transform: translateX(220%) skewX(-20deg); }
+}
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================
+   7. SCRIPT TANPA SPASI HURUF (Thai) — tracking lebar memecah glyph
+   ============================================================ */
+html:lang(th) [class*="tracking-"] {
+  letter-spacing: 0 !important;
+}

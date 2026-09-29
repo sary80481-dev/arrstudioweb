@@ -1,0 +1,47 @@
+rules_version = '2';
+
+// Penulisan HANYA lewat API server (Firebase Admin SDK mengabaikan rules ini).
+// Browser boleh membaca secara realtime (onSnapshot) sebatas yang diizinkan di bawah.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return signedIn() && request.auth.token.role == 'admin';
+    }
+
+    // Katalog kit: publik (kecuali draft), admin melihat semua
+    match /kits/{kitId} {
+      allow read: if resource.data.status in ['active', 'coming_soon'] || isAdmin();
+      allow write: if false;
+    }
+
+    // Pengaturan harga (bundle) — dibaca landing
+    match /settings/pricing {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Statistik landing (jumlah lisensi, place aktif)
+    match /stats/public {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Lisensi: pemilik melihat miliknya sendiri, admin melihat semua
+    match /licenses/{key} {
+      allow read: if signedIn() && (resource.data.ownerUid == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
