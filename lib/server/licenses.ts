@@ -4,6 +4,7 @@ import { FieldValue, Timestamp, type Query, type Transaction } from "firebase-ad
 import { db } from "@/lib/firebase/admin";
 import { REBIND_COOLDOWN_DAYS } from "@/lib/kits";
 import { ApiError } from "./http";
+import { kitUnlockKey } from "./kit-seal";
 import { kitsCol, publicStatsRef } from "./kits";
 
 export type LicenseStatus = "active" | "revoked";
@@ -222,6 +223,8 @@ export interface VerifyResult {
   /** versi terbaru kit di katalog — kit bisa memberi tahu developer jika ada update */
   latestVersion: string | null;
   checkedAt: string;
+  /** kunci pembuka modul kit yang disegel (hex) — hanya untuk place yang terikat, tidak untuk Studio */
+  unlock?: string;
 }
 
 export async function verifyLicense(input: VerifyInput): Promise<VerifyResult> {
@@ -269,6 +272,7 @@ export async function verifyLicense(input: VerifyInput): Promise<VerifyResult> {
     });
     if (newlyBound) bumpPlaces(tx, d.kit, 1);
 
-    return { ...base, placeId: input.placeId, studio: false, newlyBound };
+    const unlock = kitUnlockKey(d.kit);
+    return { ...base, placeId: input.placeId, studio: false, newlyBound, ...(unlock && { unlock }) };
   });
 }
