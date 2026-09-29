@@ -54,6 +54,8 @@ export type VerifyResult = {
 	newlyBound: boolean?,
 	latestVersion: string?,
 	checkedAt: string?,
+	-- kunci pembuka modul yang disegel (ArrSeal) — hanya ada untuk place yang terikat
+	unlock: string?,
 	code: string?,
 	message: string,
 }

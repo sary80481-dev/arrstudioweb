@@ -241,6 +241,7 @@ Aturan:
 - **Pemakaian pertama** dari place yang sudah dipublish → lisensi otomatis terikat ke place itu (`newlyBound: true`).
 - **Studio** (`placeId = "0"`) → valid untuk testing, tidak mengikat dan tidak dihitung (`studio: true`).
 - Place berbeda dari yang terikat → `403 PLACE_MISMATCH`.
+- `unlock` = kunci pembuka modul yang disegel (ArrSeal, hex 64 karakter). Hanya dikirim untuk place yang terikat (bukan Studio `placeId = "0"`) dan bila `KIT_SEAL_SECRET` diset. Kit yang disegel tidak bisa jalan tanpa kunci ini.
 - `latestVersion` = versi kit di katalog (diatur admin). `ArrLicense.lua` memberi `warn` bila berbeda dengan versi terpasang.
 - Setiap pengikatan / pencabutan langsung memperbarui counter realtime (`stats/public`, `kits/{id}.stats`).
 - Rate limit: 30/menit per key, 120/menit per IP.
