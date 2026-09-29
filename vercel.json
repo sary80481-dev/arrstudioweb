@@ -4,9 +4,6 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm build",
   "regions": ["sin1"],
-  "git": {
-    "deploymentEnabled": false
-  },
   "headers": [
     {
       "source": "/(.*)",
