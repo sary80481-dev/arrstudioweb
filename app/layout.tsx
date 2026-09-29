@@ -24,6 +24,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="en"
       data-theme="dark"
+      // matikan smooth scroll sementara saat navigasi (mis. ganti bahasa), supaya
+      // scroll ke atas tidak terhenti di tengah dan halaman tampak "turun sendiri"
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
       className={`${inter.variable} ${mono.variable} ${barlow.variable}`}
     >
