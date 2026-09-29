@@ -7,6 +7,7 @@ import type { Dictionary } from "@/lib/i18n/dictionaries/en";
 import { KitIcon } from "@/components/common/KitIcon";
 import { formatIDR, type Kit } from "@/lib/kits";
 import { selectKits, useAppSelector } from "@/lib/store/store";
+import { Reveal, Spotlight } from "./Motion";
 import { Button, Panel, Section, SectionHeading } from "./ui";
 
 const attributeKeys = ["systems", "integration", "setup"] as const;
@@ -43,9 +44,13 @@ export default function Marketplace({ t }: { t: Dictionary["kits"] }) {
           <p className="mt-4 text-muted">{t.empty}</p>
         </Panel>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-          {/* ─── KIT LIST ─── */}
-          <div role="tablist" aria-label={t.eyebrow} className="flex gap-3 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible">
+        <Reveal className="grid gap-6 lg:grid-cols-[300px_1fr]">
+          {/* ─── KIT LIST: geser horizontal di mobile, kolom di desktop ─── */}
+          <div
+            role="tablist"
+            aria-label={t.eyebrow}
+            className="-mx-5 flex snap-x gap-3 overflow-x-auto px-5 pb-2 [scrollbar-width:none] sm:-mx-8 sm:px-8 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0"
+          >
             {kits.map((k, i) => {
               const selected = k.id === kit.id;
               return (
@@ -56,16 +61,17 @@ export default function Marketplace({ t }: { t: Dictionary["kits"] }) {
                   aria-selected={selected}
                   aria-controls="kit-panel"
                   onClick={() => setActiveId(k.id)}
-                  className={`group relative flex min-w-[240px] items-center gap-4 border p-4 text-left transition-colors lg:min-w-0 ${
-                    selected ? "border-gold/60 bg-gold-soft" : "border-line bg-surface hover:border-line-strong"
+                  className={`group relative flex min-w-[240px] snap-start items-center gap-4 overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300 lg:min-w-0 ${
+                    selected
+                      ? "border-gold/60 bg-gold-soft shadow-card"
+                      : "border-line bg-surface hover:border-line-strong lg:hover:translate-x-1"
                   }`}
                 >
-                  <span className={`absolute inset-y-0 left-0 w-0.5 bg-gold-grad transition-opacity ${selected ? "opacity-100" : "opacity-0"}`} />
-                  <span className="font-mono text-xs text-dim">{String(i + 1).padStart(2, "0")}</span>
-                  <span className={`flex h-11 w-11 shrink-0 items-center justify-center border ${selected ? "border-gold text-gold" : "border-line-strong text-muted"}`}>
-                    <KitIcon icon={k.icon} size={20} strokeWidth={1.75} />
+                  <span className={`absolute inset-y-3 left-0 w-1 rounded-r-full bg-gold-grad transition-opacity ${selected ? "opacity-100" : "opacity-0"}`} />
+                  <span className={`font-display text-3xl font-bold leading-none tabular-nums ${selected ? "text-gold" : "text-line-strong group-hover:text-dim"}`}>
+                    {String(i + 1).padStart(2, "0")}
                   </span>
-                  <span className="min-w-0">
+                  <span className="min-w-0 flex-1">
                     <span className={`block truncate font-display text-xl font-bold uppercase leading-tight tracking-wide ${selected ? "text-fg" : "text-muted group-hover:text-fg"}`}>
                       {k.name}
                     </span>
@@ -73,6 +79,7 @@ export default function Marketplace({ t }: { t: Dictionary["kits"] }) {
                       {k.status === "coming_soon" ? t.comingSoon : `${k.tag} · v${k.version}`}
                     </span>
                   </span>
+                  <KitIcon icon={k.icon} size={18} strokeWidth={1.75} className={`shrink-0 ${selected ? "text-gold" : "text-dim"}`} />
                 </button>
               );
             })}
@@ -80,7 +87,7 @@ export default function Marketplace({ t }: { t: Dictionary["kits"] }) {
 
           {/* ─── DETAIL ─── */}
           <KitDetail kit={kit} t={t} />
-        </div>
+        </Reveal>
       )}
     </Section>
   );
@@ -93,28 +100,27 @@ function KitDetail({ kit, t }: { kit: Kit; t: Dictionary["kits"] }) {
     <Panel className="shadow-card" innerClassName="grid md:grid-cols-[0.9fr_1.1fr]">
       <div id="kit-panel" role="tabpanel" className="contents">
         {/* key art */}
-        <div className="relative flex min-h-[280px] items-center justify-center overflow-hidden border-b border-line bg-bg md:border-b-0 md:border-r">
-          <div aria-hidden className="absolute inset-0" style={{ background: "radial-gradient(circle at 50% 45%, var(--glow), transparent 60%)" }} />
+        <Spotlight className="group/art relative flex min-h-[280px] items-center justify-center overflow-hidden border-b border-line bg-bg md:border-b-0 md:border-r">
           <div
             aria-hidden
             className="absolute inset-0 opacity-40"
             style={{ backgroundImage: "repeating-linear-gradient(135deg, var(--line) 0 1px, transparent 1px 14px)" }}
           />
-          <span aria-hidden className="absolute bottom-3 left-4 select-none font-display text-6xl font-bold uppercase leading-none text-fg/[0.05] md:text-7xl">
+          <span aria-hidden className="absolute -bottom-2 left-3 select-none font-display text-7xl font-bold uppercase leading-none text-fg/[0.06] md:text-8xl">
             {kit.name.split(" ")[0]}
           </span>
           <div key={kit.id} className="relative animate-[float_6s_ease-in-out_infinite]">
-            <div className="chamfer bg-gold-grad p-px">
-              <div className="chamfer flex h-32 w-32 items-center justify-center bg-surface text-gold md:h-40 md:w-40">
+            <div className="rounded-[2rem] bg-gold-grad p-px shadow-[0_20px_50px_-24px_var(--gold)] transition-transform duration-500 group-hover/art:-rotate-3 group-hover/art:scale-105">
+              <div className="flex h-32 w-32 items-center justify-center rounded-[calc(2rem-1px)] bg-surface text-gold md:h-40 md:w-40">
                 <KitIcon icon={kit.icon} size={64} strokeWidth={1.25} />
               </div>
             </div>
           </div>
-          <span className="absolute left-4 top-4 flex items-center gap-1.5 font-mono text-xs text-muted">
+          <span className="absolute left-4 top-4 flex items-center gap-1.5 rounded-full border border-line bg-surface/80 px-3 py-1 font-mono text-xs text-muted backdrop-blur">
             <span className={`h-1.5 w-1.5 rounded-full ${soon ? "bg-gold" : "bg-green"}`} />
             v{kit.version} · {soon ? t.comingSoon : fmt(t.liveIn, { n: kit.stats.activePlaces })}
           </span>
-        </div>
+        </Spotlight>
 
         {/* info */}
         <div className="flex flex-col p-6 sm:p-8">
@@ -130,15 +136,17 @@ function KitDetail({ kit, t }: { kit: Kit; t: Dictionary["kits"] }) {
           {kit.tagline && <p className="mt-1 text-muted">{kit.tagline}</p>}
           <p className="mt-4 text-[15px] leading-relaxed text-muted">{kit.description}</p>
 
-          {/* attribute bars */}
+          {/* attribute bars — mengisi ulang setiap ganti kit */}
           <dl className="mt-6 space-y-3">
             {attributeKeys.map((key) => (
               <div key={key} className="grid grid-cols-[110px_1fr_32px] items-center gap-3 text-sm">
                 <dt className="font-display font-semibold uppercase tracking-[0.15em] text-muted">{t.attributes[key]}</dt>
-                <dd className="flex h-2 gap-0.5">
-                  {Array.from({ length: 10 }).map((_, i) => (
-                    <span key={i} className={`flex-1 ${i < Math.round(kit.attributes[key] / 10) ? "bg-gold-grad" : "bg-surface-2"}`} />
-                  ))}
+                <dd className="h-1.5 overflow-hidden rounded-full bg-surface-2">
+                  <span
+                    key={kit.id}
+                    className="block h-full origin-left animate-[grow_0.9s_cubic-bezier(0.2,0.7,0.2,1)] rounded-full bg-gold-grad"
+                    style={{ width: `${kit.attributes[key]}%` }}
+                  />
                 </dd>
                 <dd className="text-right font-mono text-xs text-dim">{kit.attributes[key]}</dd>
               </div>
@@ -159,14 +167,14 @@ function KitDetail({ kit, t }: { kit: Kit; t: Dictionary["kits"] }) {
                 <Plug size={14} className="text-dim" />
                 <span className="text-dim">{t.plugsInto}</span>
                 {kit.integrations.map((i) => (
-                  <span key={i} className="border border-line-strong px-2 py-0.5 text-xs text-fg">{i}</span>
+                  <span key={i} className="rounded-full border border-line-strong px-2.5 py-0.5 text-xs text-fg">{i}</span>
                 ))}
               </p>
             )}
-            <p className="flex items-center gap-2">
+            <p className="flex flex-wrap items-center gap-2">
               <FileCode2 size={14} className="text-dim" />
               <span className="text-dim">{t.licenseGoesIn}</span>
-              <code className="font-mono text-xs text-gold">{kit.configPath}</code>
+              <code className="rounded-md bg-gold-soft px-1.5 py-0.5 font-mono text-xs text-gold">{kit.configPath}</code>
             </p>
           </div>
 
@@ -176,7 +184,7 @@ function KitDetail({ kit, t }: { kit: Kit; t: Dictionary["kits"] }) {
               <span className="ml-2 text-sm text-dim">{t.oneTime}</span>
             </p>
             {soon ? (
-              <span className="flex items-center gap-2 border border-line-strong px-4 py-2.5 font-display text-sm font-semibold uppercase tracking-[0.15em] text-muted">
+              <span className="flex items-center gap-2 rounded-xl border border-line-strong px-4 py-2.5 font-display text-sm font-semibold uppercase tracking-[0.15em] text-muted">
                 <Clock size={15} /> {t.comingSoon}
               </span>
             ) : (

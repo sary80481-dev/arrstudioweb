@@ -41,7 +41,7 @@ export default function LoginPage() {
     setError("");
     setNotice("");
     if (!email) {
-      setError("Enter your email first, then tap “Forgot?”.");
+      setError("Enter your email first, then tap “Forgot password?”.");
       return;
     }
     try {
@@ -54,7 +54,10 @@ export default function LoginPage() {
 
   return (
     <>
-      <AuthHeading eyebrow="Sign in" title="Welcome" gold="back." desc="Manage your licenses and the places they're bound to." />
+      <AuthHeading title="Welcome back" desc="Sign in to manage your licenses and the places they're bound to." />
+
+      <DiscordButton />
+      <Divider>or sign in with email</Divider>
 
       <form
         onSubmit={(e) => {
@@ -93,24 +96,21 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={onForgot}
-              className="text-xs font-medium text-dim transition-colors hover:text-gold"
+              className="text-sm font-medium text-gold transition-colors hover:text-gold-hover"
             >
-              Forgot?
+              Forgot password?
             </button>
           }
         />
 
-        <div className="pt-2">
+        <div className="pt-1">
           <SubmitButton loading={loading}>Sign in</SubmitButton>
         </div>
       </form>
 
-      <Divider>or</Divider>
-      <DiscordButton />
-
       <p className="mt-8 text-center text-sm text-muted">
         New to ArrStudio?{" "}
-        <Link href="/register" className="font-semibold text-gold hover:underline">
+        <Link href="/register" className="font-semibold text-fg underline decoration-gold decoration-2 underline-offset-4 hover:text-gold">
           Create an account
         </Link>
       </p>

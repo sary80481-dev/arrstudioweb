@@ -15,7 +15,7 @@ export interface SectionProps {
 }
 
 export interface NavLink {
-  key: "kits" | "license" | "setup" | "pricing" | "faq";
+  key: "kits" | "license" | "setup" | "studio" | "services" | "pricing" | "faq";
   href: string;
 }
 

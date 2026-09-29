@@ -2,6 +2,7 @@ import { FileCode2, Terminal } from "lucide-react";
 import type { ReactNode } from "react";
 import type { SectionProps } from "@/components/type/landing";
 import { integrations } from "../_data/landing";
+import { Reveal, Spotlight } from "./Motion";
 import { Panel, Section, SectionHeading } from "./ui";
 
 /* pewarnaan sintaks sederhana untuk mockup */
@@ -39,6 +40,11 @@ function WindowBar({ icon, title, meta }: { icon: ReactNode; title: string; meta
   return (
     <div className="flex items-center justify-between border-b border-line px-4 py-3">
       <span className="flex items-center gap-2 font-mono text-xs text-fg">
+        <span aria-hidden className="mr-1 flex gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
+          <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
+          <span className="h-2.5 w-2.5 rounded-full bg-gold/70" />
+        </span>
         {icon}
         {title}
       </span>
@@ -63,7 +69,7 @@ export default function License({ t: { license: t } }: SectionProps) {
         desc={t.desc}
       />
 
-      <div className="relative grid gap-5 lg:grid-cols-2">
+      <Reveal className="relative grid gap-5 lg:grid-cols-2">
         {/* ─── CONFIG FILE ─── */}
         <Panel className="shadow-card" innerClassName="bg-bg">
           <WindowBar icon={<FileCode2 size={14} className="text-gold" />} title="ClubKit/Config.lua" meta="Roblox Studio" />
@@ -113,22 +119,27 @@ export default function License({ t: { license: t } }: SectionProps) {
             ))}
           </div>
         </Panel>
-      </div>
+      </Reveal>
 
       {/* ─── INTEGRATIONS ─── */}
       <div className="relative mt-16">
         <p className="mb-6 font-display text-sm font-semibold uppercase tracking-[0.3em] text-muted">
           {t.integratesTitle}
         </p>
-        <ul className="grid gap-px overflow-hidden border border-line bg-line sm:grid-cols-2 lg:grid-cols-5">
-          {integrations.map((it) => {
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {integrations.map((it, i) => {
             const I = it.icon;
             return (
-              <li key={it.name} className="group bg-surface p-5 transition-colors hover:bg-surface-2">
-                <I size={22} strokeWidth={1.5} className="text-gold" />
-                <p className="mt-4 font-display text-lg font-bold uppercase tracking-wide text-fg">{it.name}</p>
-                <p className="mt-1 text-sm leading-relaxed text-muted">{t.integrations[it.name]}</p>
-              </li>
+              <Reveal as="li" key={it.name} delay={i * 70}>
+                <Spotlight className="card-lift group h-full rounded-2xl border border-line bg-surface p-5 hover:border-gold/40">
+                  <div className="flex items-center justify-between">
+                    <I size={22} strokeWidth={1.5} className="text-gold transition-transform duration-300 group-hover:scale-110" />
+                    <span className="font-mono text-[11px] text-dim">{String(i + 1).padStart(2, "0")}</span>
+                  </div>
+                  <p className="mt-5 font-display text-lg font-bold uppercase tracking-wide text-fg">{it.name}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted">{t.integrations[it.name]}</p>
+                </Spotlight>
+              </Reveal>
             );
           })}
         </ul>

@@ -48,12 +48,10 @@ export default function RegisterPage() {
 
   return (
     <>
-      <AuthHeading
-        eyebrow="Create account"
-        title="Join the"
-        gold="studio."
-        desc="Your license keys and place bindings live in one account."
-      />
+      <AuthHeading title="Create account" desc="Your license keys and place bindings, all in one account." />
+
+      <DiscordButton label="Sign up with Discord" />
+      <Divider>or sign up with email</Divider>
 
       <form
         onSubmit={(e) => {
@@ -88,7 +86,7 @@ export default function RegisterPage() {
           required
         />
 
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-5">
           <PasswordField
             id="password"
             label="Password"
@@ -100,7 +98,7 @@ export default function RegisterPage() {
           />
           <PasswordField
             id="confirm"
-            label="Confirm"
+            label="Confirm password"
             autoComplete="new-password"
             placeholder="Repeat password"
             value={confirm}
@@ -114,7 +112,7 @@ export default function RegisterPage() {
 
         <label className="flex cursor-pointer select-none items-start gap-3 text-sm text-muted">
           <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="peer sr-only" />
-          <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center border border-line-strong text-transparent transition-colors peer-checked:border-gold peer-checked:bg-gold peer-checked:text-on-gold peer-focus-visible:ring-2 peer-focus-visible:ring-gold">
+          <span className="mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border border-line-strong text-transparent transition-colors peer-checked:border-gold peer-checked:bg-gold peer-checked:text-on-gold peer-focus-visible:ring-2 peer-focus-visible:ring-gold">
             <Check size={13} strokeWidth={3} />
           </span>
           <span>
@@ -129,12 +127,9 @@ export default function RegisterPage() {
         </div>
       </form>
 
-      <Divider>or</Divider>
-      <DiscordButton label="Sign up with Discord" />
-
       <p className="mt-8 text-center text-sm text-muted">
         Already have an account?{" "}
-        <Link href="/login" className="font-semibold text-gold hover:underline">
+        <Link href="/login" className="font-semibold text-fg underline decoration-gold decoration-2 underline-offset-4 hover:text-gold">
           Sign in
         </Link>
       </p>

@@ -1,5 +1,6 @@
 import { Plus } from "lucide-react";
 import type { SectionProps } from "@/components/type/landing";
+import { Reveal } from "./Motion";
 import { Section, SectionHeading } from "./ui";
 
 export default function FAQ({ t: { faq: t } }: SectionProps) {
@@ -8,7 +9,7 @@ export default function FAQ({ t: { faq: t } }: SectionProps) {
       <div className="grid gap-10 lg:grid-cols-[1fr_1.5fr] lg:gap-20">
         <div className="lg:sticky lg:top-28 lg:self-start">
           <SectionHeading
-            index="06"
+            index="08"
             eyebrow={t.eyebrow}
             title={<>{t.titleA}<br /><span className="text-gold-metal">{t.titleGold}</span></>}
             desc={
@@ -23,20 +24,25 @@ export default function FAQ({ t: { faq: t } }: SectionProps) {
           />
         </div>
 
-        <div className="border-t border-line">
+        <div className="space-y-3">
           {t.items.map((f, i) => (
-            <details key={f.q} className="group border-b border-line" open={i === 0}>
-              <summary className="flex cursor-pointer list-none items-center gap-5 py-6 text-left [&::-webkit-details-marker]:hidden">
-                <span className="font-mono text-xs text-dim">0{i + 1}</span>
-                <span className="flex-1 font-display text-xl font-bold uppercase tracking-wide text-fg transition-colors group-hover:text-gold md:text-2xl">
-                  {f.q}
-                </span>
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-line-strong text-gold transition-transform duration-300 group-open:rotate-45">
-                  <Plus size={16} />
-                </span>
-              </summary>
-              <p className="pb-7 pl-9 pr-14 text-[15px] leading-relaxed text-muted">{f.a}</p>
-            </details>
+            <Reveal key={f.q} delay={i * 60}>
+              <details
+                className="group rounded-2xl border border-line bg-surface px-5 transition-colors open:border-gold/40 open:bg-gold-soft hover:border-line-strong md:px-6"
+                open={i === 0}
+              >
+                <summary className="flex cursor-pointer list-none items-center gap-4 py-5 text-left [&::-webkit-details-marker]:hidden">
+                  <span className="font-mono text-xs text-dim">0{i + 1}</span>
+                  <span className="flex-1 font-display text-lg font-bold uppercase tracking-wide text-fg transition-colors group-hover:text-gold md:text-xl">
+                    {f.q}
+                  </span>
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line-strong text-gold transition-all duration-300 group-open:rotate-45 group-open:border-gold group-open:bg-gold-grad group-open:text-on-gold">
+                    <Plus size={16} />
+                  </span>
+                </summary>
+                <p className="pb-6 pl-8 pr-4 text-[15px] leading-relaxed text-muted md:pr-12">{f.a}</p>
+              </details>
+            </Reveal>
           ))}
         </div>
       </div>

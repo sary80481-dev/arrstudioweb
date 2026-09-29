@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { LayoutDashboard, LogOut, Menu, X } from "lucide-react";
+import { ChevronRight, LayoutDashboard, LogOut, Menu, X } from "lucide-react";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import { useAuthHint } from "@/lib/auth-hint";
 import type { Locale } from "@/lib/i18n/config";
@@ -10,7 +10,7 @@ import type { Dictionary } from "@/lib/i18n/dictionaries/en";
 import { navLinks } from "../_data/landing";
 import AccountMenu, { lightSignOut } from "./AccountMenu";
 import LanguageSwitcher from "./LanguageSwitcher";
-import { Button, Container, Logo } from "./ui";
+import { Container, Logo } from "./ui";
 
 /** Section yang sedang terlihat → link aktif */
 function useActiveSection(ids: string[]) {
@@ -33,6 +33,10 @@ function useActiveSection(ids: string[]) {
 
 const sectionIds = navLinks.map((l) => l.href.slice(1));
 
+/** Tombol emas ringkas khusus navbar (Button biasa terlalu besar untuk bar 64px) */
+const ctaClass =
+  "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-gold-grad px-4 text-sm font-semibold text-on-gold shadow-[0_4px_14px_-6px_var(--gold)] transition hover:brightness-105";
+
 export default function Navbar({ lang, t }: { lang: Locale; t: Dictionary["nav"] }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -41,55 +45,55 @@ export default function Navbar({ lang, t }: { lang: Locale; t: Dictionary["nav"]
   const user = useAuthHint();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", onKey);
-    };
+    return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
   const close = () => setOpen(false);
+  const solid = scrolled || open;
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
-        scrolled || open ? "bg-bg/85 backdrop-blur-xl" : "bg-gradient-to-b from-bg/80 to-transparent"
+      // di atas hero (selalu gelap) navbar ikut token gelap; setelah scroll kembali ke tema halaman
+      data-theme={solid ? undefined : "dark"}
+      className={`fixed inset-x-0 top-0 z-50 border-b transition-colors duration-300 ${
+        solid ? "border-line bg-bg/85 backdrop-blur-xl" : "border-transparent"
       }`}
     >
-      <Container className="flex h-[72px] items-center justify-between gap-6">
+      <Container className="flex h-16 items-center gap-8">
         <Logo href={`/${lang}`} />
 
         {/* ─── DESKTOP LINKS ─── */}
-        <nav aria-label="Main" className="hidden lg:block">
-          <ul className="flex items-center gap-9">
+        <nav aria-label="Main" className="hidden h-full lg:block">
+          <ul className="flex h-full items-center gap-1">
             {navLinks.map((l) => {
               const isActive = active === l.href.slice(1);
               return (
-                <li key={l.href}>
+                <li key={l.href} className="relative flex h-full items-center">
                   <a
                     href={l.href}
                     aria-current={isActive ? "true" : undefined}
-                    className={`group relative block py-2 font-display text-[15px] font-semibold uppercase tracking-[0.2em] transition-colors ${
-                      isActive ? "text-gold" : "text-muted hover:text-fg"
+                    className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                      isActive ? "text-fg" : "text-muted hover:bg-surface-2 hover:text-fg"
                     }`}
                   >
                     {t[l.key]}
-                    <span
-                      className={`absolute inset-x-0 -bottom-0.5 h-px origin-center bg-gold transition-transform duration-300 ${
-                        isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
-                      }`}
-                    />
                   </a>
+                  <span
+                    aria-hidden
+                    className={`absolute inset-x-3 -bottom-px h-0.5 rounded-full bg-gold transition-opacity duration-300 ${
+                      isActive ? "opacity-100" : "opacity-0"
+                    }`}
+                  />
                 </li>
               );
             })}
@@ -97,80 +101,93 @@ export default function Navbar({ lang, t }: { lang: Locale; t: Dictionary["nav"]
         </nav>
 
         {/* ─── ACTIONS ─── */}
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
           <LanguageSwitcher lang={lang} label={t.language} />
           <ThemeToggle label={t.theme} />
+          <span aria-hidden className="mx-1.5 hidden h-5 w-px bg-line-strong md:block" />
           {user ? (
             <AccountMenu user={user} labels={{ dashboard: t.dashboard, admin: t.admin, signOut: t.signOut }} />
           ) : (
             <>
               <Link
                 href="/login"
-                className="hidden font-display text-[15px] font-semibold uppercase tracking-[0.2em] text-muted transition-colors hover:text-fg md:block"
+                className="hidden rounded-md px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:text-fg md:block"
               >
                 {t.signIn}
               </Link>
-              <span className="hidden sm:block">
-                <Button href="#pricing">{t.getLicense}</Button>
-              </span>
+              <a href="#pricing" className={`${ctaClass} hidden sm:inline-flex`}>
+                {t.getLicense}
+              </a>
             </>
           )}
           <button
             type="button"
             onClick={() => setOpen((o) => !o)}
-            className="inline-flex h-10 w-10 items-center justify-center text-fg lg:hidden"
+            className="-mr-2 inline-flex h-9 w-9 items-center justify-center rounded-md text-fg transition-colors hover:bg-surface-2 lg:hidden"
             aria-label={open ? t.closeMenu : t.openMenu}
             aria-expanded={open}
             aria-controls="mobile-menu"
           >
-            {open ? <X size={22} /> : <Menu size={22} />}
+            {open ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </Container>
 
-      {/* garis emas bawah — muncul saat scroll */}
-      <div className={`h-px hairline-gold transition-opacity duration-300 ${scrolled || open ? "opacity-60" : "opacity-0"}`} />
-
-      {/* ─── MOBILE MENU ─── */}
+      {/* ─── MOBILE MENU: panel turun di bawah bar ─── */}
       <div
         id="mobile-menu"
-        className={`fixed inset-x-0 bottom-0 top-[73px] bg-bg transition-opacity duration-300 lg:hidden ${
-          open ? "opacity-100" : "pointer-events-none opacity-0"
+        className={`grid border-t border-line bg-bg transition-[grid-template-rows,opacity] duration-300 ease-out lg:hidden ${
+          open ? "grid-rows-[1fr] opacity-100" : "pointer-events-none grid-rows-[0fr] border-transparent opacity-0"
         }`}
       >
-        <Container className="flex h-full flex-col py-8">
-          <ul className="flex-1">
-            {navLinks.map((l, i) => (
-              <li key={l.href} className="border-b border-line">
-                <a
-                  href={l.href}
-                  onClick={close}
-                  className="flex items-baseline gap-4 py-5 font-display text-4xl font-bold uppercase tracking-wide text-fg transition-colors hover:text-gold"
-                >
-                  <span className="font-mono text-xs text-dim">0{i + 1}</span>
-                  {t[l.key]}
-                </a>
-              </li>
-            ))}
-          </ul>
-          <div onClick={close} className="grid grid-cols-2 gap-3 pt-6">
-            {user ? (
-              <>
-                <Button href={user.role === "admin" ? "/admin" : "/dashboard"} size="lg">
-                  <LayoutDashboard size={17} /> {user.role === "admin" ? t.admin : t.dashboard}
-                </Button>
-                <Button variant="outline" size="lg" onClick={lightSignOut}>
-                  <LogOut size={17} /> {t.signOut}
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button href="/login" variant="outline" size="lg">{t.signIn}</Button>
-                <Button href="#pricing" size="lg">{t.getLicense}</Button>
-              </>
-            )}
-          </div>
-        </Container>
+        <div className="overflow-hidden">
+          <Container className="py-4">
+            <ul>
+              {navLinks.map((l) => (
+                <li key={l.href}>
+                  <a
+                    href={l.href}
+                    onClick={close}
+                    tabIndex={open ? 0 : -1}
+                    className="flex items-center justify-between rounded-lg px-2 py-3 text-base font-medium text-fg transition-colors hover:bg-surface-2"
+                  >
+                    {t[l.key]}
+                    <ChevronRight size={16} className="text-dim" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4 grid grid-cols-2 gap-2 border-t border-line pt-4">
+              {user ? (
+                <>
+                  <Link href={user.role === "admin" ? "/admin" : "/dashboard"} onClick={close} className={ctaClass}>
+                    <LayoutDashboard size={15} /> {user.role === "admin" ? t.admin : t.dashboard}
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={lightSignOut}
+                    className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-line-strong text-sm font-medium text-fg"
+                  >
+                    <LogOut size={15} /> {t.signOut}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    onClick={close}
+                    className="inline-flex h-9 items-center justify-center rounded-lg border border-line-strong text-sm font-medium text-fg"
+                  >
+                    {t.signIn}
+                  </Link>
+                  <a href="#pricing" onClick={close} className={ctaClass}>
+                    {t.getLicense}
+                  </a>
+                </>
+              )}
+            </div>
+          </Container>
+        </div>
       </div>
     </header>
   );

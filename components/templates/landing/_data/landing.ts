@@ -7,10 +7,31 @@ import type { Integration, NavLink, Plan } from "@/components/type/landing";
 export const navLinks: NavLink[] = [
   { key: "kits", href: "#kits" },
   { key: "license", href: "#license" },
-  { key: "setup", href: "#setup" },
+  // "setup" tidak di navbar agar muat; section-nya tetap ada di halaman
+  { key: "studio", href: "#studio" },
+  { key: "services", href: "#services" },
   { key: "pricing", href: "#pricing" },
   { key: "faq", href: "#faq" },
 ];
+
+/** Produk saudara: konverter HTML → Roblox UI (dipreview live di landing) */
+export const STUDIO_URL = "https://arrrstudio.up.railway.app/";
+
+/** Jasa pembuatan web / mobile — order diteruskan ke WhatsApp dengan pesan terisi */
+export const ORDER_WHATSAPP = "6283141410446";
+
+/** Tag teknologi per layanan — urutan sama dengan dict.services.offers */
+export const serviceTags = [
+  ["Next.js", "Vue", "Laravel"],
+  [".NET", "Laravel", "MySQL"],
+  ["Android", "iOS", "PWA"],
+];
+
+/** Portofolio yang dipreview live — urutan sama dengan dict.services.work */
+export const portfolio = [
+  { url: "https://portfoliosigit.vercel.app/", device: "desktop" },
+  { url: "https://penilaian-mobileteknologi.vercel.app/", device: "phone" },
+] as const;
 
 /** Sistem yang sudah ada di place dan langsung dipakai oleh kit */
 export const integrations: Integration[] = [

@@ -118,24 +118,24 @@ const MathCaptcha = forwardRef<MathCaptchaHandle, Props>(function MathCaptcha({ 
   const tone = status === "ok" ? "text-green" : status === "err" ? "text-red-500" : "text-dim";
 
   return (
-    <div className="border border-line-strong bg-bg">
-      <div className="flex items-center justify-between border-b border-line px-3 py-2">
-        <span className="font-display text-xs font-semibold uppercase tracking-[0.25em] text-muted">Verification</span>
-        <span className={`flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-[0.2em] ${tone}`}>
+    <div className="overflow-hidden border border-line-strong bg-surface">
+      <div className="flex items-center justify-between border-b border-line px-3.5 py-2">
+        <span className="text-sm font-medium text-fg">Quick check</span>
+        <span className={`flex items-center gap-1.5 text-xs font-medium ${tone}`}>
           <span className="h-1.5 w-1.5 rounded-full bg-current" />
           {status === "ok" ? "Verified" : status === "err" ? "Wrong" : "Pending"}
         </span>
       </div>
 
       <div className="flex items-stretch">
-        <div className="relative h-14 w-[190px] shrink-0 border-r border-line">
+        <div className="relative h-14 w-[170px] shrink-0 border-r border-line sm:w-[190px]">
           <canvas ref={canvasRef} className="block h-full w-full" aria-hidden />
           <button
             type="button"
             onClick={generate}
             title="New question"
             aria-label="New question"
-            className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center border border-line-strong bg-bg/80 text-muted transition-colors hover:border-gold hover:text-gold"
+            className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-md border border-line-strong bg-bg/80 text-muted transition-colors hover:border-gold hover:text-gold"
           >
             <RefreshCw size={11} />
           </button>

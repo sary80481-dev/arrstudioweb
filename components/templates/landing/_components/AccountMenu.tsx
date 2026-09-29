@@ -44,19 +44,19 @@ export default function AccountMenu({ user, labels }: { user: AuthHint; labels: 
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="flex items-center gap-2 py-1 pl-1 pr-1.5 text-fg transition-colors hover:text-gold"
+        className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 text-fg transition-colors hover:bg-surface-2"
       >
-        <span className="chamfer-sm flex h-8 w-8 items-center justify-center bg-gold-grad font-display text-sm font-bold text-on-gold">
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gold-grad text-xs font-bold text-on-gold">
           {user.name.charAt(0).toUpperCase()}
         </span>
-        <span className="hidden max-w-[120px] truncate font-display text-[15px] font-semibold uppercase tracking-[0.12em] md:block">
+        <span className="hidden max-w-[120px] truncate text-sm font-medium md:block">
           {user.name}
         </span>
         <ChevronDown size={14} className={`text-muted transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open && (
-        <div role="menu" className="absolute right-0 top-full mt-2 w-56 border border-line-strong bg-surface py-1.5 shadow-card">
+        <div role="menu" className="absolute right-0 top-full mt-2 w-56 overflow-hidden rounded-xl border border-line-strong bg-surface py-1.5 shadow-card">
           <p className="truncate border-b border-line px-3.5 pb-2.5 pt-1 text-xs text-dim">{user.name}</p>
           <Link role="menuitem" href="/dashboard" className={item} onClick={() => setOpen(false)}>
             <LayoutDashboard size={15} className="text-gold" /> {labels.dashboard}

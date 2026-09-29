@@ -89,7 +89,7 @@ export function DataTable<T extends RowData>({
   const style = (id: string) => columnStyles[id] ?? {};
 
   return (
-    <div className="overflow-hidden rounded-lg border border-line bg-surface">
+    <div className="overflow-hidden rounded-xl border border-line bg-surface">
       {/* toolbar */}
       <div className="flex flex-col gap-2 border-b border-line p-3 sm:flex-row">
         <div className="relative flex-1">

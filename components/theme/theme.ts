@@ -10,7 +10,11 @@ export function getTheme(): Theme {
 }
 
 export function setTheme(theme: Theme) {
-  document.documentElement.setAttribute("data-theme", theme);
+  const root = document.documentElement;
+  // warna memudar pelan saat ganti tema, lalu kelasnya dilepas agar hover tetap responsif
+  root.classList.add("theme-fade");
+  window.setTimeout(() => root.classList.remove("theme-fade"), 450);
+  root.setAttribute("data-theme", theme);
   try {
     localStorage.setItem(THEME_KEY, theme);
   } catch {}

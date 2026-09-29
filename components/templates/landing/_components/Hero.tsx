@@ -1,124 +1,107 @@
-import { ChevronDown, ChevronRight, KeyRound } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import type { SectionProps } from "@/components/type/landing";
-import { LiveKitMenu, LiveStatsBand } from "./LiveHero";
-import { Button, Container, LogoImage } from "./ui";
+import { Reveal } from "./Motion";
+import { Container, LogoImage } from "./ui";
 
-// posisi bara emas — deterministik agar markup server & client sama
-const embers = Array.from({ length: 22 }, (_, i) => ({
-  left: (i * 37) % 100,
-  size: 2 + (i % 3),
-  delay: -((i * 1.7) % 14),
-  duration: 12 + (i % 5) * 2,
-}));
+/**
+ * Hero — panggung gelap di kedua tema (data-theme="dark" memakai token gelap
+ * hanya di section ini). Logo merek jadi key visual, lalu rel tiga lini bisnis.
+ */
+export default function Hero({ t, kits }: SectionProps) {
+  const rail = [
+    {
+      href: "#kits",
+      label: t.nav.kits,
+      detail: kits.length ? kits.map((k) => k.name).join(" · ") : t.hero.eyebrow,
+    },
+    { href: "#studio", label: t.nav.studio, detail: "ARRR Studio · HTML → Roblox" },
+    // cukup dua layanan ujung supaya muat satu baris
+    { href: "#services", label: t.nav.services, detail: [t.services.offers[0]?.title, t.services.offers[2]?.title].filter(Boolean).join(" · ") },
+  ];
 
-function Backdrop() {
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-      {/* sorot cahaya dari atas */}
+    <section data-theme="dark" className="relative isolate flex min-h-[min(100svh,980px)] flex-col overflow-hidden bg-bg text-fg">
+      {/* satu sumber cahaya hangat di belakang logo */}
       <div
-        className="absolute inset-0"
-        style={{ background: "radial-gradient(55% 45% at 50% 18%, var(--glow), transparent 70%)" }}
-      />
-      <div
-        className="absolute left-1/2 top-0 h-[70%] w-[min(900px,120vw)] -translate-x-1/2 opacity-60"
-        style={{
-          background: "conic-gradient(from 180deg at 50% 0%, transparent 160deg, var(--glow) 180deg, transparent 200deg)",
-        }}
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{ background: "radial-gradient(40% 55% at 75% 45%, rgb(226 184 87 / 0.14), transparent 70%)" }}
       />
 
-      {/* lantai arena berperspektif */}
-      <div className="absolute inset-x-0 bottom-0 h-[45%] [perspective:600px]">
-        <div
-          className="absolute inset-x-[-50%] bottom-0 h-[160%] origin-bottom [transform:rotateX(62deg)]"
-          style={{
-            backgroundImage:
-              "linear-gradient(var(--line-strong) 1px, transparent 1px), linear-gradient(90deg, var(--line-strong) 1px, transparent 1px)",
-            backgroundSize: "64px 64px",
-            maskImage: "linear-gradient(to top, black 0%, transparent 75%)",
-            WebkitMaskImage: "linear-gradient(to top, black 0%, transparent 75%)",
-          }}
-        />
-      </div>
+      {/* ─── COPY + KEY VISUAL: satu grid, tepi sejajar dengan navbar ─── */}
+      <Container className="grid flex-1 items-center gap-10 pb-12 pt-28 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:gap-16 lg:pb-16">
+        <div className="order-2 lg:order-1">
+          <Reveal>
+            <p className="font-display text-sm font-semibold uppercase tracking-[0.35em] text-gold">{t.hero.eyebrow}</p>
+          </Reveal>
 
-      {/* bara emas naik */}
-      {embers.map((e, i) => (
-        <span
-          key={i}
-          className="absolute bottom-[-10px] rounded-full bg-gold"
-          style={{
-            left: `${e.left}%`,
-            width: e.size,
-            height: e.size,
-            boxShadow: "0 0 8px var(--gold)",
-            animation: `rise ${e.duration}s linear ${e.delay}s infinite`,
-          }}
-        />
-      ))}
+          <Reveal delay={80}>
+            <h1 className="mt-5 font-display text-[3rem] font-bold uppercase leading-[0.9] tracking-[-0.01em] text-balance sm:text-6xl lg:text-7xl xl:text-[5.5rem]">
+              {t.hero.titleA} <span className="text-gold">{t.hero.titleB}</span>
+            </h1>
+          </Reveal>
 
-      {/* grain + vignette */}
-      <div className="absolute inset-0 grain opacity-[0.06] mix-blend-overlay" />
-      <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, transparent 50%, var(--bg) 100%)" }} />
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-bg to-transparent" />
-    </div>
-  );
-}
+          <Reveal delay={160}>
+            <p className="mt-6 max-w-xl text-base leading-relaxed text-muted md:text-lg">{t.hero.desc}</p>
+          </Reveal>
 
-export default function Hero({ t }: SectionProps) {
-  return (
-    <section className="relative isolate overflow-hidden">
-      <Backdrop />
+          <Reveal delay={240}>
+            <div className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-4">
+            <a
+              href="#kits"
+              className="group inline-flex h-14 items-center gap-3 bg-gold px-8 font-display text-base font-bold uppercase tracking-[0.16em] text-on-gold transition-colors hover:bg-gold-hover"
+            >
+              {t.hero.ctaPrimary}
+              <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+            </a>
+            <a
+              href="#license"
+              className="font-display text-base font-semibold uppercase tracking-[0.16em] text-fg underline decoration-gold decoration-2 underline-offset-8 transition-colors hover:text-gold"
+            >
+              {t.hero.ctaSecondary}
+            </a>
+            </div>
+          </Reveal>
+        </div>
 
-      <Container className="flex min-h-[100svh] flex-col items-center pb-10 pt-28 text-center md:pt-32">
-        {/* logo */}
-        <div className="relative animate-[float_7s_ease-in-out_infinite]">
-          <div aria-hidden className="absolute inset-[15%] rounded-full blur-3xl" style={{ background: "var(--glow)" }} />
+        <Reveal delay={120} className="order-1 flex justify-center lg:order-2 lg:justify-end">
           <LogoImage
-            size={320}
+            size={560}
             eager
-            className="relative h-auto w-[180px] drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)] sm:w-[230px] md:w-[270px]"
+            className="h-auto w-[58vw] max-w-[260px] drop-shadow-[0_30px_60px_rgba(0,0,0,0.6)] sm:max-w-[320px] lg:w-full lg:max-w-[460px]"
           />
-        </div>
-
-        <p className="mt-4 flex items-center gap-3 font-display text-sm font-semibold uppercase tracking-[0.4em] text-gold">
-          <span className="h-px w-10 hairline-gold" />
-          {t.hero.eyebrow}
-          <span className="h-px w-10 hairline-gold" />
-        </p>
-
-        <h1 className="mt-5 font-display text-[3.4rem] font-bold uppercase leading-[0.88] tracking-[-0.01em] text-fg sm:text-7xl md:text-8xl lg:text-[7.5rem]">
-          {t.hero.titleA}
-          <br />
-          <span className="text-gold-metal">{t.hero.titleB}</span>
-        </h1>
-
-        <p className="mt-7 max-w-2xl text-base leading-relaxed text-muted text-pretty md:text-lg">
-          {t.hero.desc}
-        </p>
-
-        <div className="mt-10 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row sm:gap-4">
-          <Button href="#kits" size="lg">
-            {t.hero.ctaPrimary}
-            <ChevronRight size={18} />
-          </Button>
-          <Button href="#license" variant="outline" size="lg">
-            <KeyRound size={17} />
-            {t.hero.ctaSecondary}
-          </Button>
-        </div>
-
-        {/* ─── KIT SELECT — ala menu game ─── */}
-        <nav aria-label="Kits" className="mt-auto w-full pt-16">
-          <LiveKitMenu liveIn={t.hero.liveIn} comingSoon={t.kits.comingSoon} />
-
-          <a href="#stats" aria-label="Scroll down" className="mx-auto mt-6 flex w-fit flex-col items-center gap-1 text-dim transition-colors hover:text-gold">
-            <span className="font-display text-xs font-semibold uppercase tracking-[0.3em]">{t.hero.scroll}</span>
-            <ChevronDown size={16} className="animate-bounce" />
-          </a>
-        </nav>
+        </Reveal>
       </Container>
 
-      {/* ─── STATS BAND (realtime) ─── */}
-      <LiveStatsBand labels={t.stats} />
+      {/* ─── REL: tiga lini bisnis ─── */}
+      <nav aria-label="ArrStudio" className="border-t border-line">
+        <Container>
+          <ul className="grid md:grid-cols-3">
+            {rail.map((r, i) => (
+              <li key={r.href} className={i > 0 ? "border-t border-line md:border-l md:border-t-0" : ""}>
+                <a href={r.href} className={`group relative flex items-center gap-5 py-6 ${i === 0 ? "md:pr-6" : "md:px-6"}`}>
+                  {/* garis emas yang mengisi dari kiri saat hover */}
+                  <span
+                    aria-hidden
+                    className="absolute inset-x-0 top-[-1px] h-0.5 origin-left scale-x-0 bg-gold transition-transform duration-500 group-hover:scale-x-100"
+                  />
+                  <span className="font-display text-sm font-semibold text-dim">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-display text-2xl font-bold uppercase tracking-wide transition-colors group-hover:text-gold">
+                      {r.label}
+                    </span>
+                    <span className="block truncate text-sm text-muted">{r.detail}</span>
+                  </span>
+                  <ArrowUpRight
+                    size={20}
+                    className="shrink-0 text-dim transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-gold"
+                  />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </Container>
+      </nav>
     </section>
   );
 }

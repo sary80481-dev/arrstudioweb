@@ -32,7 +32,7 @@ export async function api<T>(method: string, url: string, body?: unknown): Promi
 /* ─── BUTTON ─── */
 type BtnVariant = "primary" | "secondary" | "ghost" | "danger";
 const btnVariant: Record<BtnVariant, string> = {
-  primary: "bg-gold text-on-gold hover:bg-gold-hover",
+  primary: "bg-gold-grad text-on-gold shadow-[0_6px_16px_-8px_var(--gold)] hover:brightness-105",
   secondary: "border border-line-strong bg-surface text-fg hover:bg-surface-2",
   ghost: "text-muted hover:bg-surface-2 hover:text-fg",
   danger: "text-muted hover:bg-red-500/10 hover:text-red-500",
@@ -48,7 +48,7 @@ export function Btn({
     <button
       type="button"
       {...props}
-      className={`inline-flex items-center justify-center gap-1.5 rounded-md font-medium whitespace-nowrap transition-colors disabled:pointer-events-none disabled:opacity-50 ${
+      className={`inline-flex items-center justify-center gap-1.5 rounded-lg font-medium whitespace-nowrap transition-[color,background-color,filter,transform] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 ${
         size === "sm" ? "h-8 px-2.5 text-[13px]" : "h-9 px-3.5 text-sm"
       } ${btnVariant[variant]} ${className}`}
     />
@@ -57,7 +57,7 @@ export function Btn({
 
 /* ─── CARD ─── */
 export function Card({ className = "", children }: { className?: string; children: ReactNode }) {
-  return <div className={`rounded-lg border border-line bg-surface ${className}`}>{children}</div>;
+  return <div className={`rounded-xl border border-line bg-surface shadow-[0_1px_2px_rgb(0_0_0/0.03)] ${className}`}>{children}</div>;
 }
 
 /* ─── BADGE (titik + teks) ─── */
@@ -83,7 +83,7 @@ export function PageHeader({ title, desc, action }: { title: string; desc?: stri
   return (
     <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight text-fg">{title}</h1>
+        <h1 className="font-display text-3xl font-bold uppercase tracking-wide text-fg">{title}</h1>
         {desc && <p className="mt-0.5 text-sm text-muted">{desc}</p>}
       </div>
       {action && <div className="flex shrink-0 gap-2">{action}</div>}
@@ -112,7 +112,7 @@ export function FieldShell({ label, htmlFor, hint, error, children, className = 
 }
 
 export const controlClass =
-  "w-full rounded-md border border-line-strong bg-bg px-3 text-sm text-fg placeholder:text-dim transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold-soft disabled:bg-surface-2 disabled:text-muted";
+  "w-full rounded-lg border border-line-strong bg-bg px-3 text-sm text-fg placeholder:text-dim transition-shadow focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold-soft disabled:bg-surface-2 disabled:text-muted";
 
 export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={`h-9 ${controlClass} ${props.className ?? ""}`} />;

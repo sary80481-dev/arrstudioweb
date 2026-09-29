@@ -16,6 +16,9 @@ export interface UserDoc {
   updatedAt: Timestamp;
 }
 
+/** Cara akun pertama kali dibuat */
+export type SignupMethod = "discord" | "web";
+
 export interface UserDto {
   uid: string;
   email: string;
@@ -25,7 +28,13 @@ export interface UserDto {
   discordUsername: string | null;
   avatarUrl: string | null;
   createdAt: string | null;
+  signupMethod: SignupMethod;
+  /** akun web yang belakangan login lewat Discord juga ikut true */
+  discordLinked: boolean;
 }
+
+/** Akun baru dari Discord OAuth dibuat dengan uid `discord_<id>` (lihat api/auth/discord/callback) */
+export const signupMethodOf = (uid: string): SignupMethod => (uid.startsWith("discord_") ? "discord" : "web");
 
 const users = () => db().collection("users");
 
@@ -47,6 +56,8 @@ export function toUserDto(uid: string, d: UserDoc): UserDto {
     discordUsername: d.discordUsername ?? null,
     avatarUrl: d.avatarUrl ?? null,
     createdAt: d.createdAt?.toDate().toISOString() ?? null,
+    signupMethod: signupMethodOf(uid),
+    discordLinked: !!d.discordId,
   };
 }
 

@@ -1,10 +1,71 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Ban, Globe, Hourglass, KeyRound, Radio } from "lucide-react";
 import { KitIcon } from "@/components/common/KitIcon";
 import { KIT_STATUS_LABEL, formatIDR } from "@/lib/kits";
+import type { UserDto } from "@/lib/server/users";
 import { selectKits, selectLicenses, selectStats, useAppSelector } from "@/lib/store/store";
-import { Card, PageHeader, StatusPill } from "./_components/fields";
+import { Card, PageHeader, StatusPill, api } from "./_components/fields";
+
+/** 6 akun terbaru + asal pendaftarannya */
+function RecentSignups() {
+  const [users, setUsers] = useState<UserDto[] | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    api<{ users: UserDto[] }>("GET", "/api/admin/users")
+      .then((r) => setUsers(r.users))
+      .catch(() => setFailed(true));
+  }, []);
+
+  const discord = users?.filter((u) => u.signupMethod === "discord").length ?? 0;
+
+  return (
+    <Card className="mt-6">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3">
+        <h2 className="text-sm font-semibold text-fg">
+          Recent sign-ups
+          {users && (
+            <span className="ml-2 font-normal text-dim">
+              {users.length} total · {discord} Discord · {users.length - discord} web
+            </span>
+          )}
+        </h2>
+        <Link href="/admin/users" className="text-[13px] text-muted hover:text-fg">All users</Link>
+      </div>
+      {failed ? (
+        <p className="px-4 py-8 text-center text-sm text-muted">Couldn&apos;t load users.</p>
+      ) : users === null ? (
+        <p className="px-4 py-8 text-center text-sm text-muted">Loading…</p>
+      ) : users.length === 0 ? (
+        <p className="px-4 py-8 text-center text-sm text-muted">No accounts yet.</p>
+      ) : (
+        <ul className="grid divide-y divide-line sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-3">
+          {users.slice(0, 6).map((u) => (
+            <li key={u.uid} className="flex items-center gap-3 px-4 py-3 sm:border-b sm:border-line">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold-soft text-xs font-semibold text-gold">
+                {(u.displayName || u.email || "?").charAt(0).toUpperCase()}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[13px] font-medium text-fg">{u.displayName}</p>
+                <p className="truncate text-xs text-dim">{ago(u.createdAt)}</p>
+              </div>
+              {u.signupMethod === "discord" ? (
+                <span className="rounded-full bg-[#5865f2]/12 px-2 py-0.5 text-[11px] font-medium text-[#5865f2]">Discord</span>
+              ) : (
+                <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-muted">
+                  <Globe size={11} /> Web
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
+  );
+}
 
 const ago = (iso: string | null) => {
   if (!iso) return "—";
@@ -26,25 +87,34 @@ export default function Overview() {
   const revenue = kits.reduce((sum, k) => sum + k.price * k.stats.licenses, 0);
 
   const metrics = [
-    { label: "Licenses issued", value: stats.licensesIssued.toLocaleString() },
-    { label: "Live places", value: stats.placesActive.toLocaleString() },
-    { label: "Unused keys", value: unused?.toLocaleString() ?? "—" },
-    { label: "Revoked", value: revoked?.toLocaleString() ?? "—" },
+    { label: "Licenses issued", value: stats.licensesIssued.toLocaleString(), icon: KeyRound },
+    { label: "Live places", value: stats.placesActive.toLocaleString(), icon: Radio },
+    { label: "Unused keys", value: unused?.toLocaleString() ?? "—", icon: Hourglass },
+    { label: "Revoked", value: revoked?.toLocaleString() ?? "—", icon: Ban },
   ];
 
   return (
     <>
       <PageHeader title="Overview" desc="Numbers update as licenses are issued and places come online." />
 
-      {/* gap-px di atas bg-line = garis pemisah 1px yang rapi di semua breakpoint */}
-      <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line lg:grid-cols-4">
-        {metrics.map((m) => (
-          <div key={m.label} className="bg-surface px-4 py-4 sm:px-5">
-            <dt className="text-[13px] text-muted">{m.label}</dt>
-            <dd className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-fg">{m.value}</dd>
+      <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {metrics.map((m, i) => (
+          <div
+            key={m.label}
+            className={`group relative overflow-hidden rounded-xl border px-4 py-4 transition-colors sm:px-5 ${
+              i === 0 ? "border-gold/40 bg-gold-soft" : "border-line bg-surface hover:border-line-strong"
+            }`}
+          >
+            <dt className="flex items-center gap-2 text-[13px] text-muted">
+              <m.icon size={14} strokeWidth={1.75} className={i === 0 ? "text-gold" : "text-dim"} />
+              {m.label}
+            </dt>
+            <dd className="mt-2 font-display text-4xl font-bold tabular-nums leading-none text-fg">{m.value}</dd>
           </div>
         ))}
       </dl>
+
+      <RecentSignups />
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[1.25fr_1fr]">
         {/* per kit */}

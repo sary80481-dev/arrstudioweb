@@ -35,7 +35,7 @@ export default function LanguageSwitcher({ lang, label }: { lang: Locale; label:
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={label}
-        className="flex h-9 items-center gap-1.5 px-2 font-display text-sm font-semibold uppercase tracking-[0.15em] text-muted transition-colors hover:text-fg"
+        className="flex h-9 items-center gap-1.5 rounded-md px-2 text-sm font-medium uppercase text-muted transition-colors hover:bg-surface-2 hover:text-fg"
       >
         <Globe size={16} strokeWidth={1.75} />
         {lang}
@@ -46,7 +46,7 @@ export default function LanguageSwitcher({ lang, label }: { lang: Locale; label:
         <ul
           role="listbox"
           aria-label={label}
-          className="absolute right-0 top-full mt-2 w-52 border border-line-strong bg-surface py-1.5 shadow-card"
+          className="absolute right-0 top-full mt-2 w-52 overflow-hidden rounded-xl border border-line-strong bg-surface py-1.5 shadow-card"
         >
           {locales.map((l) => (
             <li key={l} role="option" aria-selected={l === lang}>

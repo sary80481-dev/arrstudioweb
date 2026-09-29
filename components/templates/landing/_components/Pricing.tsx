@@ -6,6 +6,7 @@ import type { Dictionary } from "@/lib/i18n/dictionaries/en";
 import { formatIDRShort, type Kit } from "@/lib/kits";
 import { selectKits, selectPricing, useAppSelector } from "@/lib/store/store";
 import { plans } from "../_data/landing";
+import { Reveal } from "./Motion";
 import { Button, Panel, Section, SectionHeading } from "./ui";
 
 /** "Rp 299rb–449rb" dari harga kit aktif */
@@ -39,9 +40,9 @@ export default function Pricing({ t }: { t: Dictionary["pricing"] }) {
       .filter((f) => f.trim() !== "");
 
   return (
-    <Section id="pricing" className="border-y border-line bg-surface/40">
+    <Section id="pricing" className="bg-surface-2/50">
       <SectionHeading
-        index="05"
+        index="07"
         eyebrow={t.eyebrow}
         title={<>{t.titleA} <span className="text-gold-metal">{t.titleGold}</span></>}
         desc={t.desc}
@@ -49,17 +50,17 @@ export default function Pricing({ t }: { t: Dictionary["pricing"] }) {
       />
 
       <div className={`grid items-stretch gap-5 ${visible.length === 3 ? "lg:grid-cols-3" : "mx-auto max-w-4xl md:grid-cols-2"}`}>
-        {visible.map(({ plan: p, text }) => (
+        {visible.map(({ plan: p, text }, idx) => (
+          <Reveal key={text.name} delay={idx * 100} className={p.highlighted ? "lg:-my-4" : ""}>
           <Panel
-            key={text.name}
             highlight={p.highlighted}
-            className={p.highlighted ? "shadow-card lg:-my-4" : ""}
-            innerClassName="flex h-full flex-col p-7 md:p-9"
+            className={`card-lift h-full ${p.highlighted ? "shadow-[0_30px_60px_-30px_var(--gold)]" : ""}`}
+            innerClassName={`flex h-full flex-col p-7 md:p-9 ${p.highlighted ? "spotlight [--my:0%]" : ""}`}
           >
             <div className="flex items-center justify-between gap-3">
               <h3 className="font-display text-2xl font-bold uppercase tracking-wide text-fg">{text.name}</h3>
               {p.highlighted && (
-                <span className="chamfer-sm shrink-0 bg-gold-grad px-3 py-1 font-display text-xs font-bold uppercase tracking-[0.2em] text-on-gold">
+                <span className="shrink-0 rounded-full bg-gold-grad px-3 py-1 font-display text-xs font-bold uppercase tracking-[0.2em] text-on-gold">
                   {t.bestValue}
                 </span>
               )}
@@ -86,6 +87,7 @@ export default function Pricing({ t }: { t: Dictionary["pricing"] }) {
               {text.cta}
             </Button>
           </Panel>
+          </Reveal>
         ))}
       </div>
     </Section>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Barlow_Condensed } from "next/font/google";
 import { themeScript } from "@/components/theme/theme";
+import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin", "vietnamese"], variable: "--font-inter", display: "swap" });
@@ -13,6 +14,8 @@ const barlow = Barlow_Condensed({
 });
 
 export const metadata: Metadata = {
+  // URL absolut untuk og:image — preview link di WhatsApp/Discord butuh domain asli, bukan path relatif
+  metadataBase: new URL(siteUrl()),
   title: "ArrStudio — Premium Roblox Kits",
   description:
     "ClubKit Pro and Summit Kit: licensed Roblox systems that plug straight into the DataStore, group ranks and gamepasses your place already uses.",

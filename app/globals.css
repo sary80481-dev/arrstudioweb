@@ -4,6 +4,8 @@
    0. VARIANT — `dark:` mengikuti <html data-theme="dark">
    ============================================================ */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+/* tema halaman yang sebenarnya (abaikan section yang memaksa gelap, mis. hero) */
+@custom-variant site-dark (&:where(html[data-theme="dark"] *));
 
 /* ============================================================
    1. TOKENS — DARK (default, sinematik)
@@ -39,34 +41,35 @@
 }
 
 /* ============================================================
-   2. TOKENS — LIGHT (ivory)
+   2. TOKENS — LIGHT (soft champagne)
+   krem hangat berlapis, kontras teks tetap AA, bayangan lembut
    ============================================================ */
 [data-theme="light"] {
   color-scheme: light;
 
-  --bg: #f6f3ec;
-  --surface: #fffdf8;
-  --surface-2: #eee9dd;
+  --bg: #faf7f1;
+  --surface: #ffffff;
+  --surface-2: #f3eee4;
 
-  --fg: #16130d;
-  --muted: #5b5548;
-  --dim: #857e6f;
+  --fg: #2a2419;
+  --muted: #6b6354;
+  --dim: #9a917f;
 
-  --line: rgb(22 19 13 / 0.09);
-  --line-strong: rgb(22 19 13 / 0.2);
+  --line: rgb(120 96 48 / 0.1);
+  --line-strong: rgb(120 96 48 / 0.2);
 
-  --gold: #9a7215;
-  --gold-hover: #7d5c0e;
-  --gold-soft: rgb(154 114 21 / 0.1);
-  --on-gold: #1a1204;
-  --gold-grad: linear-gradient(180deg, #f3d584 0%, #d7a93f 50%, #b08425 100%);
-  --gold-text: linear-gradient(180deg, #c4952d 0%, #9a7215 55%, #6e4f0b 100%);
+  --gold: #a87b1c;
+  --gold-hover: #8e6512;
+  --gold-soft: rgb(212 168 72 / 0.12);
+  --on-gold: #2a1d05;
+  --gold-grad: linear-gradient(180deg, #f6dd9a 0%, #e2b85a 52%, #c9963a 100%);
+  --gold-text: linear-gradient(180deg, #d4a441 0%, #b08223 55%, #8a6212 100%);
 
-  --green: #15803d;
-  --silver: #6b6860;
+  --green: #16a34a;
+  --silver: #7c7668;
 
-  --shadow: 0 1px 2px rgb(22 19 13 / 0.05), 0 18px 40px -20px rgb(22 19 13 / 0.2);
-  --glow: rgb(215 169 63 / 0.18);
+  --shadow: 0 1px 2px rgb(120 96 48 / 0.05), 0 12px 32px -14px rgb(120 96 48 / 0.18);
+  --glow: rgb(236 196 110 / 0.28);
 }
 
 /* ============================================================
@@ -109,6 +112,13 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+.theme-fade,
+.theme-fade *,
+.theme-fade *::before,
+.theme-fade *::after {
+  transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, fill 0.4s ease !important;
 }
 
 ::selection {
@@ -181,6 +191,40 @@ body {
 }
 @keyframes blink {
   50% { opacity: 0; }
+}
+@keyframes draw {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes pagein {
+  from { opacity: 0; transform: translateY(6px); }
+}
+@keyframes grow {
+  from { transform: scaleX(0); }
+}
+
+/* muncul saat masuk viewport — kelas `is-in` dipasang oleh <Reveal> */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.8s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* kartu yang terangkat + sorot emas mengikuti kursor (--mx/--my dari <Spotlight>) */
+@utility card-lift {
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.35s ease;
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+  }
+}
+@utility spotlight {
+  background-image: radial-gradient(420px circle at var(--mx, 50%) var(--my, -20%), var(--gold-soft), transparent 60%);
 }
 
 @media (prefers-reduced-motion: reduce) {

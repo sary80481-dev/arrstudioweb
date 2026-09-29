@@ -5,6 +5,8 @@ import Hero from "./_components/Hero";
 import Marketplace from "./_components/Marketplace";
 import License from "./_components/License";
 import HowItWorks from "./_components/HowItWorks";
+import Services from "./_components/Services";
+import Studio from "./_components/Studio";
 import Testimonials from "./_components/Testimonials";
 import Pricing from "./_components/Pricing";
 import FAQ from "./_components/FAQ";
@@ -23,6 +25,8 @@ export default function LandingPage(props: SectionProps) {
         <Marketplace t={props.t.kits} />
         <License {...props} />
         <HowItWorks {...props} />
+        <Studio {...props} />
+        <Services t={props.t.services} />
         <Testimonials {...props} />
         <Pricing t={props.t.pricing} />
         <FAQ {...props} />
