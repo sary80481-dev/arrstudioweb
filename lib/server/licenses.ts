@@ -201,6 +201,32 @@ export async function setLicenseStatus(key: string, status: LicenseStatus) {
 }
 
 /**
+ * Pemilik mengisi slot kosong dengan Place ID secara manual (tanpa menunggu server
+ * game pertama kali jalan). Tidak kena jeda — yang dibatasi hanya melepas place.
+ */
+export async function addPlace(key: string, uid: string, placeId: string) {
+  const ref = licenses().doc(normalizeKey(key));
+
+  return db().runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const d = snap.data() as LicenseDoc | undefined;
+    if (!d || d.ownerUid !== uid) throw new ApiError(404, "LICENSE_NOT_FOUND", "License not found.");
+    if (d.status !== "active") throw new ApiError(403, "LICENSE_REVOKED", "This license has been revoked.");
+    const places = placesOf(d);
+    if (places.includes(placeId)) return toLicenseDto(d);
+    if (places.length >= maxPlacesOf(d)) {
+      throw new ApiError(409, "NO_FREE_SLOT", `All ${maxPlacesOf(d)} places are in use. Remove one first.`);
+    }
+
+    const next = [...places, placeId];
+    const patch = { places: next, placeId: d.placeId ?? placeId, maxPlaces: maxPlacesOf(d), boundAt: d.boundAt ?? Timestamp.now() };
+    tx.update(ref, patch);
+    bumpPlaces(tx, d.kit, 1);
+    return toLicenseDto({ ...d, ...patch });
+  });
+}
+
+/**
  * Pemilik melepas place dari lisensinya (mis. map lama ditinggal) → slotnya kosong
  * dan place baru bisa terikat. Dibatasi sekali per jeda, supaya satu key tidak
  * dipakai bergiliran untuk banyak place.
