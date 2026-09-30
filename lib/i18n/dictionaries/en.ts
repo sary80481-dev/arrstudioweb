@@ -52,6 +52,7 @@ const en = {
     attributes: { systems: "Systems", integration: "Integration", setup: "Setup speed" },
     comingSoon: "Coming soon",
     learnMore: "Learn more",
+    placesPerKey: "{n} places per key",
     empty: "New kits are on the way — check back soon.",
   },
   license: {
@@ -106,14 +107,14 @@ const en = {
         name: "Single license",
         period: "one-time",
         desc: "One kit, one place.",
-        features: ["1 kit of your choice", "1 license key · 1 place", "All 1.x updates", "Community support"],
+        features: ["1 kit of your choice", "1 license key · up to {p} places", "All 1.x updates", "Community support"],
         cta: "Choose a kit",
       },
       {
         name: "Studio bundle",
         period: "one-time",
         desc: "Every kit in one pack, for teams running several places.",
-        features: ["{kits}", "{n} license keys · {n} places", "All 1.x updates", "Priority support", "Early access to new kits"],
+        features: ["{kits}", "1 key per kit · up to {n} places", "All 1.x updates", "Priority support", "Early access to new kits"],
         cta: "Get the bundle",
       },
       {
@@ -136,7 +137,7 @@ const en = {
       { q: "Where does the license key go?", a: "Inside the kit itself. Every kit ships with a Config module — set LicenseKey to the key from your dashboard and publish. There is no separate plugin or launcher." },
       { q: "What happens when the server starts?", a: "The kit sends the key to the ArrStudio license server, which checks it against your place. Once verified (usually under a second) the kit connects to your DataStore, group ranks, gamepasses and leaderstats and switches on." },
       { q: "Will it clash with systems I already have?", a: "Kits are built to plug into what your place already uses rather than replace it. You map your existing DataStore keys, group ID and gamepass IDs in Config, and the kit reads and writes through them." },
-      { q: "Can I move a license to another place?", a: "Yes — rebind the key to a new place from your dashboard, once every 30 days." },
+      { q: "Can I use one key in several places?", a: "Yes. Paste the same key into each place — it links itself on the first server start, up to your license's place limit. Starting a new map with all slots used? Remove an old place from your dashboard (once every 30 days)." },
       { q: "How do updates work?", a: "Kits update on server start for every 1.x release. Your Config values are kept, and changelogs are posted before each release." },
     ],
   },

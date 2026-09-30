@@ -1,6 +1,6 @@
 import type { DocumentData, Timestamp } from "firebase/firestore";
 import type { LicenseDto } from "@/lib/server/licenses";
-import { REBIND_COOLDOWN_DAYS, type Kit } from "./kits";
+import { DEFAULT_PLACES_PER_LICENSE, REBIND_COOLDOWN_DAYS, type Kit } from "./kits";
 
 /* Konversi dokumen Firestore (client SDK) → bentuk yang dipakai UI.
    Modul kecil tanpa dependensi runtime Firebase, aman di-import dari mana saja. */
@@ -25,6 +25,7 @@ export function docToKit(id: string, d: DocumentData): Kit {
     configPath: d.configPath,
     rating: d.rating ?? null,
     order: d.order ?? 0,
+    placesPerLicense: d.placesPerLicense ?? DEFAULT_PLACES_PER_LICENSE,
     video: d.video ?? null,
     stats: { licenses: d.stats?.licenses ?? 0, activePlaces: d.stats?.activePlaces ?? 0 },
     updatedAt: iso(d.updatedAt),
@@ -41,6 +42,9 @@ export function docToLicense(d: DocumentData): LicenseDto {
     ownerUid: d.ownerUid,
     ownerEmail: d.ownerEmail ?? null,
     placeId: d.placeId ?? null,
+    // lisensi lama belum punya `places`/`maxPlaces` → satu slot berisi placeId
+    places: d.places ?? (d.placeId ? [d.placeId] : []),
+    maxPlaces: d.maxPlaces ?? 1,
     status: d.status,
     note: d.note ?? null,
     createdAt: iso(d.createdAt),
@@ -48,7 +52,7 @@ export function docToLicense(d: DocumentData): LicenseDto {
     lastVerifiedAt: iso(d.lastVerifiedAt),
     lastKitVersion: d.lastKitVersion ?? null,
     verifyCount: d.verifyCount ?? 0,
-    rebindAvailableAt: next && next > Date.now() ? new Date(next).toISOString() : null,
+    releaseAvailableAt: next && next > Date.now() ? new Date(next).toISOString() : null,
   };
 }
 

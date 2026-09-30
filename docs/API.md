@@ -178,29 +178,34 @@ Semua lisensi milik user yang login, terbaru dulu.
       "kit": "clubkit",
       "ownerUid": "abc123",
       "placeId": "13284790215",
+      "places": ["13284790215", "98765432101"],
+      "maxPlaces": 3,
       "status": "active",
       "note": null,
       "createdAt": "2026-09-20T08:00:00.000Z",
       "boundAt": "2026-09-20T09:12:00.000Z",
       "lastVerifiedAt": "2026-09-29T10:01:00.000Z",
       "verifyCount": 184,
-      "rebindAvailableAt": null
+      "releaseAvailableAt": null
     }
   ]
 }
 ```
 
-#### `POST /api/licenses/:key/rebind` 🔒
-Pindahkan lisensi ke place lain. Pengikatan pertama bebas; pemindahan berikutnya hanya sekali per **30 hari**.
+#### `DELETE /api/licenses/:key/places/:placeId` 🔒
+Satu key berlaku di beberapa place (`maxPlaces`; default kit = `placesPerLicense`, lisensi lama = 1).
+Place baru terikat **otomatis** saat server pertamanya memverifikasi, selama slot masih ada.
+Endpoint ini melepas place yang sudah tidak dipakai supaya slotnya kosong — hanya sekali per **30 hari**.
 
 ```json
-// request
-{ "placeId": "98765432101" }
 // 200
 { "license": { ...LicenseDto } }
 // 429
-{ "error": { "code": "REBIND_COOLDOWN", "message": "...", "retryAt": "2026-10-20T09:12:00.000Z" } }
+{ "error": { "code": "RELEASE_COOLDOWN", "message": "...", "retryAt": "2026-10-20T09:12:00.000Z" } }
 ```
+
+Slot penuh saat place baru memverifikasi → `403 PLACE_MISMATCH` (kode lama dipertahankan agar kit yang sudah terpasang
+tetap menganggapnya fatal), dengan `boundPlaceIds` dan `maxPlaces` di body error.
 
 #### `POST /api/licenses/verify` 🎮
 Dipanggil oleh kit dari **server Roblox**. Tanpa login — yang diverifikasi adalah key-nya.

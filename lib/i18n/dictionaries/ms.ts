@@ -54,6 +54,7 @@ const ms: Dictionary = {
     attributes: { systems: "Sistem", integration: "Integrasi", setup: "Kelajuan persediaan" },
     comingSoon: "Akan datang",
     learnMore: "Ketahui lebih lanjut",
+    placesPerKey: "{n} place setiap kunci",
     empty: "Kit baharu sedang disediakan — sila semak semula nanti.",
   },
   license: {
@@ -108,14 +109,14 @@ const ms: Dictionary = {
         name: "Lesen tunggal",
         period: "sekali bayar",
         desc: "Satu kit, satu place.",
-        features: ["1 kit pilihan anda", "1 kunci lesen · 1 place", "Semua kemas kini 1.x", "Sokongan komuniti"],
+        features: ["1 kit pilihan anda", "1 kunci lesen · sehingga {p} place", "Semua kemas kini 1.x", "Sokongan komuniti"],
         cta: "Pilih kit",
       },
       {
         name: "Pakej studio",
         period: "sekali bayar",
         desc: "Semua kit dalam satu pakej, untuk pasukan dengan beberapa place.",
-        features: ["{kits}", "{n} kunci lesen · {n} place", "Semua kemas kini 1.x", "Sokongan keutamaan", "Akses awal kit baharu"],
+        features: ["{kits}", "1 kunci setiap kit · sehingga {n} place", "Semua kemas kini 1.x", "Sokongan keutamaan", "Akses awal kit baharu"],
         cta: "Dapatkan pakej",
       },
       {
@@ -138,7 +139,7 @@ const ms: Dictionary = {
       { q: "Di mana kunci lesen diletakkan?", a: "Di dalam kit itu sendiri. Setiap kit ada modul Config — tetapkan LicenseKey kepada kunci dari papan pemuka anda dan terbitkan. Tiada plugin atau pelancar berasingan." },
       { q: "Apa berlaku apabila pelayan bermula?", a: "Kit menghantar kunci ke pelayan lesen ArrStudio untuk dipadankan dengan place anda. Setelah disahkan (biasanya kurang sesaat), kit bersambung ke DataStore, pangkat kumpulan, gamepass dan leaderstats anda lalu diaktifkan." },
       { q: "Adakah ia bercanggah dengan sistem sedia ada saya?", a: "Kit dibina untuk bersambung dengan apa yang place anda sudah gunakan, bukan menggantikannya. Anda petakan kunci DataStore, ID kumpulan dan ID gamepass dalam Config, dan kit membaca serta menulis melaluinya." },
-      { q: "Bolehkah lesen dipindahkan ke place lain?", a: "Boleh — ikat semula kunci ke place baharu dari papan pemuka, sekali setiap 30 hari." },
+      { q: "Bolehkah satu kunci digunakan di beberapa place?", a: "Boleh. Tampal kunci yang sama di setiap place — ia bersambung sendiri semasa pelayan pertama kali bermula, sehingga had place lesen anda. Buat peta baharu tetapi slot sudah penuh? Buang place lama dari papan pemuka (sekali setiap 30 hari)." },
       { q: "Bagaimana kemas kini berfungsi?", a: "Kit dikemas kini semasa pelayan bermula untuk setiap keluaran 1.x. Nilai Config anda dikekalkan, dan log perubahan diterbitkan sebelum setiap keluaran." },
     ],
   },

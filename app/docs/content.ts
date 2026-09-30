@@ -149,24 +149,25 @@ export const groups: EndpointGroup[] = [
       "key": "ARR-7F2K-M4QX-Q9RD",
       "kit": "clubkit",
       "kitName": "ClubKit Pro",
-      "placeId": "13284790215",
+      "places": ["13284790215", "98765432101"],
+      "maxPlaces": 3,
       "status": "active",
       "lastKitVersion": "1.2.0",
       "verifyCount": 184,
-      "rebindAvailableAt": null
+      "releaseAvailableAt": null
     }
   ]
 }`,
       },
       {
-        id: "rebind",
-        method: "POST",
-        path: "/api/licenses/:key/rebind",
+        id: "release-place",
+        method: "DELETE",
+        path: "/api/licenses/:key/places/:placeId",
         access: "session",
-        summary: "Move a license to another place",
-        description: "First binding is free; moving to another place is allowed once every 30 days.",
-        request: `{ "placeId": "98765432101" }`,
-        errors: ["LICENSE_NOT_FOUND", "LICENSE_REVOKED", "REBIND_COOLDOWN"],
+        summary: "Remove a place from a license",
+        description:
+          "One key works in several places (maxPlaces). New places link themselves on their first server start while a slot is free; remove a place you no longer use to free its slot — once every 30 days.",
+        errors: ["LICENSE_NOT_FOUND", "LICENSE_REVOKED", "PLACE_NOT_BOUND", "RELEASE_COOLDOWN"],
       },
     ],
   },

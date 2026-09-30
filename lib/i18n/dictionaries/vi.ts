@@ -54,6 +54,7 @@ const vi: Dictionary = {
     attributes: { systems: "Hệ thống", integration: "Tích hợp", setup: "Tốc độ cài đặt" },
     comingSoon: "Sắp ra mắt",
     learnMore: "Tìm hiểu thêm",
+    placesPerKey: "{n} place mỗi key",
     empty: "Kit mới đang được chuẩn bị — hãy quay lại sau.",
   },
   license: {
@@ -108,14 +109,14 @@ const vi: Dictionary = {
         name: "Bản quyền đơn",
         period: "một lần",
         desc: "Một kit, một place.",
-        features: ["1 kit tùy chọn", "1 key · 1 place", "Mọi bản cập nhật 1.x", "Hỗ trợ cộng đồng"],
+        features: ["1 kit tùy chọn", "1 key · tối đa {p} place", "Mọi bản cập nhật 1.x", "Hỗ trợ cộng đồng"],
         cta: "Chọn kit",
       },
       {
         name: "Gói studio",
         period: "một lần",
         desc: "Tất cả kit trong một gói, cho team chạy nhiều place.",
-        features: ["{kits}", "{n} key · {n} place", "Mọi bản cập nhật 1.x", "Hỗ trợ ưu tiên", "Truy cập sớm kit mới"],
+        features: ["{kits}", "1 key mỗi kit · tối đa {n} place", "Mọi bản cập nhật 1.x", "Hỗ trợ ưu tiên", "Truy cập sớm kit mới"],
         cta: "Mua gói",
       },
       {
@@ -138,7 +139,7 @@ const vi: Dictionary = {
       { q: "Key bản quyền đặt ở đâu?", a: "Ngay trong kit. Mỗi kit có một module Config — đặt LicenseKey bằng key từ dashboard rồi publish. Không có plugin hay launcher riêng." },
       { q: "Điều gì xảy ra khi server khởi động?", a: "Kit gửi key đến server bản quyền ArrStudio để đối chiếu với place của bạn. Khi đã xác minh (thường dưới một giây), kit kết nối với DataStore, cấp bậc nhóm, gamepass và leaderstats rồi bật lên." },
       { q: "Có xung đột với hệ thống tôi đang có không?", a: "Kit được làm để kết nối với những gì place đang dùng chứ không thay thế. Bạn khai báo key DataStore, ID nhóm và ID gamepass trong Config, kit sẽ đọc ghi qua đó." },
-      { q: "Có thể chuyển bản quyền sang place khác không?", a: "Có — gán lại key cho place mới từ dashboard, mỗi 30 ngày một lần." },
+      { q: "Một key dùng được cho nhiều place không?", a: "Được. Dán cùng một key vào từng place — key tự liên kết khi server khởi động lần đầu, tới giới hạn place của bản quyền. Làm map mới mà đã hết slot? Gỡ một place cũ trong dashboard (mỗi 30 ngày một lần)." },
       { q: "Cập nhật hoạt động thế nào?", a: "Kit tự cập nhật khi server khởi động với mọi bản 1.x. Giá trị Config được giữ nguyên, và changelog được đăng trước mỗi bản phát hành." },
     ],
   },

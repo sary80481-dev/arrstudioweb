@@ -1,7 +1,7 @@
 import "server-only";
 import { FieldValue, type Timestamp } from "firebase-admin/firestore";
 import { db } from "@/lib/firebase/admin";
-import { EMPTY_STATS, slugify, type Kit, type KitInput, type PublicStats } from "@/lib/kits";
+import { DEFAULT_PLACES_PER_LICENSE, EMPTY_STATS, slugify, type Kit, type KitInput, type PublicStats } from "@/lib/kits";
 import { DEFAULT_PRICING, type PricingSettings } from "@/lib/pricing";
 import { deleteBlobs, videoFiles } from "./blob";
 import { removePackage } from "./packages";
@@ -30,6 +30,7 @@ export function toKit(id: string, d: KitDoc): Kit {
     configPath: d.configPath,
     rating: d.rating ?? null,
     order: d.order ?? 0,
+    placesPerLicense: d.placesPerLicense ?? DEFAULT_PLACES_PER_LICENSE,
     video: d.video ?? null,
     stats: { licenses: d.stats?.licenses ?? 0, activePlaces: d.stats?.activePlaces ?? 0 },
     updatedAt: d.updatedAt?.toDate().toISOString() ?? null,

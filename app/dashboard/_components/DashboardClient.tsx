@@ -100,58 +100,53 @@ export function LiveLicenses({ uid, downloads }: { uid: string; downloads: Recor
 }
 
 function LicenseCard({ license, downloadable }: { license: LicenseDto; downloadable: boolean }) {
-  const [placeId, setPlaceId] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [removing, setRemoving] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   const revoked = license.status === "revoked";
+  const used = license.places.length;
+  const full = used >= license.maxPlaces;
 
-  const rebind = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const release = async (placeId: string) => {
+    if (!confirm(`Remove place ${placeId} from this license? The kit stops working there, and you can remove another place again in 30 days.`)) return;
     setError("");
-    setBusy(true);
-    const res = await fetch(`/api/licenses/${encodeURIComponent(license.key)}/rebind`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ placeId: placeId.trim() }),
-    });
+    setRemoving(placeId);
+    const res = await fetch(`/api/licenses/${encodeURIComponent(license.key)}/places/${placeId}`, { method: "DELETE" });
     const body = await res.json().catch(() => null);
-    setBusy(false);
+    setRemoving(null);
     if (!res.ok) {
-      const retry = body?.error?.retryAt ? ` Try again after ${date(body.error.retryAt)}.` : "";
-      setError((body?.error?.message ?? "Could not move this license.") + retry);
-      return;
+      const retry = body?.error?.retryAt ? ` You can remove a place again after ${date(body.error.retryAt)}.` : "";
+      setError((body?.error?.message ?? "Could not remove this place.") + retry);
     }
     // data baru datang sendiri lewat onSnapshot
-    setPlaceId("");
   };
 
   return (
-    <Panel highlight={!revoked && !!license.placeId} innerClassName="p-6 sm:p-7">
+    <Panel highlight={!revoked && used > 0} innerClassName="p-6 sm:p-7">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="font-display text-sm font-semibold uppercase tracking-[0.25em] text-gold">{license.kitName}</p>
-          <p className="mt-2 break-all font-mono text-lg text-fg">{license.key}</p>
+          <p className="text-sm font-semibold text-gold">{license.kitName}</p>
+          <p className="mt-1.5 break-all font-mono text-lg text-fg">{license.key}</p>
         </div>
         <span
-          className={`shrink-0 px-2.5 py-1 font-display text-xs font-bold uppercase tracking-[0.2em] ${
-            revoked ? "bg-red-500/10 text-red-500" : license.placeId ? "bg-green/10 text-green" : "bg-gold-soft text-gold"
+          className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${
+            revoked ? "bg-red-500/10 text-red-500" : used ? "bg-green/10 text-green" : "bg-gold-soft text-gold"
           }`}
         >
-          {revoked ? "Revoked" : license.placeId ? "Bound" : "Unused"}
+          {revoked ? "Revoked" : used ? "Active" : "Unused"}
         </span>
       </div>
 
       {/* potongan Config siap tempel */}
-      <div className="mt-5 flex items-center justify-between gap-3 border border-line bg-bg px-4 py-3">
+      <div className="mt-5 flex items-center justify-between gap-3 rounded-2xl bg-bg px-4 py-3">
         <code className="min-w-0 truncate font-mono text-[13px] text-muted">
           <span className="text-fg">LicenseKey</span> = <span className="text-green">&quot;{license.key}&quot;</span>,
         </code>
         <CopyButton text={`LicenseKey = "${license.key}",`} label="Copy for Config" />
       </div>
 
-      {!revoked && (
-        downloadable ? (
+      {!revoked &&
+        (downloadable ? (
           <a
             href={`/api/kits/${encodeURIComponent(license.kit)}/download`}
             download
@@ -161,33 +156,69 @@ function LicenseCard({ license, downloadable }: { license: LicenseDto; downloada
           </a>
         ) : (
           <p className="mt-3 text-center text-xs text-dim">The kit file will be available to download here soon.</p>
-        )
-      )}
+        ))}
 
-      <dl className="mt-5 grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <dt className="text-dim">Place</dt>
-          <dd className="mt-0.5 text-fg">
-            {license.placeId ? (
-              <a
-                href={`https://www.roblox.com/games/${license.placeId}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 font-mono hover:text-gold"
-              >
-                {license.placeId} <ExternalLink size={12} />
-              </a>
-            ) : (
-              "Binds on first server start"
-            )}
-          </dd>
+      {/* ─── PLACES: satu key, beberapa slot ─── */}
+      <div className="mt-6">
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="text-sm font-medium text-fg">Places</p>
+          <p className={`text-sm tabular-nums ${full ? "text-gold" : "text-muted"}`}>
+            {used} / {license.maxPlaces} used
+          </p>
         </div>
+        {/* bilah slot */}
+        <div className="mt-2 flex gap-1">
+          {Array.from({ length: license.maxPlaces }, (_, i) => (
+            <span key={i} className={`h-1.5 flex-1 rounded-full ${i < used ? "bg-brand" : "bg-bg"}`} />
+          ))}
+        </div>
+
+        {used > 0 && (
+          <ul className="mt-3 space-y-1.5">
+            {license.places.map((p) => (
+              <li key={p} className="flex items-center justify-between gap-3 rounded-2xl bg-bg px-4 py-2.5">
+                <a
+                  href={`https://www.roblox.com/games/${p}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex min-w-0 items-center gap-1.5 truncate font-mono text-sm text-fg hover:text-gold"
+                >
+                  {p} <ExternalLink size={12} className="shrink-0" />
+                </a>
+                {!revoked && (
+                  <button
+                    type="button"
+                    onClick={() => release(p)}
+                    disabled={removing !== null}
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs text-muted transition-colors hover:bg-red-500/10 hover:text-red-500 disabled:opacity-50"
+                  >
+                    {removing === p && <Loader2 size={12} className="animate-spin" />}
+                    Remove
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {!revoked && (
+          <p className="mt-3 text-xs leading-relaxed text-dim">
+            {full
+              ? "All slots are in use. To use this key in a new place, remove one you no longer need."
+              : "Paste the same key into any place — it links itself on the first server start."}
+            {license.releaseAvailableAt && ` Next removal available ${date(license.releaseAvailableAt)}.`}
+          </p>
+        )}
+        {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
+      </div>
+
+      <dl className="mt-6 grid grid-cols-3 gap-4 text-sm">
         <div>
           <dt className="text-dim">Last check</dt>
           <dd className="mt-0.5 text-fg">{date(license.lastVerifiedAt)}</dd>
         </div>
         <div>
-          <dt className="text-dim">Installed version</dt>
+          <dt className="text-dim">Version</dt>
           <dd className="mt-0.5 font-mono text-fg">{license.lastKitVersion ?? "—"}</dd>
         </div>
         <div>
@@ -195,36 +226,6 @@ function LicenseCard({ license, downloadable }: { license: LicenseDto; downloada
           <dd className="mt-0.5 font-mono text-fg">{license.verifyCount}</dd>
         </div>
       </dl>
-
-      {!revoked && (
-        <form onSubmit={rebind} className="mt-6 border-t border-line pt-5">
-          <label htmlFor={`place-${license.key}`} className="font-display text-sm font-semibold uppercase tracking-[0.18em] text-muted">
-            {license.placeId ? "Move to another place" : "Bind to a place now"}
-          </label>
-          <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-            <input
-              id={`place-${license.key}`}
-              inputMode="numeric"
-              placeholder="Place ID, e.g. 13284790215"
-              value={placeId}
-              onChange={(e) => setPlaceId(e.target.value.replace(/\D/g, ""))}
-              className="h-11 min-w-0 flex-1 border border-line-strong bg-bg px-3 font-mono text-sm text-fg placeholder:text-dim focus:border-gold focus:outline-none"
-            />
-            <button
-              type="submit"
-              disabled={busy || !placeId}
-              className="chamfer-sm flex h-11 items-center justify-center gap-2 bg-gold-grad px-5 font-display text-sm font-bold uppercase tracking-[0.15em] text-on-gold transition hover:brightness-110 disabled:opacity-50"
-            >
-              {busy && <Loader2 size={14} className="animate-spin" />}
-              Save
-            </button>
-          </div>
-          {license.rebindAvailableAt && (
-            <p className="mt-2 text-xs text-dim">Next move available {date(license.rebindAvailableAt)}.</p>
-          )}
-          {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
-        </form>
-      )}
     </Panel>
   );
 }

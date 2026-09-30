@@ -56,7 +56,7 @@ function KitTile({ kit, t, lang, wide }: { kit: Kit; t: Dictionary["kits"]; lang
         {kit.tagline && <p className="mt-3 text-xl text-muted md:text-2xl">{kit.tagline}</p>}
 
         <p className="mt-4 text-sm text-dim">
-          {formatIDR(kit.price)} · {t.oneTime}
+          {formatIDR(kit.price)} · {t.oneTime} · {fmt(t.placesPerKey, { n: kit.placesPerLicense })}
           {kit.rating != null && (
             <span className="ml-2 inline-flex items-center gap-1">
               · <Star size={12} className="fill-gold text-gold" /> {kit.rating.toFixed(1)}

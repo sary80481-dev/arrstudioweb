@@ -32,6 +32,7 @@ export const KitInputSchema = z.object({
   configPath: z.string().trim().regex(/^[A-Za-z0-9_/]{3,60}$/, "Letters, numbers, _ and / only"),
   rating: z.number().min(0).max(5).nullable(),
   order: z.number().int().min(0).max(999),
+  placesPerLicense: z.number().int().min(1, "At least 1 place").max(100),
   video: KitVideoSchema.nullable(),
 });
 

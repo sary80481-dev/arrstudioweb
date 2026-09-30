@@ -34,17 +34,24 @@ const columns = [
     },
   }),
   col.accessor((r) => r.ownerEmail ?? r.ownerUid, { id: "owner", header: "Owner", cell: (c) => <span className="block max-w-[220px] truncate text-muted">{c.getValue()}</span> }),
-  col.accessor((r) => r.placeId ?? "", {
+  col.accessor((r) => r.places.join(" "), {
     id: "place",
-    header: "Place",
-    cell: (c) =>
-      c.getValue() ? (
-        <a href={`https://www.roblox.com/games/${c.getValue()}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-mono text-fg hover:text-gold">
-          {c.getValue()} <ExternalLink size={11} className="text-dim" />
-        </a>
-      ) : (
-        <span className="text-dim">—</span>
-      ),
+    header: "Places",
+    cell: (c) => {
+      const l = c.row.original;
+      return (
+        <span className="flex flex-col gap-0.5">
+          <span className="text-xs tabular-nums text-muted">
+            {l.places.length}/{l.maxPlaces} slots
+          </span>
+          {l.places.map((p) => (
+            <a key={p} href={`https://www.roblox.com/games/${p}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-mono text-fg hover:text-gold">
+              {p} <ExternalLink size={11} className="text-dim" />
+            </a>
+          ))}
+        </span>
+      );
+    },
   }),
   col.accessor((r) => state(r).label, {
     id: "status",
@@ -62,7 +69,12 @@ const columns = [
     ),
   }),
   col.accessor((r) => r.note ?? "", { id: "note", header: "Note", enableSorting: false, cell: () => null }),
-  col.display({ id: "actions", header: () => <span className="sr-only">Actions</span>, cell: (c) => <RevokeButton license={c.row.original} /> }),
+  col.display({ id: "actions", header: () => <span className="sr-only">Actions</span>, cell: (c) => (
+      <div className="flex justify-end gap-1">
+        <SlotsButton license={c.row.original} />
+        <RevokeButton license={c.row.original} />
+      </div>
+    ) }),
 ];
 
 type StatusFilter = "all" | "unused" | "bound" | "revoked";
@@ -72,7 +84,7 @@ const when = (iso: string | null) =>
 
 function state(l: LicenseDto): { label: string; tone: "green" | "amber" | "red" } {
   if (l.status === "revoked") return { label: "Revoked", tone: "red" };
-  return l.placeId ? { label: "Bound", tone: "green" } : { label: "Unused", tone: "amber" };
+  return l.places.length ? { label: "Bound", tone: "green" } : { label: "Unused", tone: "amber" };
 }
 
 function CopyIcon({ text }: { text: string }) {
@@ -109,8 +121,8 @@ export default function LicensesManager() {
     return licenses.filter((l) => {
       if (kitFilter !== "all" && l.kit !== kitFilter) return false;
       if (status === "revoked") return l.status === "revoked";
-      if (status === "bound") return l.status === "active" && !!l.placeId;
-      if (status === "unused") return l.status === "active" && !l.placeId;
+      if (status === "bound") return l.status === "active" && l.places.length > 0;
+      if (status === "unused") return l.status === "active" && l.places.length === 0;
       return true;
     });
   }, [licenses, kitFilter, status]);
@@ -191,12 +203,40 @@ function RevokeButton({ license }: { license: LicenseDto }) {
   );
 }
 
+/** Ubah jumlah slot place (mis. pembeli menambah place lewat Discord) */
+function SlotsButton({ license }: { license: LicenseDto }) {
+  const [busy, setBusy] = useState(false);
+
+  const edit = async () => {
+    const raw = prompt(`Place slots for ${license.key} (currently used in ${license.places.length}):`, String(license.maxPlaces));
+    if (raw === null) return;
+    const n = Number(raw);
+    if (!Number.isInteger(n) || n < 1 || n > 100) return alert("Enter a whole number from 1 to 100.");
+    setBusy(true);
+    try {
+      await api("PATCH", `/api/admin/licenses/${encodeURIComponent(license.key)}`, { maxPlaces: n });
+    } catch (e) {
+      alert((e as Error).message);
+    }
+    setBusy(false);
+  };
+
+  return (
+    <Btn size="sm" variant="ghost" onClick={edit} disabled={busy} title="Change place slots">
+      {busy && <Loader2 size={13} className="animate-spin" />}
+      Slots
+    </Btn>
+  );
+}
+
 /* ─── PANEL TERBITKAN LISENSI ─── */
 function IssuePanel({ kits, onClose }: { kits: Kit[]; onClose: () => void }) {
   const issuable = kits.filter((k) => k.status !== "draft");
   const [kit, setKit] = useState(issuable[0]?.id ?? "");
   const [buyer, setBuyer] = useState<UserDto | null>(null);
   const [count, setCount] = useState(1);
+  // null = ikut pengaturan kit (placesPerLicense)
+  const [places, setPlaces] = useState<number | null>(null);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -212,6 +252,7 @@ function IssuePanel({ kits, onClose }: { kits: Kit[]; onClose: () => void }) {
         kit,
         ownerUid: buyer?.uid,
         count,
+        maxPlaces: places ?? undefined,
         note: note.trim() || undefined,
       });
       setIssued(keys);
@@ -231,7 +272,7 @@ function IssuePanel({ kits, onClose }: { kits: Kit[]; onClose: () => void }) {
         </button>
       </div>
 
-      <form onSubmit={submit} className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-[1.1fr_1.4fr_80px_1.2fr_auto] lg:items-end">
+      <form onSubmit={submit} className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-[1.1fr_1.4fr_72px_80px_1.2fr_auto] lg:items-end">
         <FieldShell label="Kit" htmlFor="i-kit">
           <Select id="i-kit" value={kit} onChange={(e) => setKit(e.target.value)} required>
             {issuable.length === 0 && <option value="">Create a kit first</option>}
@@ -251,6 +292,16 @@ function IssuePanel({ kits, onClose }: { kits: Kit[]; onClose: () => void }) {
             max={50}
             value={count}
             onChange={(e) => setCount(Math.max(1, Math.min(50, Number(e.target.value) || 1)))}
+          />
+        </FieldShell>
+        <FieldShell label="Places" htmlFor="i-places">
+          <TextInput
+            id="i-places"
+            type="number"
+            min={1}
+            max={100}
+            value={places ?? issuable.find((k) => k.id === kit)?.placesPerLicense ?? 3}
+            onChange={(e) => setPlaces(Math.max(1, Math.min(100, Number(e.target.value) || 1)))}
           />
         </FieldShell>
         <FieldShell label="Note (optional)" htmlFor="i-note">

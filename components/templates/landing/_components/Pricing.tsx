@@ -26,7 +26,10 @@ export default function Pricing({ t, lang }: { t: Dictionary["pricing"]; lang: L
   // harga & isi bundle diatur di /admin/pricing, kit dari /admin/kits — keduanya realtime
   const kits = useAppSelector(selectKits);
   const pricing = useAppSelector(selectPricing);
-  const activeNames = kits.filter((k) => k.status === "active").map((k) => k.name);
+  const active = kits.filter((k) => k.status === "active");
+  const activeNames = active.map((k) => k.name);
+  // "hingga {p} place" untuk lisensi single — pakai angka terkecil supaya janjinya berlaku di semua kit
+  const singlePlaces = active.length ? Math.min(...active.map((k) => k.placesPerLicense)) : 1;
 
   const visible = plans
     .map((p, i) => ({ plan: p, text: t.plans[i] }))
@@ -37,7 +40,7 @@ export default function Pricing({ t, lang }: { t: Dictionary["pricing"]; lang: L
 
   const features = (list: string[]) =>
     list
-      .map((f) => fmt(f, { kits: joinNames(activeNames), n: pricing.bundlePlaces }))
+      .map((f) => fmt(f, { kits: joinNames(activeNames), n: pricing.bundlePlaces, p: singlePlaces }))
       .filter((f) => f.trim() !== "");
 
   const action = (p: (typeof plans)[number], cta: string, highlighted?: boolean) => {

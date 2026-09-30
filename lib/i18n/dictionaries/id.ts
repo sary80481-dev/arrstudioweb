@@ -54,6 +54,7 @@ const id: Dictionary = {
     attributes: { systems: "Sistem", integration: "Integrasi", setup: "Kecepatan setup" },
     comingSoon: "Segera hadir",
     learnMore: "Selengkapnya",
+    placesPerKey: "{n} place per key",
     empty: "Kit baru sedang disiapkan — cek lagi nanti.",
   },
   license: {
@@ -108,14 +109,14 @@ const id: Dictionary = {
         name: "Lisensi tunggal",
         period: "sekali bayar",
         desc: "Satu kit, satu place.",
-        features: ["1 kit pilihan kamu", "1 key lisensi · 1 place", "Semua update 1.x", "Dukungan komunitas"],
+        features: ["1 kit pilihan kamu", "1 key lisensi · hingga {p} place", "Semua update 1.x", "Dukungan komunitas"],
         cta: "Pilih kit",
       },
       {
         name: "Bundle studio",
         period: "sekali bayar",
         desc: "Semua kit dalam satu paket, untuk tim dengan beberapa place.",
-        features: ["{kits}", "{n} key lisensi · {n} place", "Semua update 1.x", "Dukungan prioritas", "Akses awal kit baru"],
+        features: ["{kits}", "1 key per kit · hingga {n} place", "Semua update 1.x", "Dukungan prioritas", "Akses awal kit baru"],
         cta: "Ambil bundle",
       },
       {
@@ -138,7 +139,7 @@ const id: Dictionary = {
       { q: "Key lisensi ditaruh di mana?", a: "Di dalam kit itu sendiri. Setiap kit punya modul Config — isi LicenseKey dengan key dari dashboard kamu lalu publish. Tidak ada plugin atau launcher terpisah." },
       { q: "Apa yang terjadi saat server start?", a: "Kit mengirim key ke server lisensi ArrStudio untuk dicocokkan dengan place kamu. Setelah terverifikasi (biasanya kurang dari satu detik), kit tersambung ke DataStore, rank grup, gamepass, dan leaderstats lalu aktif." },
       { q: "Apakah bentrok dengan sistem yang sudah saya punya?", a: "Kit dibuat untuk menyambung ke sistem yang sudah dipakai place kamu, bukan menggantinya. Kamu cukup memetakan key DataStore, ID grup, dan ID gamepass di Config, lalu kit membaca dan menulis lewat sistem itu." },
-      { q: "Bisakah lisensi dipindah ke place lain?", a: "Bisa — pindahkan key ke place baru dari dashboard, sekali setiap 30 hari." },
+      { q: "Bisakah satu key dipakai di beberapa place?", a: "Bisa. Tempel key yang sama di tiap place — otomatis terhubung saat server pertama kali jalan, sampai batas place lisensimu. Bikin map baru tapi slot sudah penuh? Lepas place lama dari dashboard (sekali setiap 30 hari)." },
       { q: "Bagaimana cara update-nya?", a: "Kit ter-update saat server start untuk setiap rilis 1.x. Nilai Config kamu tetap aman, dan changelog diumumkan sebelum setiap rilis." },
     ],
   },

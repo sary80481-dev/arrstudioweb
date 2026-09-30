@@ -37,6 +37,7 @@ const emptyKit = (order: number): KitInput => ({
   configPath: "",
   rating: null,
   order,
+  placesPerLicense: 3,
   video: null,
 });
 
@@ -365,6 +366,22 @@ function KitSheet({ kit, nextOrder, onClose }: { kit: Kit | null; nextOrder: num
                 <TextInput id="k-order" type="number" min={0} value={form.order} onChange={(e) => set("order", Number(e.target.value))} />
               </FieldShell>
             </div>
+            <FieldShell
+              label="Places per license"
+              htmlFor="k-places"
+              error={errors.placesPerLicense}
+              hint="How many places one key from a single purchase can run in. Existing licenses keep their own limit."
+            >
+              <TextInput
+                id="k-places"
+                type="number"
+                min={1}
+                max={100}
+                value={form.placesPerLicense}
+                onChange={(e) => set("placesPerLicense", Number(e.target.value) || 1)}
+                className="w-28"
+              />
+            </FieldShell>
           </section>
 
           <section className={section}>

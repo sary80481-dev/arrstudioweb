@@ -23,6 +23,8 @@ interface Line {
   kitName: string;
   /** jumlah license key untuk kit ini */
   count: number;
+  /** slot place per key (order lama tanpa field ini = 1) */
+  places?: number;
 }
 
 interface OrderDoc {
@@ -70,7 +72,11 @@ async function price(item: OrderItem): Promise<{ title: string; amount: number; 
   if (item.type === "kit") {
     const kit = await getKit(item.kitId);
     if (!kit || kit.status !== "active") throw new ApiError(404, "KIT_NOT_AVAILABLE", "This kit isn't available for purchase.");
-    return { title: `${kit.name} — single license`, amount: kit.price, lines: [{ kit: kit.id, kitName: kit.name, count: 1 }] };
+    return {
+      title: `${kit.name} — single license`,
+      amount: kit.price,
+      lines: [{ kit: kit.id, kitName: kit.name, count: 1, places: kit.placesPerLicense }],
+    };
   }
 
   const pricing = await getPricing();
@@ -80,8 +86,8 @@ async function price(item: OrderItem): Promise<{ title: string; amount: number; 
   return {
     title: "Studio bundle",
     amount: pricing.bundlePrice,
-    // bundle = setiap kit aktif, masing-masing untuk `bundlePlaces` place
-    lines: kits.map((k) => ({ kit: k.id, kitName: k.name, count: pricing.bundlePlaces })),
+    // bundle = satu key per kit aktif, masing-masing berlaku untuk `bundlePlaces` place
+    lines: kits.map((k) => ({ kit: k.id, kitName: k.name, count: 1, places: pricing.bundlePlaces })),
   };
 }
 
@@ -148,6 +154,7 @@ export async function applyPayment(status: MidtransStatus): Promise<OrderDto | n
           ownerUid: claimed.ownerUid,
           ownerEmail: claimed.ownerEmail,
           count: line.count,
+          maxPlaces: line.places ?? 1,
           note: `Order ${claimed.orderId}`,
         }))
       );

@@ -91,6 +91,8 @@ export interface Kit {
   configPath: string;
   rating: number | null;
   order: number;
+  /** slot place per lisensi single — satu key bisa dipakai di sekian place */
+  placesPerLicense: number;
   video: KitVideo | null;
   stats: KitStats;
   updatedAt: string | null;
@@ -147,6 +149,7 @@ export const DEFAULT_KITS: KitInput[] = [
     configPath: "ClubKit/Config",
     rating: 4.9,
     order: 1,
+    placesPerLicense: 3,
     video: null,
   },
   {
@@ -166,9 +169,13 @@ export const DEFAULT_KITS: KitInput[] = [
     configPath: "SummitKit/Config",
     rating: 4.8,
     order: 2,
+    placesPerLicense: 3,
     video: null,
   },
 ];
 
-/** Jeda minimum antar pindah place untuk satu lisensi */
+/** Slot place default per lisensi (bisa diubah per kit di /admin/kits) */
+export const DEFAULT_PLACES_PER_LICENSE = 3;
+
+/** Jeda minimum antar pelepasan place untuk satu lisensi */
 export const REBIND_COOLDOWN_DAYS = 30;

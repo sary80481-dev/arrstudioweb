@@ -22,6 +22,8 @@ const Issue = z
     ownerUid: z.string().min(1).optional(),
     ownerEmail: z.email().optional(),
     count: z.number().int().min(1).max(50).default(1),
+    /** slot place per lisensi; kosong = pengaturan kit */
+    maxPlaces: z.number().int().min(1).max(100).optional(),
     note: z.string().max(200).optional(),
   })
   .refine((v) => v.ownerUid || v.ownerEmail, "ownerUid or ownerEmail is required");
@@ -39,6 +41,7 @@ export const POST = handle(async (req: NextRequest) => {
     ownerUid: owner.uid,
     ownerEmail: owner.email || body.ownerEmail || null,
     count: body.count,
+    maxPlaces: body.maxPlaces,
     note: body.note,
   });
   return json({ keys }, { status: 201 });

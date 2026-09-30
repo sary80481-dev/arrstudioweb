@@ -54,6 +54,7 @@ const fil: Dictionary = {
     attributes: { systems: "Systems", integration: "Integration", setup: "Bilis ng setup" },
     comingSoon: "Malapit na",
     learnMore: "Alamin pa",
+    placesPerKey: "{n} places bawat key",
     empty: "May bagong kits na paparating — bumalik ka ulit.",
   },
   license: {
@@ -108,14 +109,14 @@ const fil: Dictionary = {
         name: "Single license",
         period: "isang bayad",
         desc: "Isang kit, isang place.",
-        features: ["1 kit na gusto mo", "1 license key · 1 place", "Lahat ng 1.x updates", "Community support"],
+        features: ["1 kit na gusto mo", "1 license key · hanggang {p} places", "Lahat ng 1.x updates", "Community support"],
         cta: "Pumili ng kit",
       },
       {
         name: "Studio bundle",
         period: "isang bayad",
         desc: "Lahat ng kits sa isang pack, para sa teams na may ilang places.",
-        features: ["{kits}", "{n} license keys · {n} places", "Lahat ng 1.x updates", "Priority support", "Maagang access sa bagong kits"],
+        features: ["{kits}", "1 key bawat kit · hanggang {n} places", "Lahat ng 1.x updates", "Priority support", "Maagang access sa bagong kits"],
         cta: "Kunin ang bundle",
       },
       {
@@ -138,7 +139,7 @@ const fil: Dictionary = {
       { q: "Saan ilalagay ang license key?", a: "Sa loob mismo ng kit. May Config module ang bawat kit — ilagay sa LicenseKey ang key mula sa dashboard mo at i-publish. Walang hiwalay na plugin o launcher." },
       { q: "Ano ang nangyayari pag-start ng server?", a: "Ipinapadala ng kit ang key sa ArrStudio license server para itugma sa place mo. Kapag na-verify (karaniwang wala pang isang segundo), kokonekta ang kit sa DataStore, group ranks, gamepasses at leaderstats mo at mag-o-on." },
       { q: "Magbabanggaan ba ito sa mga system ko?", a: "Ginawa ang kits para kumonekta sa gamit na ng place mo, hindi para palitan ito. I-map mo lang sa Config ang DataStore keys, group ID at gamepass IDs mo, at doon dadaan ang pagbasa at pagsulat ng kit." },
-      { q: "Puwede bang ilipat ang lisensya sa ibang place?", a: "Oo — i-rebind ang key sa bagong place mula sa dashboard, isang beses kada 30 araw." },
+      { q: "Puwede bang gamitin ang isang key sa ilang places?", a: "Oo. I-paste ang parehong key sa bawat place — kusa itong kumokonekta sa unang server start, hanggang sa place limit ng lisensya mo. Gagawa ng bagong map pero puno na ang slots? Mag-alis ng lumang place sa dashboard (isang beses kada 30 araw)." },
       { q: "Paano gumagana ang updates?", a: "Nag-a-update ang kits pag-start ng server sa bawat 1.x release. Nananatili ang Config values mo, at pino-post ang changelog bago ang bawat release." },
     ],
   },
