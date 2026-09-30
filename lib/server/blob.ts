@@ -4,6 +4,37 @@ import { VIDEO_HOST_PATTERN, type KitVideo } from "@/lib/kits";
 /** Vercel Blob aktif? (token otomatis ada saat store dihubungkan ke proyek di Vercel) */
 export const blobConfigured = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 
+/**
+ * Pastikan store di balik token benar-benar ada & bisa dipakai. Upload dari browser
+ * yang gagal di sisi Blob hanya muncul sebagai "CORS error" tanpa pesan, jadi admin
+ * mengecek ini dulu sebelum mulai kompres / upload.
+ */
+export async function blobHealth(): Promise<{ ok: true } | { ok: false; code: string; message: string }> {
+  if (!blobConfigured()) {
+    return { ok: false, code: "BLOB_NOT_CONFIGURED", message: "Video storage isn't set up — connect a Vercel Blob store to this project and redeploy." };
+  }
+  const blob = await import("@vercel/blob");
+  try {
+    await blob.list({ limit: 1 });
+    return { ok: true };
+  } catch (err) {
+    if (err instanceof blob.BlobStoreNotFoundError) {
+      return {
+        ok: false,
+        code: "BLOB_STORE_MISSING",
+        message: "BLOB_READ_WRITE_TOKEN points to a Blob store that no longer exists. Connect a store in Vercel → Storage, then redeploy.",
+      };
+    }
+    if (err instanceof blob.BlobStoreSuspendedError) {
+      return { ok: false, code: "BLOB_STORE_SUSPENDED", message: "The Vercel Blob store is suspended — check your Vercel plan / usage." };
+    }
+    if (err instanceof blob.BlobAccessError) {
+      return { ok: false, code: "BLOB_TOKEN_INVALID", message: "BLOB_READ_WRITE_TOKEN was rejected. Reconnect the Blob store in Vercel and redeploy." };
+    }
+    return { ok: false, code: "BLOB_UNAVAILABLE", message: `Vercel Blob is unavailable: ${(err as Error).message}` };
+  }
+}
+
 const isOurBlob = (url: string) => {
   try {
     return VIDEO_HOST_PATTERN.test(new URL(url).hostname);

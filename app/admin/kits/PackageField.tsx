@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { FileBox, Loader2, RefreshCw, Trash2, UploadCloud, X } from "lucide-react";
 import { formatBytes } from "@/lib/video/compress";
 import { Btn, api } from "../_components/fields";
+import { ensureBlobReady } from "./blob-check";
 
 interface KitPackage {
   fileName: string;
@@ -38,6 +39,7 @@ export function PackageField({ kitId }: { kitId: string }) {
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     try {
+      await ensureBlobReady();
       const { upload: put } = await import("@vercel/blob/client");
       const safeName = file.name.replace(/[^\w.-]+/g, "_");
       const xml = /\.rbxmx$/i.test(file.name);

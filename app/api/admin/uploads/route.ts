@@ -1,7 +1,7 @@
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { z } from "zod";
 import { blobUrl } from "@/lib/kit-schema";
-import { blobConfigured, deleteBlobs } from "@/lib/server/blob";
+import { blobConfigured, blobHealth, deleteBlobs } from "@/lib/server/blob";
 import { ApiError, handle, json, parseBody } from "@/lib/server/http";
 import { requireAdmin } from "@/lib/server/session";
 
@@ -13,6 +13,18 @@ const assertConfigured = () => {
     throw new ApiError(503, "BLOB_NOT_CONFIGURED", "Video storage isn't set up — connect a Vercel Blob store and set BLOB_READ_WRITE_TOKEN.");
   }
 };
+
+/**
+ * GET /api/admin/uploads — cek store Blob sebelum admin mulai kompres/upload.
+ * Kegagalan di sisi Blob saat upload langsung dari browser hanya terlihat sebagai
+ * "CORS error" tanpa pesan, jadi alasannya diambil di sini.
+ */
+export const GET = handle(async (req: Request) => {
+  await requireAdmin(req);
+  const health = await blobHealth();
+  if (!health.ok) throw new ApiError(503, health.code, health.message);
+  return json({ ok: true });
+});
 
 /**
  * POST /api/admin/uploads — token upload langsung browser → Vercel Blob.

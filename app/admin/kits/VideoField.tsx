@@ -6,6 +6,7 @@ import { KitVideoPlayer } from "@/components/video/KitVideoPlayer";
 import type { KitVideo } from "@/lib/kits";
 import { MAX_DURATION_S, VideoError, compressVideo, formatBytes, formatDuration } from "@/lib/video/compress";
 import { Btn } from "../_components/fields";
+import { ensureBlobReady } from "./blob-check";
 
 type Phase =
   | { step: "idle" }
@@ -75,6 +76,8 @@ export function VideoField({
     setPhase({ step: "compress", progress: 0, name: file.name });
 
     try {
+      // store bermasalah → ketahuan sekarang, bukan setelah menunggu kompresi
+      await ensureBlobReady();
       const r = await compressVideo(file, {
         signal: ctrl.signal,
         onProgress: (progress) => setPhase({ step: "compress", progress, name: file.name }),
