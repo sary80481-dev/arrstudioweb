@@ -53,6 +53,13 @@ const en = {
     comingSoon: "Coming soon",
     learnMore: "Learn more",
     placesPerKey: "{n} places per key",
+    buy: "Buy",
+    search: "Search kits",
+    all: "All",
+    showAll: "Show all {n} kits",
+    showLess: "Show less",
+    noResults: "No kits match your search.",
+    features: "What's inside",
     empty: "New kits are on the way — check back soon.",
   },
   license: {

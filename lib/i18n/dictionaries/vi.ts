@@ -55,6 +55,13 @@ const vi: Dictionary = {
     comingSoon: "Sắp ra mắt",
     learnMore: "Tìm hiểu thêm",
     placesPerKey: "{n} place mỗi key",
+    buy: "Mua",
+    search: "Tìm kit",
+    all: "Tất cả",
+    showAll: "Xem tất cả {n} kit",
+    showLess: "Thu gọn",
+    noResults: "Không có kit phù hợp.",
+    features: "Bên trong kit",
     empty: "Kit mới đang được chuẩn bị — hãy quay lại sau.",
   },
   license: {

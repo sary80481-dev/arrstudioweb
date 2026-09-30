@@ -55,6 +55,7 @@ export function BuyButton({
   returnTo,
   className,
   block = false,
+  wrapperClassName,
   children,
 }: {
   item: Item;
@@ -63,6 +64,8 @@ export function BuyButton({
   className: string;
   /** lebar penuh (mis. di kartu harga) */
   block?: boolean;
+  /** ganti kelas pembungkus tombol + pesan error */
+  wrapperClassName?: string;
   children: ReactNode;
 }) {
   const router = useRouter();
@@ -115,7 +118,7 @@ export function BuyButton({
   };
 
   return (
-    <span className={block ? "flex flex-col gap-1.5" : "inline-flex flex-col items-end gap-1.5"}>
+    <span className={wrapperClassName ?? (block ? "flex flex-col gap-1.5" : "inline-flex flex-col items-end gap-1.5")}>
       <button type="button" onClick={buy} disabled={busy} className={className}>
         {busy && <Loader2 size={15} className="animate-spin" />}
         {children}

@@ -55,6 +55,13 @@ const th: Dictionary = {
     comingSoon: "เร็ว ๆ นี้",
     learnMore: "ดูเพิ่มเติม",
     placesPerKey: "{n} place ต่อคีย์",
+    buy: "ซื้อ",
+    search: "ค้นหาคิต",
+    all: "ทั้งหมด",
+    showAll: "ดูคิตทั้งหมด {n} ชุด",
+    showLess: "แสดงน้อยลง",
+    noResults: "ไม่พบคิตที่ตรงกัน",
+    features: "มีอะไรในคิต",
     empty: "คิตใหม่กำลังจะมา — แวะกลับมาดูอีกครั้งนะ",
   },
   license: {

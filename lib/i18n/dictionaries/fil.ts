@@ -55,6 +55,13 @@ const fil: Dictionary = {
     comingSoon: "Malapit na",
     learnMore: "Alamin pa",
     placesPerKey: "{n} places bawat key",
+    buy: "Bilhin",
+    search: "Maghanap ng kit",
+    all: "Lahat",
+    showAll: "Ipakita lahat ng {n} kits",
+    showLess: "Ipakita nang kaunti",
+    noResults: "Walang kit na tugma.",
+    features: "Nasa loob ng kit",
     empty: "May bagong kits na paparating — bumalik ka ulit.",
   },
   license: {

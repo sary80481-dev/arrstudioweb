@@ -55,6 +55,13 @@ const ms: Dictionary = {
     comingSoon: "Akan datang",
     learnMore: "Ketahui lebih lanjut",
     placesPerKey: "{n} place setiap kunci",
+    buy: "Beli",
+    search: "Cari kit",
+    all: "Semua",
+    showAll: "Lihat semua {n} kit",
+    showLess: "Tunjuk kurang",
+    noResults: "Tiada kit yang sepadan.",
+    features: "Kandungan kit",
     empty: "Kit baharu sedang disediakan — sila semak semula nanti.",
   },
   license: {

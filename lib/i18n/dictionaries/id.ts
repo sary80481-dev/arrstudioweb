@@ -55,6 +55,13 @@ const id: Dictionary = {
     comingSoon: "Segera hadir",
     learnMore: "Selengkapnya",
     placesPerKey: "{n} place per key",
+    buy: "Beli",
+    search: "Cari kit",
+    all: "Semua",
+    showAll: "Lihat semua {n} kit",
+    showLess: "Tampilkan lebih sedikit",
+    noResults: "Tidak ada kit yang cocok.",
+    features: "Isi kit",
     empty: "Kit baru sedang disiapkan — cek lagi nanti.",
   },
   license: {

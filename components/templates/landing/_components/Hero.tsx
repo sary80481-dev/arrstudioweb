@@ -17,7 +17,8 @@ import { Container, LogoImage, buttonClass } from "./ui";
 export default function Hero({ t, stats }: Pick<SectionProps, "t" | "stats">) {
   // realtime dari Redux: video baru dari admin langsung tampil
   const kits = useAppSelector(selectKits);
-  const reel = kits.filter((k) => k.video);
+  // maks. 5 di pemilih hero — katalog lengkap ada di section Kits
+  const reel = kits.filter((k) => k.video).slice(0, 5);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [watching, setWatching] = useState(false);
   const active = reel.find((k) => k.id === activeId) ?? reel[0];
