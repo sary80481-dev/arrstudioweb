@@ -1,8 +1,12 @@
 import "server-only";
 import { VIDEO_HOST_PATTERN, type KitVideo } from "@/lib/kits";
 
-/** Vercel Blob aktif? (token otomatis ada saat store dihubungkan ke proyek di Vercel) */
-export const blobConfigured = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+/**
+ * Vercel Blob aktif? Store yang dihubungkan dari dashboard sekarang memakai
+ * BLOB_STORE_ID + OIDC (token diambil otomatis oleh SDK saat berjalan di Vercel);
+ * store lama / setup manual memakai BLOB_READ_WRITE_TOKEN. Keduanya didukung.
+ */
+export const blobConfigured = () => Boolean(process.env.BLOB_STORE_ID || process.env.BLOB_READ_WRITE_TOKEN);
 
 /**
  * Pastikan store di balik token benar-benar ada & bisa dipakai. Upload dari browser
@@ -22,14 +26,14 @@ export async function blobHealth(): Promise<{ ok: true } | { ok: false; code: st
       return {
         ok: false,
         code: "BLOB_STORE_MISSING",
-        message: "BLOB_READ_WRITE_TOKEN points to a Blob store that no longer exists. Connect a store in Vercel → Storage, then redeploy.",
+        message: "The connected Blob store no longer exists. Connect a store in Vercel → Storage, then redeploy.",
       };
     }
     if (err instanceof blob.BlobStoreSuspendedError) {
       return { ok: false, code: "BLOB_STORE_SUSPENDED", message: "The Vercel Blob store is suspended — check your Vercel plan / usage." };
     }
     if (err instanceof blob.BlobAccessError) {
-      return { ok: false, code: "BLOB_TOKEN_INVALID", message: "BLOB_READ_WRITE_TOKEN was rejected. Reconnect the Blob store in Vercel and redeploy." };
+      return { ok: false, code: "BLOB_TOKEN_INVALID", message: "Vercel Blob rejected this project's credentials. Reconnect the Blob store in Vercel and redeploy." };
     }
     return { ok: false, code: "BLOB_UNAVAILABLE", message: `Vercel Blob is unavailable: ${(err as Error).message}` };
   }

@@ -6,28 +6,13 @@ import { KitVideoPlayer } from "@/components/video/KitVideoPlayer";
 import type { KitVideo } from "@/lib/kits";
 import { MAX_DURATION_S, VideoError, compressVideo, formatBytes, formatDuration } from "@/lib/video/compress";
 import { Btn } from "../_components/fields";
-import { ensureBlobReady } from "./blob-check";
+import { ensureBlobReady, uniqueName, uploadToBlob } from "./blob-check";
 
 type Phase =
   | { step: "idle" }
   | { step: "compress"; progress: number; name: string }
   | { step: "upload"; progress: number; name: string }
   | { step: "error"; message: string };
-
-const MULTIPART_FROM = 25 * 1024 * 1024;
-
-async function uploadToBlob(path: string, body: Blob, contentType: string, signal: AbortSignal, onProgress?: (p: number) => void) {
-  const { upload } = await import("@vercel/blob/client");
-  const res = await upload(path, body, {
-    access: "public",
-    handleUploadUrl: "/api/admin/uploads",
-    contentType,
-    multipart: body.size > MULTIPART_FROM,
-    abortSignal: signal,
-    onUploadProgress: ({ percentage }) => onProgress?.(percentage / 100),
-  });
-  return res.url;
-}
 
 /** File di Blob yang diupload tapi tidak jadi dipakai */
 export function discardVideos(videos: KitVideo[]) {
@@ -84,7 +69,8 @@ export function VideoField({
       });
 
       setPhase({ step: "upload", progress: 0, name: file.name });
-      const base = `kits/${kitId}/${Date.now()}`;
+      // video & poster berbagi nama acak yang sama → mudah dikenali berpasangan di Blob
+      const base = `kits/${kitId}/${uniqueName("video")}`;
       const posterShare = r.poster ? 0.05 : 0;
       const url = await uploadToBlob(`${base}.mp4`, r.video, "video/mp4", ctrl.signal, (p) =>
         setPhase({ step: "upload", progress: p * (1 - posterShare), name: file.name })

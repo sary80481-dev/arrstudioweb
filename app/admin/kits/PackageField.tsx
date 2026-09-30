@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { FileBox, Loader2, RefreshCw, Trash2, UploadCloud, X } from "lucide-react";
 import { formatBytes } from "@/lib/video/compress";
 import { Btn, api } from "../_components/fields";
-import { ensureBlobReady } from "./blob-check";
+import { ensureBlobReady, uniqueName, uploadToBlob } from "./blob-check";
 
 interface KitPackage {
   fileName: string;
@@ -40,19 +40,16 @@ export function PackageField({ kitId }: { kitId: string }) {
     abortRef.current = ctrl;
     try {
       await ensureBlobReady();
-      const { upload: put } = await import("@vercel/blob/client");
-      const safeName = file.name.replace(/[^\w.-]+/g, "_");
       const xml = /\.rbxmx$/i.test(file.name);
-      const res = await put(`kits/${kitId}/packages/${safeName}`, file, {
-        access: "public",
-        handleUploadUrl: "/api/admin/uploads",
-        contentType: xml ? "application/xml" : "application/octet-stream",
-        multipart: file.size > 25 * 1024 * 1024,
-        abortSignal: ctrl.signal,
-        onUploadProgress: ({ percentage }) => setProgress(percentage / 100),
-      });
+      const url = await uploadToBlob(
+        `kits/${kitId}/packages/${uniqueName(file.name)}`,
+        file,
+        xml ? "application/xml" : "application/octet-stream",
+        ctrl.signal,
+        setProgress
+      );
       const r = await api<{ package: KitPackage }>("PUT", `/api/admin/kits/${kitId}/package`, {
-        url: res.url,
+        url,
         fileName: file.name.slice(0, 80),
         size: file.size,
       });
