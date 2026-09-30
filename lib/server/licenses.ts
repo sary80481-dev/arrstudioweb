@@ -201,6 +201,26 @@ export async function setLicenseStatus(key: string, status: LicenseStatus) {
 }
 
 /**
+ * Hapus lisensi permanen — hanya yang sudah dicabut, supaya lisensi aktif pembeli
+ * tidak hilang karena salah klik. Place-nya sudah tidak dihitung sejak dicabut;
+ * yang dikurangi di sini jumlah lisensi (kit & statistik publik).
+ */
+export async function deleteLicense(key: string) {
+  const ref = licenses().doc(normalizeKey(key));
+  await db().runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const d = snap.data() as LicenseDoc | undefined;
+    if (!d) throw new ApiError(404, "LICENSE_NOT_FOUND", "License not found.");
+    if (d.status !== "revoked") {
+      throw new ApiError(409, "LICENSE_ACTIVE", "Revoke this license before deleting it.");
+    }
+    tx.delete(ref);
+    tx.set(publicStatsRef(), { licensesIssued: FieldValue.increment(-1), updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+    tx.set(kitsCol().doc(d.kit), { stats: { licenses: FieldValue.increment(-1) } }, { merge: true });
+  });
+}
+
+/**
  * Pemilik mengisi slot kosong dengan Place ID secara manual (tanpa menunggu server
  * game pertama kali jalan). Tidak kena jeda — yang dibatasi hanya melepas place.
  */

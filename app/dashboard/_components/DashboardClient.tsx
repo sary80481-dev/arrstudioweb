@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -287,7 +288,7 @@ function LicenseCard({
 
         {/* ─── KEY ─── */}
         <div className="mt-6 flex flex-wrap items-center gap-3 rounded-[20px] bg-bg p-2 pl-5">
-          <code className="min-w-0 flex-1 break-all py-1.5 font-mono text-lg tracking-wide text-fg md:text-xl">{license.key}</code>
+          <code className="min-w-0 flex-1 break-all py-1.5 font-mono text-[15px] tracking-wide text-fg sm:text-lg md:text-xl">{license.key}</code>
           <div className="flex gap-1.5">
             <CopyButton text={license.key} label="Copy key" className="bg-surface-2!" />
             <CopyButton text={`LicenseKey = "${license.key}",`} label="Config line" className="bg-surface-2! max-sm:hidden" />
@@ -373,20 +374,12 @@ function PlaceCard({
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const boxRef = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
   const cooldown = !!license.releaseAvailableAt;
-
-  // tutup menu saat klik di luar kartu
-  useEffect(() => {
-    if (!menu) return;
-    const onDown = (e: PointerEvent) => {
-      if (boxRef.current?.contains(e.target as Node)) return;
-      setMenu(false);
-      setConfirming(false);
-    };
-    document.addEventListener("pointerdown", onDown);
-    return () => document.removeEventListener("pointerdown", onDown);
-  }, [menu]);
+  const closeMenu = () => {
+    setMenu(false);
+    setConfirming(false);
+  };
 
   const remove = async () => {
     setBusy(true);
@@ -405,7 +398,7 @@ function PlaceCard({
   const url = `https://www.roblox.com/games/${placeId}`;
 
   return (
-    <div ref={boxRef} className="relative flex min-h-[92px] items-center gap-3.5 rounded-[20px] bg-bg p-3.5 pr-12 transition-shadow hover:shadow-card">
+    <div className="relative flex min-h-[92px] items-center gap-3.5 rounded-[20px] bg-bg p-3.5 pr-12 transition-shadow hover:shadow-card">
       {info?.iconUrl ? (
         // eslint-disable-next-line @next/next/no-img-element -- ikon dari CDN Roblox
         <img src={info.iconUrl} alt="" className="h-16 w-16 shrink-0 rounded-[14px] bg-surface-2 object-cover" />
@@ -444,12 +437,11 @@ function PlaceCard({
 
       {/* menu ⋯ */}
       <button
+        ref={btnRef}
         type="button"
-        onClick={() => {
-          setMenu((m) => !m);
-          setConfirming(false);
-        }}
+        onClick={() => (menu ? closeMenu() : setMenu(true))}
         aria-label={`Options for place ${placeId}`}
+        aria-haspopup="menu"
         aria-expanded={menu}
         className="absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-fg"
       >
@@ -457,23 +449,33 @@ function PlaceCard({
       </button>
 
       {menu && (
-        <div className="absolute right-2.5 top-12 z-20 w-64 animate-[pagein_0.15s_ease-out] rounded-2xl bg-surface p-1.5 shadow-float ring-1 ring-line">
-          <a href={url} target="_blank" rel="noreferrer" className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-fg hover:bg-surface-2">
-            <ArrowUpRight size={15} className="text-muted" /> Open in Roblox
+        <Popover anchorRef={btnRef} onClose={closeMenu} title={info?.name ?? `Place ${placeId}`}>
+          <a href={url} target="_blank" rel="noreferrer" onClick={closeMenu} className={menuItem}>
+            <ArrowUpRight size={16} className="text-muted" /> Open in Roblox
           </a>
           <CopyRow text={placeId} />
           {canRemove &&
             (confirming ? (
-              <div className="mt-1 rounded-xl bg-red-500/10 p-3">
-                <p className="text-xs leading-relaxed text-red-500">
+              <div className="mt-1 rounded-xl bg-red-500/10 p-3.5">
+                <p className="text-[13px] leading-relaxed text-red-500">
                   The kit stops working in this place. After this, you can remove another place in 30 days.
                 </p>
-                <div className="mt-2.5 flex gap-1.5">
-                  <button type="button" onClick={remove} disabled={busy} className="flex-1 rounded-full bg-red-500 py-1.5 text-xs font-medium text-white hover:bg-red-600">
-                    Remove place
-                  </button>
-                  <button type="button" onClick={() => setConfirming(false)} className="rounded-full px-3 py-1.5 text-xs text-muted hover:text-fg">
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setConfirming(false)}
+                    className="rounded-full bg-surface-2 py-2.5 text-sm text-fg transition-colors hover:bg-fg/[0.1]"
+                  >
                     Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={remove}
+                    disabled={busy}
+                    className="flex items-center justify-center gap-1.5 rounded-full bg-red-500 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-600 disabled:opacity-60"
+                  >
+                    {busy && <Loader2 size={14} className="animate-spin" />}
+                    Remove
                   </button>
                 </div>
               </div>
@@ -482,15 +484,128 @@ function PlaceCard({
                 type="button"
                 onClick={() => setConfirming(true)}
                 disabled={cooldown}
-                title={cooldown ? `Available ${ago(license.releaseAvailableAt)}` : undefined}
-                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm text-red-500 hover:bg-red-500/10 disabled:cursor-not-allowed disabled:text-dim disabled:hover:bg-transparent"
+                className={`${menuItem} text-red-500! hover:bg-red-500/10 disabled:cursor-not-allowed disabled:text-dim! disabled:hover:bg-transparent`}
               >
-                <X size={15} /> {cooldown ? `Remove (${ago(license.releaseAvailableAt)})` : "Remove from license"}
+                <X size={16} />
+                <span>
+                  Remove from license
+                  {cooldown && <span className="block text-xs text-dim">Available {ago(license.releaseAvailableAt)}</span>}
+                </span>
               </button>
             ))}
-        </div>
+        </Popover>
       )}
     </div>
+  );
+}
+
+const menuItem =
+  "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-fg transition-colors hover:bg-surface-2 max-sm:py-3.5 max-sm:text-base";
+
+const MENU_W = 272;
+const GAP = 8;
+const EDGE = 12;
+
+/**
+ * Menu mengambang yang dirender di <body> (portal) — tidak terpotong oleh kartu
+ * ber-overflow-hidden. Desktop: menempel ke tombol, membuka ke atas bila ruang
+ * di bawah kurang, ikut bergeser saat scroll/resize. HP: bottom sheet.
+ */
+function Popover({
+  anchorRef,
+  onClose,
+  title,
+  children,
+}: {
+  anchorRef: React.RefObject<HTMLElement | null>;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+}) {
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const [sheet, setSheet] = useState(false);
+
+  useLayoutEffect(() => {
+    const place = () => {
+      const isSheet = window.matchMedia("(max-width: 639px)").matches;
+      setSheet(isSheet);
+      const a = anchorRef.current?.getBoundingClientRect();
+      const h = menuRef.current?.offsetHeight ?? 0;
+      if (!a || isSheet) return;
+      const below = window.innerHeight - a.bottom - GAP - EDGE;
+      const up = h > below && a.top - GAP - EDGE > below;
+      setPos({
+        top: up ? Math.max(EDGE, a.top - GAP - h) : a.bottom + GAP,
+        left: Math.min(Math.max(EDGE, a.right - MENU_W), window.innerWidth - MENU_W - EDGE),
+      });
+    };
+    place();
+    // tinggi menu berubah (mis. panel konfirmasi terbuka) → hitung ulang posisi
+    const ro = new ResizeObserver(place);
+    if (menuRef.current) ro.observe(menuRef.current);
+    window.addEventListener("resize", place);
+    window.addEventListener("scroll", place, true);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
+    };
+  }, [anchorRef]);
+
+  // klik di luar / Escape → tutup
+  useEffect(() => {
+    const onDown = (e: PointerEvent) => {
+      const t = e.target as Node;
+      if (menuRef.current?.contains(t) || anchorRef.current?.contains(t)) return;
+      onClose();
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [anchorRef, onClose]);
+
+  // bottom sheet mengunci scroll halaman di belakangnya
+  useEffect(() => {
+    if (!sheet) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [sheet]);
+
+  return createPortal(
+    sheet ? (
+      <div className="fixed inset-0 z-[90]">
+        <div aria-hidden className="absolute inset-0 animate-[pagein_0.2s_ease-out] bg-black/50 backdrop-blur-[2px]" />
+        <div
+          ref={menuRef}
+          role="menu"
+          aria-label={title}
+          className="absolute inset-x-0 bottom-0 animate-[sheet-up_0.28s_cubic-bezier(0.2,0.7,0.2,1)] rounded-t-[28px] bg-surface p-3 pb-[max(env(safe-area-inset-bottom),16px)] shadow-float"
+        >
+          <span aria-hidden className="mx-auto mb-2 block h-1 w-10 rounded-full bg-line-strong" />
+          <p className="truncate px-3 pb-2 pt-1 text-sm font-semibold text-fg">{title}</p>
+          {children}
+        </div>
+      </div>
+    ) : (
+      <div
+        ref={menuRef}
+        role="menu"
+        aria-label={title}
+        style={{ top: pos?.top ?? 0, left: pos?.left ?? 0, width: MENU_W, visibility: pos ? "visible" : "hidden" }}
+        className="fixed z-[90] animate-[pagein_0.15s_ease-out] rounded-2xl bg-surface p-1.5 shadow-float ring-1 ring-line"
+      >
+        {children}
+      </div>
+    ),
+    document.body
   );
 }
 
@@ -504,9 +619,9 @@ function CopyRow({ text }: { text: string }) {
         setDone(true);
         setTimeout(() => setDone(false), 1200);
       }}
-      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm text-fg hover:bg-surface-2"
+      className={menuItem}
     >
-      {done ? <Check size={15} className="text-green" /> : <Copy size={15} className="text-muted" />}
+      {done ? <Check size={16} className="text-green" /> : <Copy size={16} className="text-muted" />}
       {done ? "Copied" : "Copy place ID"}
     </button>
   );

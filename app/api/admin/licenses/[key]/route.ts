@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { handle, json, parseBody } from "@/lib/server/http";
-import { setLicenseStatus, setMaxPlaces } from "@/lib/server/licenses";
+import { deleteLicense, setLicenseStatus, setMaxPlaces } from "@/lib/server/licenses";
 import { requireAdmin } from "@/lib/server/session";
 
 const Body = z
@@ -20,4 +20,12 @@ export const PATCH = handle(async (req: NextRequest, ctx: RouteContext<"/api/adm
   let license = maxPlaces ? await setMaxPlaces(k, maxPlaces) : null;
   if (status) license = await setLicenseStatus(k, status);
   return json({ license });
+});
+
+/** DELETE /api/admin/licenses/:key — hapus permanen (hanya lisensi yang sudah dicabut) */
+export const DELETE = handle(async (req: NextRequest, ctx: RouteContext<"/api/admin/licenses/[key]">) => {
+  await requireAdmin(req);
+  const { key } = await ctx.params;
+  await deleteLicense(decodeURIComponent(key));
+  return json({ ok: true });
 });

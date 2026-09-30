@@ -312,7 +312,12 @@ User harus sudah punya akun (pernah login sekali).
 #### `PATCH /api/admin/licenses/:key`
 ```json
 { "status": "revoked" }   // atau "active" untuk memulihkan
+{ "maxPlaces": 5 }         // ubah jumlah slot place (tidak boleh di bawah place yang terpakai)
 ```
+
+#### `DELETE /api/admin/licenses/:key`
+Hapus permanen. Hanya untuk lisensi yang sudah dicabut (`409 LICENSE_ACTIVE` bila masih aktif).
+Jumlah lisensi di kit & statistik publik ikut berkurang.
 
 ---
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Check, Copy, ExternalLink, Loader2, Plus, Search, X } from "lucide-react";
+import { Check, Copy, ExternalLink, Loader2, Plus, Search, Trash2, X } from "lucide-react";
 import type { Kit } from "@/lib/kits";
 import type { LicenseDto } from "@/lib/server/licenses";
 import type { UserDto } from "@/lib/server/users";
@@ -71,7 +71,11 @@ const columns = [
   col.accessor((r) => r.note ?? "", { id: "note", header: "Note", enableSorting: false, cell: () => null }),
   col.display({ id: "actions", header: () => <span className="sr-only">Actions</span>, cell: (c) => (
       <div className="flex justify-end gap-1">
-        <SlotsButton license={c.row.original} />
+        {c.row.original.status === "revoked" ? (
+          <DeleteButton license={c.row.original} />
+        ) : (
+          <SlotsButton license={c.row.original} />
+        )}
         <RevokeButton license={c.row.original} />
       </div>
     ) }),
@@ -199,6 +203,30 @@ function RevokeButton({ license }: { license: LicenseDto }) {
     <Btn size="sm" variant={revoked ? "ghost" : "danger"} onClick={toggle} disabled={busy}>
       {busy && <Loader2 size={13} className="animate-spin" />}
       {revoked ? "Restore" : "Revoke"}
+    </Btn>
+  );
+}
+
+/** Hapus permanen — hanya muncul untuk lisensi yang sudah dicabut */
+function DeleteButton({ license }: { license: LicenseDto }) {
+  const [busy, setBusy] = useState(false);
+
+  const remove = async () => {
+    if (!confirm(`Delete ${license.key} permanently? This can't be undone.`)) return;
+    setBusy(true);
+    try {
+      await api("DELETE", `/api/admin/licenses/${encodeURIComponent(license.key)}`);
+      // baris hilang sendiri lewat onSnapshot
+    } catch (e) {
+      alert((e as Error).message);
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Btn size="sm" variant="danger" onClick={remove} disabled={busy} aria-label={`Delete ${license.key}`} title="Delete permanently">
+      {busy ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+      Delete
     </Btn>
   );
 }

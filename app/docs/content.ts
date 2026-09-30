@@ -217,7 +217,16 @@ export const groups: EndpointGroup[] = [
         errors: ["USER_NOT_FOUND", "KIT_NOT_FOUND"],
       },
       { id: "licenses-admin-list", method: "GET", path: "/api/admin/licenses?ownerUid=&kit=", access: "admin", summary: "List licenses (max 100)" },
-      { id: "licenses-status", method: "PATCH", path: "/api/admin/licenses/:key", access: "admin", summary: "Revoke or restore", request: `{ "status": "revoked" }` },
+      { id: "licenses-status", method: "PATCH", path: "/api/admin/licenses/:key", access: "admin", summary: "Revoke, restore or change place slots", request: `{ "status": "revoked" }  // or { "maxPlaces": 5 }` },
+      {
+        id: "licenses-delete",
+        method: "DELETE",
+        path: "/api/admin/licenses/:key",
+        access: "admin",
+        summary: "Delete a revoked license",
+        description: "Permanent. Only revoked licenses can be deleted — revoke first.",
+        errors: ["LICENSE_NOT_FOUND", "LICENSE_ACTIVE"],
+      },
       {
         id: "pricing",
         method: "PATCH",

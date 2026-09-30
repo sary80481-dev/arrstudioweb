@@ -241,6 +241,9 @@ body {
   from { transform: scale(1.08); }
   to   { transform: scale(1); }
 }
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+}
 @keyframes pulse-dot {
   0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--green) 55%, transparent); }
   100% { box-shadow: 0 0 0 6px transparent; }
