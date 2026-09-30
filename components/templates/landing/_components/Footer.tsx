@@ -1,4 +1,5 @@
 import type { SectionProps } from "@/components/type/landing";
+import { DISCORD_INVITE } from "@/lib/links";
 import { STUDIO_URL } from "../_data/landing";
 import { Container, Logo, buttonClass } from "./ui";
 
@@ -26,7 +27,7 @@ export default function Footer({ lang, t: { footer: t, nav } }: SectionProps) {
       links: [
         { label: "ARRR Studio", href: STUDIO_URL },
         { label: nav.services, href: "#services" },
-        { label: "Discord", href: "#" },
+        { label: "Discord", href: DISCORD_INVITE },
         { label: "YouTube", href: "#" },
         { label: t.links.contact, href: "#" },
         { label: t.links.status, href: "#" },

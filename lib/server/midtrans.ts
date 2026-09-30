@@ -16,6 +16,18 @@ const API_URL = () => (isProduction() ? "https://api.midtrans.com" : "https://ap
 
 export const midtransConfigured = () => Boolean(process.env.MIDTRANS_SERVER_KEY);
 
+/**
+ * Checkout otomatis dinyalakan manual (PAYMENTS_ENABLED=true) setelah channel pembayaran
+ * Midtrans aktif. Selama mati, tombol beli mengarahkan pembeli ke Discord.
+ */
+export const paymentsEnabled = () => process.env.PAYMENTS_ENABLED === "true" && midtransConfigured();
+
+/**
+ * Client key untuk popup Snap. Memang boleh dilihat browser (Midtrans merancangnya publik),
+ * tapi dikirim lewat respons API — bukan NEXT_PUBLIC_ — supaya tidak tertanam saat build.
+ */
+export const snapClientKey = () => process.env.MIDTRANS_CLIENT_KEY || null;
+
 function serverKey() {
   const key = process.env.MIDTRANS_SERVER_KEY;
   if (!key) throw new ApiError(503, "PAYMENTS_NOT_CONFIGURED", "Payments aren't set up yet — set MIDTRANS_SERVER_KEY.");

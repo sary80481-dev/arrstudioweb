@@ -1,5 +1,6 @@
 import { Plus } from "lucide-react";
 import type { SectionProps } from "@/components/type/landing";
+import { DISCORD_INVITE } from "@/lib/links";
 import { Reveal } from "./Motion";
 import { Muted, Section, SectionHeading } from "./ui";
 
@@ -13,7 +14,7 @@ export default function FAQ({ t: { faq: t } }: SectionProps) {
         desc={
           <>
             {t.stillStuck}{" "}
-            <a href="#" className="text-gold hover:underline hover:underline-offset-4">
+            <a href={DISCORD_INVITE} target="_blank" rel="noreferrer" className="text-gold hover:underline hover:underline-offset-4">
               {t.askDiscord}
             </a>
           </>
