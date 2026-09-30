@@ -53,6 +53,7 @@ const th: Dictionary = {
     get: "ซื้อ {name}",
     attributes: { systems: "ระบบ", integration: "การเชื่อมต่อ", setup: "ความเร็วติดตั้ง" },
     comingSoon: "เร็ว ๆ นี้",
+    learnMore: "ดูเพิ่มเติม",
     empty: "คิตใหม่กำลังจะมา — แวะกลับมาดูอีกครั้งนะ",
   },
   license: {

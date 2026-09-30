@@ -51,6 +51,7 @@ const en = {
     get: "Get {name}",
     attributes: { systems: "Systems", integration: "Integration", setup: "Setup speed" },
     comingSoon: "Coming soon",
+    learnMore: "Learn more",
     empty: "New kits are on the way — check back soon.",
   },
   license: {

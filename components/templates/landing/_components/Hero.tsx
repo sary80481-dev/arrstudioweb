@@ -1,100 +1,124 @@
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { ArrowRight, Play } from "lucide-react";
+import { fmt } from "@/lib/i18n/config";
 import type { SectionProps } from "@/components/type/landing";
-import { Container, LogoImage } from "./ui";
+import { KitVideoPlayer, VideoLightbox } from "@/components/video/KitVideoPlayer";
+import { selectKits, useAppSelector } from "@/lib/store/store";
+import { Container, LogoImage, buttonClass } from "./ui";
 
 /**
- * Hero — panggung gelap di kedua tema (data-theme="dark" memakai token gelap
- * hanya di section ini). Logo merek jadi key visual, lalu rel tiga lini bisnis.
+ * Hero sinematik setinggi layar (selalu gelap):
+ * - ada video kit → video penuh di belakang, judul raksasa di kiri bawah,
+ *   pemilih kit di kanan bawah (seperti pemilih model di situs mobil sport)
+ * - belum ada video → logo "diungkap" oleh sorot cahaya dari atas + pantulan lantai
  */
-export default function Hero({ t, kits }: SectionProps) {
-  const rail = [
-    {
-      href: "#kits",
-      label: t.nav.kits,
-      detail: kits.length ? kits.map((k) => k.name).join(" · ") : t.hero.eyebrow,
-    },
-    { href: "#studio", label: t.nav.studio, detail: "ARRR Studio · HTML → Roblox" },
-    // cukup dua layanan ujung supaya muat satu baris
-    { href: "#services", label: t.nav.services, detail: [t.services.offers[0]?.title, t.services.offers[2]?.title].filter(Boolean).join(" · ") },
-  ];
+export default function Hero({ t, stats }: Pick<SectionProps, "t" | "stats">) {
+  // realtime dari Redux: video baru dari admin langsung tampil
+  const kits = useAppSelector(selectKits);
+  const reel = kits.filter((k) => k.video);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [watching, setWatching] = useState(false);
+  const active = reel.find((k) => k.id === activeId) ?? reel[0];
 
   return (
-    <section data-theme="dark" className="relative isolate flex min-h-[min(100svh,980px)] flex-col overflow-hidden bg-bg text-fg">
-      {/* satu sumber cahaya hangat di belakang logo */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10"
-        style={{ background: "radial-gradient(40% 55% at 75% 45%, rgb(226 184 87 / 0.14), transparent 70%)" }}
-      />
-
-      {/* ─── COPY + KEY VISUAL: satu grid, tepi sejajar dengan navbar ─── */}
-      <Container className="grid flex-1 items-center gap-10 pb-12 pt-28 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:gap-16 lg:pb-16">
-        {/* animasi masuk pakai CSS murni (bukan <Reveal>) — hero di atas lipatan tidak boleh
-            menunggu JavaScript untuk tampil, kalau tidak LCP di HP jadi lambat */}
-        <div className="order-2 animate-[pagein_0.7s_ease-out_both] lg:order-1">
-          <p className="font-display text-sm font-semibold uppercase tracking-[0.35em] text-gold">{t.hero.eyebrow}</p>
-
-          <h1 className="mt-5 font-display text-[3rem] font-bold uppercase leading-[0.9] tracking-[-0.01em] text-balance sm:text-6xl lg:text-7xl xl:text-[5.5rem]">
-            {t.hero.titleA} <span className="text-gold">{t.hero.titleB}</span>
-          </h1>
-
-          <p className="mt-6 max-w-xl text-base leading-relaxed text-muted md:text-lg">{t.hero.desc}</p>
-
-          <div className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-4">
-            <a
-              href="#kits"
-              className="group inline-flex h-14 items-center gap-3 bg-gold px-8 font-display text-base font-bold uppercase tracking-[0.16em] text-on-gold transition-colors hover:bg-gold-hover"
-            >
-              {t.hero.ctaPrimary}
-              <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
-            </a>
-            <a
-              href="#license"
-              className="font-display text-base font-semibold uppercase tracking-[0.16em] text-fg underline decoration-gold decoration-2 underline-offset-8 transition-colors hover:text-gold"
-            >
-              {t.hero.ctaSecondary}
-            </a>
+    <section data-theme="dark" className="relative isolate h-[100svh] min-h-[620px] max-h-[1100px] overflow-hidden bg-black text-fg">
+      {/* ─── LATAR ─── */}
+      {active?.video ? (
+        <KitVideoPlayer
+          key={active.video.url}
+          video={active.video}
+          title={active.name}
+          mode="view"
+          expandable={false}
+          className="absolute! inset-0 -z-20 animate-[kenburns_2.4s_cubic-bezier(0.2,0.7,0.2,1)_both] bg-black"
+        />
+      ) : (
+        // HP: logo di atas judul · desktop: logo di kanan, judul di kiri — tidak pernah bertumpuk
+        <div aria-hidden className="absolute inset-0 -z-20 flex justify-center lg:items-center lg:justify-end lg:pr-[max(2rem,calc((100vw-1200px)/2+2rem))]">
+          <div
+            className="absolute inset-0 hidden lg:block"
+            style={{ background: "radial-gradient(28% 60% at 76% 0%, rgb(255 236 190 / 0.22), transparent 70%)" }}
+          />
+          <div
+            className="absolute inset-0 lg:hidden"
+            style={{ background: "radial-gradient(60% 45% at 50% 0%, rgb(255 236 190 / 0.22), transparent 70%)" }}
+          />
+          <div className="relative mt-[12svh] w-[min(50vw,300px)] animate-[pagein_1.4s_ease-out_both] lg:mt-0 lg:w-[min(32vw,440px)] lg:-translate-y-[12%]">
+            <LogoImage size={420} eager className="relative h-auto w-full drop-shadow-[0_40px_80px_rgba(0,0,0,0.9)]" />
+            {/* pantulan di "lantai" */}
+            <LogoImage
+              size={420}
+              className="absolute left-0 top-full h-auto w-full -scale-y-100 opacity-[0.12] [mask-image:linear-gradient(to_bottom,black,transparent_45%)]"
+            />
           </div>
         </div>
+      )}
 
-        <div className="order-1 flex animate-[pagein_0.9s_ease-out_both] justify-center lg:order-2 lg:justify-end">
-          <LogoImage
-            size={460}
-            eager
-            className="h-auto w-[58vw] max-w-[260px] drop-shadow-[0_30px_60px_rgba(0,0,0,0.6)] sm:max-w-[320px] lg:w-full lg:max-w-[460px]"
-          />
-        </div>
-      </Container>
+      {/* teks selalu terbaca di atas video apa pun */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-3/4 bg-gradient-to-t from-black via-black/60 to-transparent" />
+      <div aria-hidden className="pointer-events-none absolute inset-y-0 left-0 -z-10 w-2/3 bg-gradient-to-r from-black/60 to-transparent" />
 
-      {/* ─── REL: tiga lini bisnis ─── */}
-      <nav aria-label="ArrStudio" className="border-t border-line">
-        <Container>
-          <ul className="grid md:grid-cols-3">
-            {rail.map((r, i) => (
-              <li key={r.href} className={i > 0 ? "border-t border-line md:border-l md:border-t-0" : ""}>
-                <a href={r.href} className={`group relative flex items-center gap-5 py-6 ${i === 0 ? "md:pr-6" : "md:px-6"}`}>
-                  {/* garis emas yang mengisi dari kiri saat hover */}
-                  <span
-                    aria-hidden
-                    className="absolute inset-x-0 top-[-1px] h-0.5 origin-left scale-x-0 bg-gold transition-transform duration-500 group-hover:scale-x-100"
-                  />
-                  <span className="font-display text-sm font-semibold text-dim">{String(i + 1).padStart(2, "0")}</span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-display text-2xl font-bold uppercase tracking-wide transition-colors group-hover:text-gold">
-                      {r.label}
-                    </span>
-                    <span className="block truncate text-sm text-muted">{r.detail}</span>
-                  </span>
-                  <ArrowUpRight
-                    size={20}
-                    className="shrink-0 text-dim transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-gold"
-                  />
+      {/* ─── KONTEN ─── */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0">
+        <Container className="grid items-end gap-10 pb-12 md:pb-16 lg:grid-cols-[1fr_auto]">
+          <div className="animate-[pagein_0.9s_ease-out_0.2s_both]">
+            <p className="text-sm font-medium uppercase tracking-[0.22em] text-gold">{t.hero.eyebrow}</p>
+            <h1 className={`text-hero mt-5 text-[2.75rem] text-white sm:text-7xl ${active?.video ? "max-w-5xl lg:text-[7rem]" : "max-w-3xl lg:text-[5.75rem]"}`}>
+              {t.hero.titleA} <span className="text-white/45">{t.hero.titleB}</span>
+            </h1>
+            <p className="mt-6 max-w-xl text-base leading-relaxed text-white/70 md:text-lg">{t.hero.desc}</p>
+
+            <div className="pointer-events-auto mt-9 flex flex-wrap items-center gap-3">
+              <a href="#kits" className={buttonClass("gold", "lg")}>
+                {t.hero.ctaPrimary}
+                <ArrowRight size={17} className="transition-transform group-hover/btn:translate-x-0.5" />
+              </a>
+              {active?.video ? (
+                <button type="button" onClick={() => setWatching(true)} className={buttonClass("light", "lg")}>
+                  <Play size={15} className="fill-current" /> {active.name}
+                </button>
+              ) : (
+                <a href="#license" className={buttonClass("light", "lg")}>
+                  {t.hero.ctaSecondary}
                 </a>
-              </li>
-            ))}
-          </ul>
+              )}
+            </div>
+
+            {stats.placesActive > 0 && (
+              <p className="mt-7 flex items-center gap-2 text-sm text-white/55">
+                <span className="h-1.5 w-1.5 animate-[pulse-dot_1.6s_ease-out_infinite] rounded-full bg-green" />
+                {fmt(t.hero.liveIn, { n: stats.placesActive.toLocaleString() })}
+              </p>
+            )}
+          </div>
+
+          {/* ─── PEMILIH KIT ─── */}
+          {reel.length > 1 && (
+            <ul className="pointer-events-auto flex gap-6 lg:flex-col lg:items-end lg:gap-3" aria-label="Kits">
+              {reel.map((k, i) => {
+                const on = k.id === active?.id;
+                return (
+                  <li key={k.id}>
+                    <button
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => setActiveId(k.id)}
+                      className={`flex items-baseline gap-3 text-left transition-colors ${on ? "text-white" : "text-white/40 hover:text-white/75"}`}
+                    >
+                      <span className="font-mono text-xs">{String(i + 1).padStart(2, "0")}</span>
+                      <span className="text-lg font-semibold tracking-[-0.02em] md:text-2xl">{k.name}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </Container>
-      </nav>
+      </div>
+
+      {watching && active?.video && <VideoLightbox video={active.video} title={active.name} onClose={() => setWatching(false)} />}
     </section>
   );
 }

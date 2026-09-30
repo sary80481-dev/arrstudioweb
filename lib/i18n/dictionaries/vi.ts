@@ -53,6 +53,7 @@ const vi: Dictionary = {
     get: "Mua {name}",
     attributes: { systems: "Hệ thống", integration: "Tích hợp", setup: "Tốc độ cài đặt" },
     comingSoon: "Sắp ra mắt",
+    learnMore: "Tìm hiểu thêm",
     empty: "Kit mới đang được chuẩn bị — hãy quay lại sau.",
   },
   license: {

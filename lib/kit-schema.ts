@@ -1,7 +1,19 @@
 import { z } from "zod";
-import { INTEGRATIONS, KIT_ICON_KEYS, KIT_ID_PATTERN, KIT_STATUSES, type KitIconKey } from "./kits";
+import { INTEGRATIONS, KIT_ICON_KEYS, KIT_ID_PATTERN, KIT_STATUSES, VIDEO_HOST_PATTERN, type KitIconKey } from "./kits";
 
 const score = z.number().int().min(0).max(100);
+
+// hanya URL Vercel Blob — cegah video/gambar dari host lain ikut tampil di landing
+export const blobUrl = z.url({ protocol: /^https$/, hostname: VIDEO_HOST_PATTERN });
+
+export const KitVideoSchema = z.object({
+  url: blobUrl,
+  poster: blobUrl.nullable(),
+  width: z.number().int().min(16).max(4096),
+  height: z.number().int().min(16).max(4096),
+  duration: z.number().min(0).max(600),
+  size: z.number().int().min(1),
+});
 
 /** Validasi input kit — dipakai di API admin dan di form admin (client) */
 export const KitInputSchema = z.object({
@@ -20,6 +32,7 @@ export const KitInputSchema = z.object({
   configPath: z.string().trim().regex(/^[A-Za-z0-9_/]{3,60}$/, "Letters, numbers, _ and / only"),
   rating: z.number().min(0).max(5).nullable(),
   order: z.number().int().min(0).max(999),
+  video: KitVideoSchema.nullable(),
 });
 
 export const KitPatchSchema = KitInputSchema.omit({ id: true }).partial();

@@ -25,6 +25,7 @@ export function docToKit(id: string, d: DocumentData): Kit {
     configPath: d.configPath,
     rating: d.rating ?? null,
     order: d.order ?? 0,
+    video: d.video ?? null,
     stats: { licenses: d.stats?.licenses ?? 0, activePlaces: d.stats?.activePlaces ?? 0 },
     updatedAt: iso(d.updatedAt),
   };

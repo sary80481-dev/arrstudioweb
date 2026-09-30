@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Download, Loader2, MoreHorizontal, Pencil, Plus, Trash2, X } from "lucide-react";
 import { KitIcon } from "@/components/common/KitIcon";
 import { KitInputSchema } from "@/lib/kit-schema";
 import {
   INTEGRATIONS, KIT_STATUSES, KIT_STATUS_LABEL, defaultConfigPath, formatIDR, slugify,
-  type Kit, type KitInput, type KitStatus,
+  type Kit, type KitInput, type KitStatus, type KitVideo,
 } from "@/lib/kits";
 import { selectKits, useAppSelector } from "@/lib/store/store";
 import {
@@ -14,6 +14,8 @@ import {
   TextInput, api,
 } from "../_components/fields";
 import { DataTable, columnHelper } from "../_components/DataTable";
+import { PackageField } from "./PackageField";
+import { VideoField, discardVideos } from "./VideoField";
 
 const col = columnHelper<Kit>();
 
@@ -35,6 +37,7 @@ const emptyKit = (order: number): KitInput => ({
   configPath: "",
   rating: null,
   order,
+  video: null,
 });
 
 export default function KitsManager() {
@@ -202,16 +205,24 @@ function KitSheet({ kit, nextOrder, onClose }: { kit: Kit | null; nextOrder: num
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [serverError, setServerError] = useState("");
+  // video yang diupload selama sheet terbuka — yang tidak jadi disimpan dihapus dari Blob
+  const uploads = useRef<KitVideo[]>([]);
+
+  const close = useCallback(() => {
+    discardVideos(uploads.current);
+    uploads.current = [];
+    onClose();
+  }, [onClose]);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [onClose]);
+  }, [close]);
 
   const set = <K extends keyof KitInput>(k: K, v: KitInput[K]) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -237,7 +248,8 @@ function KitSheet({ kit, nextOrder, onClose }: { kit: Kit | null; nextOrder: num
         void _id;
         await api("PATCH", `/api/admin/kits/${kit.id}`, patch);
       }
-      onClose();
+      uploads.current = uploads.current.filter((v) => v.url !== parsed.data.video?.url);
+      close();
     } catch (err) {
       setServerError((err as Error).message);
       setSaving(false);
@@ -248,7 +260,7 @@ function KitSheet({ kit, nextOrder, onClose }: { kit: Kit | null; nextOrder: num
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-labelledby="kit-sheet-title">
-      <button type="button" aria-label="Close" onClick={onClose} className="absolute inset-0 bg-black/40" />
+      <button type="button" aria-label="Close" onClick={close} className="absolute inset-0 bg-black/40" />
 
       <form onSubmit={submit} className="relative flex h-full w-full flex-col border-l border-line bg-bg shadow-card sm:max-w-[560px]" noValidate>
         <header className="flex items-center justify-between border-b border-line px-5 py-3.5">
@@ -256,12 +268,31 @@ function KitSheet({ kit, nextOrder, onClose }: { kit: Kit | null; nextOrder: num
             <h2 id="kit-sheet-title" className="truncate text-base font-semibold text-fg">{isNew ? "New kit" : `Edit ${kit.name}`}</h2>
             {!isNew && <p className="text-xs text-dim">Last updated {date(kit.updatedAt)}</p>}
           </div>
-          <button type="button" onClick={onClose} aria-label="Close" className="rounded-md p-1.5 text-muted hover:bg-surface-2 hover:text-fg">
+          <button type="button" onClick={close} aria-label="Close" className="rounded-md p-1.5 text-muted hover:bg-surface-2 hover:text-fg">
             <X size={18} />
           </button>
         </header>
 
         <div className="flex-1 space-y-6 overflow-y-auto px-5 py-5">
+          <section className={section}>
+            <FieldShell label="Showcase video" error={errors.video} hint="Plays on the landing page, kit card and sign-in screen.">
+              <VideoField
+                kitId={(isNew ? form.id || slugify(form.name) : kit.id) || "draft"}
+                kitName={form.name}
+                value={form.video}
+                onChange={(v) => set("video", v)}
+                onUploaded={(v) => uploads.current.push(v)}
+              />
+            </FieldShell>
+            <FieldShell label="Kit file" hint={isNew ? undefined : "Saved as soon as it uploads — no need to press Save."}>
+              {isNew ? (
+                <p className="rounded-lg bg-surface-2 px-3 py-3 text-[13px] text-muted">Create the kit first, then upload its .rbxm file.</p>
+              ) : (
+                <PackageField kitId={kit.id} />
+              )}
+            </FieldShell>
+          </section>
+
           <section className={section}>
             <div className="grid gap-4 sm:grid-cols-2">
               <FieldShell label="Name" htmlFor="k-name" error={errors.name}>
@@ -358,7 +389,7 @@ function KitSheet({ kit, nextOrder, onClose }: { kit: Kit | null; nextOrder: num
 
         <footer className="flex items-center justify-end gap-2 border-t border-line px-5 py-3">
           {serverError && <p role="alert" className="mr-auto truncate text-[13px] text-red-500" title={serverError}>{serverError}</p>}
-          <Btn onClick={onClose}>Cancel</Btn>
+          <Btn onClick={close}>Cancel</Btn>
           <Btn type="submit" variant="primary" disabled={saving}>
             {saving && <Loader2 size={14} className="animate-spin" />}
             {isNew ? "Create kit" : "Save changes"}

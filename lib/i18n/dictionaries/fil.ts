@@ -53,6 +53,7 @@ const fil: Dictionary = {
     get: "Kunin ang {name}",
     attributes: { systems: "Systems", integration: "Integration", setup: "Bilis ng setup" },
     comingSoon: "Malapit na",
+    learnMore: "Alamin pa",
     empty: "May bagong kits na paparating — bumalik ka ulit.",
   },
   license: {

@@ -46,7 +46,7 @@ export default function AccountMenu({ user, labels }: { user: AuthHint; labels: 
         aria-expanded={open}
         className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 text-fg transition-colors hover:bg-surface-2"
       >
-        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gold-grad text-xs font-bold text-on-gold">
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand text-xs font-semibold text-on-brand">
           {user.name.charAt(0).toUpperCase()}
         </span>
         <span className="hidden max-w-[120px] truncate text-sm font-medium md:block">

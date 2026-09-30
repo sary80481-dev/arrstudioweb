@@ -7,7 +7,7 @@ import { OAUTH_STATE_COOKIE, discordAuthorizeUrl, discordRedirectUri } from "@/l
 export async function GET(req: NextRequest) {
   const next = req.nextUrl.searchParams.get("next");
   // hanya izinkan redirect internal, cegah open redirect
-  const safeNext = next?.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
+  const safeNext = next?.startsWith("/") && !next.startsWith("//") && !next.startsWith("/\\") ? next : "/dashboard";
 
   const state = randomBytes(16).toString("hex");
   (await cookies()).set(OAUTH_STATE_COOKIE, JSON.stringify({ state, next: safeNext }), {

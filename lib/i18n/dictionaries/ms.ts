@@ -53,6 +53,7 @@ const ms: Dictionary = {
     get: "Dapatkan {name}",
     attributes: { systems: "Sistem", integration: "Integrasi", setup: "Kelajuan persediaan" },
     comingSoon: "Akan datang",
+    learnMore: "Ketahui lebih lanjut",
     empty: "Kit baharu sedang disediakan — sila semak semula nanti.",
   },
   license: {

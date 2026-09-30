@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Copy, ExternalLink, KeyRound, Loader2, LogOut, Radio } from "lucide-react";
+import { Check, Copy, Download, ExternalLink, KeyRound, Loader2, LogOut, Radio } from "lucide-react";
 import { signOut } from "@/lib/auth-client";
 import type { LicenseDto } from "@/lib/server/licenses";
 import { useLicensesSync, useRealtimeAuthSync } from "@/lib/realtime";
@@ -61,7 +61,7 @@ export function LiveBadge({ live }: { live: boolean }) {
 }
 
 /** Daftar lisensi milik user — realtime: lisensi yang baru diterbitkan admin langsung muncul */
-export function LiveLicenses({ uid }: { uid: string }) {
+export function LiveLicenses({ uid, downloads }: { uid: string; downloads: Record<string, boolean> }) {
   // sambungkan realtime → Redux; data awal sudah di-preload dari server
   useRealtimeAuthSync();
   useLicensesSync({ ownerUid: uid });
@@ -91,7 +91,7 @@ export function LiveLicenses({ uid }: { uid: string }) {
       ) : (
         <div className="mt-10 grid gap-5 lg:grid-cols-2">
           {licenses.map((l) => (
-            <LicenseCard key={l.key} license={l} />
+            <LicenseCard key={l.key} license={l} downloadable={!!downloads[l.kit]} />
           ))}
         </div>
       )}
@@ -99,7 +99,7 @@ export function LiveLicenses({ uid }: { uid: string }) {
   );
 }
 
-function LicenseCard({ license }: { license: LicenseDto }) {
+function LicenseCard({ license, downloadable }: { license: LicenseDto; downloadable: boolean }) {
   const [placeId, setPlaceId] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -149,6 +149,20 @@ function LicenseCard({ license }: { license: LicenseDto }) {
         </code>
         <CopyButton text={`LicenseKey = "${license.key}",`} label="Copy for Config" />
       </div>
+
+      {!revoked && (
+        downloadable ? (
+          <a
+            href={`/api/kits/${encodeURIComponent(license.kit)}/download`}
+            download
+            className="mt-3 flex items-center justify-center gap-2 rounded-full bg-brand px-4 py-2.5 text-sm font-medium text-on-brand transition-colors hover:bg-brand-hover"
+          >
+            <Download size={15} /> Download {license.kitName} (.rbxm)
+          </a>
+        ) : (
+          <p className="mt-3 text-center text-xs text-dim">The kit file will be available to download here soon.</p>
+        )
+      )}
 
       <dl className="mt-5 grid grid-cols-2 gap-4 text-sm">
         <div>

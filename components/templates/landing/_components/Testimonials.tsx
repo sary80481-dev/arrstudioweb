@@ -1,65 +1,64 @@
-import { Star } from "lucide-react";
-import type { SectionProps } from "@/components/type/landing";
+"use client";
+
+import { useRef } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { Dictionary } from "@/lib/i18n/dictionaries/en";
 import { testimonialNames } from "../_data/landing";
-import { Reveal, Spotlight } from "./Motion";
-import { Section, SectionHeading } from "./ui";
+import { Muted, Section, SectionHeading } from "./ui";
 
 const initials = (name: string) => name.split(" ").map((p) => p[0]).join("").slice(0, 2);
 
-export default function Testimonials({ t: { testimonials: t } }: SectionProps) {
-  return (
-    <Section>
-      <SectionHeading
-        index="06"
-        eyebrow={t.eyebrow}
-        title={<>{t.titleA} <span className="text-gold-metal">{t.titleGold}</span></>}
-      />
+/** Kutipan dalam rel geser (snap), kartu besar — dibaca satu per satu */
+export default function Testimonials({ t }: { t: Dictionary["testimonials"] }) {
+  const rail = useRef<HTMLUListElement>(null);
+  const scroll = (dir: 1 | -1) => {
+    const el = rail.current;
+    if (el) el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: "smooth" });
+  };
 
-      {/* kutipan pertama dibuat besar, dua lainnya bertumpuk di sampingnya */}
-      <div className="grid gap-4 lg:grid-cols-[1.35fr_1fr] lg:grid-rows-2">
+  return (
+    <Section className="overflow-hidden">
+      <SectionHeading label={t.eyebrow} title={<>{t.titleA} <Muted>{t.titleGold}</Muted></>} />
+
+      <ul
+        ref={rail}
+        className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-5 pb-2 [scrollbar-width:none] sm:-mx-8 sm:px-8 [&::-webkit-scrollbar]:hidden"
+      >
         {t.items.map((item, i) => {
           const name = testimonialNames[i];
-          const featured = i === 0;
           return (
-            <Reveal key={name} delay={i * 100} className={featured ? "lg:row-span-2" : ""}>
-              <Spotlight
-                className={`card-lift group relative flex h-full flex-col overflow-hidden rounded-3xl border p-7 md:p-9 ${
-                  featured ? "border-gold/30 bg-gold-soft" : "border-line bg-surface"
-                }`}
-              >
-                <span
-                  aria-hidden
-                  className={`pointer-events-none absolute -right-2 -top-10 select-none font-display font-bold leading-none text-gold/15 ${
-                    featured ? "text-[14rem]" : "text-[9rem]"
-                  }`}
-                >
-                  &rdquo;
-                </span>
-                <div className="flex gap-0.5 text-gold" aria-label="5/5">
-                  {Array.from({ length: 5 }).map((_, s) => (
-                    <Star key={s} size={featured ? 16 : 14} className="fill-current" />
-                  ))}
-                </div>
-                <blockquote
-                  className={`relative mt-5 flex-1 leading-snug text-fg text-pretty ${
-                    featured ? "font-display text-3xl font-semibold md:text-4xl" : "text-[17px] leading-relaxed"
-                  }`}
-                >
-                  {item.quote}
+            <li key={name} className="w-[85%] shrink-0 snap-start sm:w-[60%] lg:w-[calc((100%-1.5rem)/2.4)]">
+              <figure className="flex h-full min-h-[340px] flex-col rounded-[28px] bg-surface-2 p-8 md:p-10">
+                <blockquote className="flex-1 text-2xl font-medium leading-snug tracking-[-0.02em] text-fg text-pretty">
+                  &ldquo;{item.quote}&rdquo;
                 </blockquote>
-                <figcaption className="mt-8 flex items-center gap-3">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gold-grad font-display text-sm font-bold text-on-gold ring-4 ring-bg transition-transform duration-300 group-hover:scale-110">
+                <figcaption className="mt-10 flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-bg text-sm font-semibold text-fg">
                     {initials(name)}
                   </span>
                   <span>
-                    <span className="block font-display text-lg font-bold uppercase tracking-wide text-fg">{name}</span>
-                    <span className="block text-sm text-dim">{item.role}</span>
+                    <span className="block text-[15px] font-semibold text-fg">{name}</span>
+                    <span className="block text-sm text-muted">{item.role}</span>
                   </span>
                 </figcaption>
-              </Spotlight>
-            </Reveal>
+              </figure>
+            </li>
           );
         })}
+      </ul>
+
+      <div className="mt-6 hidden justify-end gap-2 md:flex">
+        {([-1, 1] as const).map((d) => (
+          <button
+            key={d}
+            type="button"
+            onClick={() => scroll(d)}
+            aria-label={d < 0 ? "Previous" : "Next"}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-2 text-fg transition-colors hover:bg-fg/[0.1]"
+          >
+            {d < 0 ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
+          </button>
+        ))}
       </div>
     </Section>
   );

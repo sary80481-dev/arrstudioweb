@@ -1,17 +1,12 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Barlow_Condensed } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import { themeScript } from "@/components/theme/theme";
 import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin", "vietnamese"], variable: "--font-inter", display: "swap" });
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains", display: "swap" });
-const barlow = Barlow_Condensed({
-  subsets: ["latin", "vietnamese"],
-  weight: ["500", "600", "700"],
-  variable: "--font-barlow",
-  display: "swap",
-});
+// satu keluarga huruf untuk judul & teks (Geist variable), mono hanya untuk label kecil & kode
+const sans = Geist({ subsets: ["latin", "vietnamese"], variable: "--font-geist", display: "swap" });
+const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
 
 export const metadata: Metadata = {
   // URL absolut untuk og:image — preview link di WhatsApp/Discord butuh domain asli, bukan path relatif
@@ -32,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       // scroll ke atas tidak terhenti di tengah dan halaman tampak "turun sendiri"
       data-scroll-behavior="smooth"
       suppressHydrationWarning
-      className={`${inter.variable} ${mono.variable} ${barlow.variable}`}
+      className={`${sans.variable} ${mono.variable}`}
     >
       <head>
         {/* set tema sebelum paint — cegah flash */}

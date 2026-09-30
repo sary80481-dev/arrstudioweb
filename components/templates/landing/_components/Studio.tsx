@@ -1,59 +1,37 @@
-import { ArrowUpRight, Check } from "lucide-react";
 import type { SectionProps } from "@/components/type/landing";
 import { STUDIO_URL } from "../_data/landing";
 import { Reveal } from "./Motion";
 import { SitePreview } from "./SitePreview";
-import { Section, SectionHeading } from "./ui";
+import { Eyebrow, MoreLink, Muted, Section } from "./ui";
 
-/** Produk saudara — HTML → Roblox UI converter, dipreview live */
+/** Produk saudara — HTML → Roblox UI converter, sebagai satu tile produk */
 export default function Studio({ t: { studio: t } }: SectionProps) {
   return (
-    <Section id="studio" className="overflow-hidden">
-      <div className="grid items-center gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-14">
-        <div>
-          <SectionHeading
-            index="04"
-            eyebrow={t.eyebrow}
-            title={<>{t.titleA}<br /><span className="text-gold">{t.titleGold}</span></>}
-            desc={t.desc}
-            className="mb-8! md:mb-8!"
-          />
-          <Reveal delay={120}>
-            <ul className="space-y-3 border-l border-line-strong pl-5">
-              {t.features.map((f) => (
-                <li key={f} className="flex items-start gap-2.5 text-[15px] text-fg">
-                  <Check size={16} className="mt-0.5 shrink-0 text-gold" strokeWidth={2.25} />
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <a
-              href={STUDIO_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="group mt-9 inline-flex items-center gap-2 border-b-2 border-gold pb-1 font-display text-lg font-bold uppercase tracking-[0.12em] text-fg transition-colors hover:text-gold"
-            >
-              {t.open}
-              <ArrowUpRight size={18} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-            </a>
-          </Reveal>
-        </div>
+    <Section id="studio" className="pt-0! md:pt-0!">
+      <Reveal className="overflow-hidden rounded-[28px] bg-surface-2 px-5 pt-14 text-center sm:px-10 md:pt-20">
+        <Eyebrow>{t.eyebrow}</Eyebrow>
+        <h2 className="text-display mx-auto mt-3 max-w-3xl text-[2.5rem] text-fg sm:text-6xl">
+          {t.titleA} <Muted>{t.titleGold}</Muted>
+        </h2>
+        <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-muted md:text-xl">{t.desc}</p>
+        <MoreLink href={STUDIO_URL} className="mt-6">{t.open}</MoreLink>
 
-        <Reveal delay={80} className="relative">
-          {/* blok emas bergeser di belakang jendela — aksen editorial, bukan glow */}
-          <div aria-hidden className="absolute -bottom-5 -right-5 left-10 top-10 rounded-2xl bg-gold-grad opacity-90 lg:-right-8" />
+        <ul className="mx-auto mt-10 flex max-w-3xl flex-wrap justify-center gap-2">
+          {t.features.map((f) => (
+            <li key={f} className="rounded-full bg-bg px-4 py-2 text-sm text-muted">{f}</li>
+          ))}
+        </ul>
+
+        <div className="mx-auto mt-14 max-w-5xl translate-y-px">
           <SitePreview
             url={STUDIO_URL}
             title="ARRR Studio — HTML to Roblox UI Converter"
             poster="/previews/arrr-studio.png"
             hint={t.hint}
-            className="relative"
+            className="rounded-b-none!"
           />
-          <p className="relative mt-8 flex items-center gap-2 font-mono text-xs text-muted">
-            <span className="h-1.5 w-1.5 rounded-full bg-green" /> {t.live}
-          </p>
-        </Reveal>
-      </div>
+        </div>
+      </Reveal>
     </Section>
   );
 }

@@ -4,6 +4,7 @@ import { ShieldCheck } from "lucide-react";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import { Container, Logo } from "@/components/templates/landing/_components/ui";
 import { listLicensesForUser } from "@/lib/server/licenses";
+import { packageAvailability } from "@/lib/server/packages";
 import { currentUser, redirectToLogin } from "@/lib/server/session";
 import StoreProvider from "@/lib/store/StoreProvider";
 import { LiveLicenses, SignOutButton } from "./_components/DashboardClient";
@@ -15,6 +16,8 @@ export default async function DashboardPage() {
   if (!user) return redirectToLogin();
 
   const licenses = await listLicensesForUser(user.uid);
+  // kit mana yang sudah punya file .rbxm — URL-nya sendiri tetap di server
+  const downloads = await packageAvailability(licenses.map((l) => l.kit)).catch(() => ({}));
 
   return (
     <div className="min-h-svh">
@@ -48,7 +51,7 @@ export default async function DashboardPage() {
         </h1>
 
         <StoreProvider preloaded={{ licenses: { items: licenses, error: null } }}>
-          <LiveLicenses uid={user.uid} />
+          <LiveLicenses uid={user.uid} downloads={downloads} />
         </StoreProvider>
       </Container>
     </div>

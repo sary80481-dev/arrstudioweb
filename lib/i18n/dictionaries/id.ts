@@ -53,6 +53,7 @@ const id: Dictionary = {
     get: "Beli {name}",
     attributes: { systems: "Sistem", integration: "Integrasi", setup: "Kecepatan setup" },
     comingSoon: "Segera hadir",
+    learnMore: "Selengkapnya",
     empty: "Kit baru sedang disiapkan — cek lagi nanti.",
   },
   license: {

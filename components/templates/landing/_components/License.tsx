@@ -2,8 +2,8 @@ import { FileCode2, Terminal } from "lucide-react";
 import type { ReactNode } from "react";
 import type { SectionProps } from "@/components/type/landing";
 import { integrations } from "../_data/landing";
-import { Reveal, Spotlight } from "./Motion";
-import { Panel, Section, SectionHeading } from "./ui";
+import { Reveal } from "./Motion";
+import { Muted, Section, SectionHeading } from "./ui";
 
 /* pewarnaan sintaks sederhana untuk mockup */
 const C = ({ children }: { children: ReactNode }) => <span className="text-dim italic">{children}</span>;
@@ -14,7 +14,7 @@ const N = ({ children }: { children: ReactNode }) => <span className="text-silve
 const configLines: ReactNode[] = [
   <C key="c1">-- ClubKit/Config (ModuleScript)</C>,
   <><span className="text-gold">return</span> {"{"}</>,
-  <span key="lic" className="-mx-4 block bg-gold-soft px-4 ring-1 ring-inset ring-gold/40">
+  <span key="lic" className="-mx-5 block rounded-md bg-gold-soft px-5">
     {"  "}<K>LicenseKey</K> = <S>&quot;ARR-7F2K-M4QX-Q9RD&quot;</S>,
   </span>,
   "",
@@ -38,13 +38,8 @@ const logLines: { tag: string; text: string; ok?: boolean; accent?: boolean }[] 
 
 function WindowBar({ icon, title, meta }: { icon: ReactNode; title: string; meta: string }) {
   return (
-    <div className="flex items-center justify-between border-b border-line px-4 py-3">
+    <div className="flex items-center justify-between px-5 pt-4">
       <span className="flex items-center gap-2 font-mono text-xs text-fg">
-        <span aria-hidden className="mr-1 flex gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
-          <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
-          <span className="h-2.5 w-2.5 rounded-full bg-gold/70" />
-        </span>
         {icon}
         {title}
       </span>
@@ -53,48 +48,42 @@ function WindowBar({ icon, title, meta }: { icon: ReactNode; title: string; meta
   );
 }
 
+/** Momen gelap di tengah halaman: cara kerja lisensi + angka performa besar */
 export default function License({ t: { license: t } }: SectionProps) {
+  const specs = [
+    ["0.21", "s", t.statCheck],
+    ["4", "", t.statLinked],
+    ["0", "", t.statEdited],
+  ] as const;
+
   return (
-    <Section id="license" className="overflow-hidden">
+    <Section id="license" tone="dark" className="overflow-hidden">
       <div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-1/3 h-[600px] w-[900px] -translate-x-1/2 blur-[120px]"
-        style={{ background: "radial-gradient(ellipse, var(--glow), transparent 70%)" }}
+        className="pointer-events-none absolute left-1/2 top-0 h-[520px] w-[900px] -translate-x-1/2"
+        style={{ background: "radial-gradient(closest-side, rgb(232 191 98 / 0.12), transparent)" }}
       />
 
-      <SectionHeading
-        index="02"
-        eyebrow={t.eyebrow}
-        title={<>{t.titleA} <span className="text-gold-metal">{t.titleGold}</span></>}
-        desc={t.desc}
-      />
+      <SectionHeading label={t.eyebrow} title={<>{t.titleA} <Muted>{t.titleGold}</Muted></>} desc={t.desc} />
 
-      <Reveal className="relative grid gap-5 lg:grid-cols-2">
+      <Reveal className="relative grid gap-3 lg:grid-cols-2">
         {/* ─── CONFIG FILE ─── */}
-        <Panel className="shadow-card" innerClassName="bg-bg">
+        <div className="overflow-hidden rounded-[24px] bg-surface-2">
           <WindowBar icon={<FileCode2 size={14} className="text-gold" />} title="ClubKit/Config.lua" meta="Roblox Studio" />
-          <pre className="overflow-x-auto px-4 py-5 font-mono text-[13px] leading-7 text-muted">
+          <pre className="overflow-x-auto px-5 py-5 font-mono text-[13px] leading-7 text-muted">
             {configLines.map((line, i) => (
               <div key={i} className="flex">
-                <span className="mr-5 inline-block w-4 shrink-0 select-none text-right text-dim/60">{i + 1}</span>
+                <span className="mr-5 inline-block w-4 shrink-0 select-none text-right text-dim/50">{i + 1}</span>
                 <span className="flex-1 whitespace-pre">{line}</span>
               </div>
             ))}
           </pre>
-          <p className="border-t border-line px-4 py-3 text-xs text-dim">
-            {t.steps.map((s, i) => (
-              <span key={s}>
-                {i > 0 && " · "}
-                <span className="text-gold">{"①②③"[i]}</span> {s}
-              </span>
-            ))}
-          </p>
-        </Panel>
+        </div>
 
         {/* ─── SERVER CONSOLE ─── */}
-        <Panel className="shadow-card" innerClassName="flex flex-col bg-bg">
+        <div className="flex flex-col overflow-hidden rounded-[24px] bg-surface-2">
           <WindowBar icon={<Terminal size={14} className="text-gold" />} title={t.serverOutput} meta={t.onStart} />
-          <ol className="flex-1 space-y-2 px-4 py-5 font-mono text-[13px] leading-6">
+          <ol className="flex-1 space-y-2 px-5 py-5 font-mono text-[13px] leading-6">
             {logLines.map((l, i) => (
               <li key={i} className="flex gap-3">
                 <span className="shrink-0 text-dim">[{l.tag}]</span>
@@ -106,44 +95,50 @@ export default function License({ t: { license: t } }: SectionProps) {
             ))}
             <li aria-hidden className="h-4 w-2 animate-[blink_1s_steps(1)_infinite] bg-gold" />
           </ol>
-          <div className="grid grid-cols-3 border-t border-line text-center">
-            {[
-              ["0.21s", t.statCheck],
-              ["4", t.statLinked],
-              ["0", t.statEdited],
-            ].map(([v, l], i) => (
-              <div key={l} className={`px-2 py-4 ${i > 0 ? "border-l border-line" : ""}`}>
-                <p className="font-display text-2xl font-bold text-gold-metal">{v}</p>
-                <p className="mt-0.5 text-[11px] uppercase tracking-wider text-dim">{l}</p>
-              </div>
-            ))}
-          </div>
-        </Panel>
+        </div>
       </Reveal>
 
-      {/* ─── INTEGRATIONS ─── */}
-      <div className="relative mt-16">
-        <p className="mb-6 font-display text-sm font-semibold uppercase tracking-[0.3em] text-muted">
-          {t.integratesTitle}
+      {/* ─── ANGKA PERFORMA: besar, tanpa kotak ─── */}
+      <Reveal>
+        <dl className="mt-24 grid gap-12 text-center sm:grid-cols-3 md:mt-32">
+          {specs.map(([value, unit, label]) => (
+            <div key={label} className="flex flex-col-reverse">
+              <dt className="mt-3 text-[15px] text-muted">{label}</dt>
+              <dd className="text-hero text-7xl text-fg tabular-nums md:text-8xl">
+                {value}
+                {unit && <span className="text-4xl text-muted md:text-5xl">{unit}</span>}
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <p className="mx-auto mt-14 max-w-2xl text-center text-[15px] text-muted">
+          {t.steps.map((s, i) => (
+            <span key={s}>
+              {i > 0 && <span className="text-dim"> → </span>}
+              {s}
+            </span>
+          ))}
         </p>
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {integrations.map((it, i) => {
+      </Reveal>
+
+      {/* ─── INTEGRASI ─── */}
+      <Reveal className="mt-24 md:mt-32">
+        <p className="text-center text-lg font-medium text-fg">{t.integratesTitle}</p>
+        <ul className="mt-12 grid gap-x-8 gap-y-12 text-center sm:grid-cols-2 lg:grid-cols-5">
+          {integrations.map((it) => {
             const I = it.icon;
             return (
-              <Reveal as="li" key={it.name} delay={i * 70}>
-                <Spotlight className="card-lift group h-full rounded-2xl border border-line bg-surface p-5 hover:border-gold/40">
-                  <div className="flex items-center justify-between">
-                    <I size={22} strokeWidth={1.5} className="text-gold transition-transform duration-300 group-hover:scale-110" />
-                    <span className="font-mono text-[11px] text-dim">{String(i + 1).padStart(2, "0")}</span>
-                  </div>
-                  <p className="mt-5 font-display text-lg font-bold uppercase tracking-wide text-fg">{it.name}</p>
-                  <p className="mt-1 text-sm leading-relaxed text-muted">{t.integrations[it.name]}</p>
-                </Spotlight>
-              </Reveal>
+              <li key={it.name} className="flex flex-col items-center">
+                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-2 text-gold">
+                  <I size={24} strokeWidth={1.5} />
+                </span>
+                <p className="mt-4 text-[17px] font-semibold tracking-[-0.01em] text-fg">{it.name}</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted">{t.integrations[it.name]}</p>
+              </li>
             );
           })}
         </ul>
-      </div>
+      </Reveal>
     </Section>
   );
 }

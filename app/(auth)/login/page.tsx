@@ -7,7 +7,14 @@ import { DISCORD_ERRORS } from "@/lib/auth-errors";
 
 /** Firebase SDK baru di-load saat form dikirim — halaman login terbuka lebih cepat */
 const authClient = () => import("@/lib/auth-client");
-import { Alert, AuthHeading, Divider, DiscordButton, Field, PasswordField, SubmitButton } from "../_components/AuthUI";
+import { Alert, AuthHeading, Divider, DiscordButton, Field, PasswordField, SubmitButton, safeNext } from "../_components/AuthUI";
+
+/** Tujuan setelah login (?next=, mis. kembali ke kit yang mau dibeli) */
+const nextPath = () => safeNext(new URLSearchParams(window.location.search).get("next")) ?? "/dashboard";
+
+function DiscordWithNext() {
+  return <DiscordButton next={safeNext(useSearchParams().get("next"))} />;
+}
 
 /** Error dari redirect callback Discord (?error=...) */
 function DiscordError() {
@@ -29,7 +36,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await action();
-      router.push("/dashboard");
+      router.push(nextPath());
       router.refresh();
     } catch (err) {
       setError((await authClient()).authErrorMessage(err));
@@ -56,7 +63,9 @@ export default function LoginPage() {
     <>
       <AuthHeading title="Welcome back" desc="Sign in to manage your licenses and the places they're bound to." />
 
-      <DiscordButton />
+      <Suspense fallback={<DiscordButton />}>
+        <DiscordWithNext />
+      </Suspense>
       <Divider>or sign in with email</Divider>
 
       <form
@@ -96,7 +105,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={onForgot}
-              className="text-sm font-medium text-gold transition-colors hover:text-gold-hover"
+              className="text-[15px] text-gold transition-colors hover:underline hover:underline-offset-4"
             >
               Forgot password?
             </button>
@@ -108,9 +117,9 @@ export default function LoginPage() {
         </div>
       </form>
 
-      <p className="mt-8 text-center text-sm text-muted">
+      <p className="mt-9 text-center text-[15px] text-muted">
         New to ArrStudio?{" "}
-        <Link href="/register" className="font-semibold text-fg underline decoration-gold decoration-2 underline-offset-4 hover:text-gold">
+        <Link href="/register" className="font-medium text-gold hover:underline hover:underline-offset-4">
           Create an account
         </Link>
       </p>

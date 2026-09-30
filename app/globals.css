@@ -4,72 +4,88 @@
    0. VARIANT — `dark:` mengikuti <html data-theme="dark">
    ============================================================ */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
-/* tema halaman yang sebenarnya (abaikan section yang memaksa gelap, mis. hero) */
+/* tema halaman yang sebenarnya (abaikan elemen yang memaksa gelap, mis. panel video) */
 @custom-variant site-dark (&:where(html[data-theme="dark"] *));
 
 /* ============================================================
-   1. TOKENS — DARK (default, sinematik)
+   1. TOKENS — DARK (default)
+   Hitam pekat ala halaman produk: pemisah = blok warna & ruang, bukan garis.
+   Emas hanya satu aksen.
    ============================================================ */
 :root,
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --bg: #07070a;
-  --surface: #0e0d10;
-  --surface-2: #17151a;
+  --bg: #000000;
+  --surface: #0d0d0e;
+  --surface-2: #161617;
 
-  --fg: #f4f1ea;
-  --muted: #a8a39a;
-  --dim: #6f6a62;
+  --fg: #f5f5f7;
+  --muted: #a1a1a6;
+  --dim: #6e6e73;
 
-  --line: rgb(232 205 140 / 0.1);
-  --line-strong: rgb(232 205 140 / 0.24);
+  --line: rgb(255 255 255 / 0.08);
+  --line-strong: rgb(255 255 255 / 0.14);
 
-  /* GOLD */
-  --gold: #e2b857;
-  --gold-hover: #f1cd73;
-  --gold-soft: rgb(226 184 87 / 0.12);
+  /* aksen emas untuk teks / ikon (kontras AA di atas --bg) */
+  --gold: #e8bf62;
+  --gold-hover: #f2cf7c;
+  --gold-soft: rgb(232 191 98 / 0.1);
   --on-gold: #1a1204;
-  --gold-grad: linear-gradient(180deg, #f8e09a 0%, #e0b24f 48%, #a97b22 100%);
-  --gold-text: linear-gradient(180deg, #fff3cf 0%, #e9c46a 45%, #b0842b 100%);
+
+  /* isian tombol utama — emas merek yang sama di kedua tema */
+  --brand: #e8bf62;
+  --brand-hover: #f2cd78;
+  --on-brand: #16110a;
+
+  /* dipertahankan untuk admin & dashboard; sekarang nyaris datar, bukan metalik */
+  --gold-grad: linear-gradient(180deg, #eec86f 0%, #e0b24f 100%);
+  --gold-text: linear-gradient(180deg, var(--gold), var(--gold));
 
   --green: #4ade80;
   --silver: #c9c7c2;
 
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.5), 0 18px 40px -18px rgb(0 0 0 / 0.8);
-  --glow: rgb(226 184 87 / 0.18);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 16px 40px -20px rgb(0 0 0 / 0.7);
+  --shadow-lg: 0 2px 4px rgb(0 0 0 / 0.3), 0 40px 80px -32px rgb(0 0 0 / 0.8);
+  --glow: rgb(232 191 98 / 0.12);
 }
 
 /* ============================================================
-   2. TOKENS — LIGHT (soft champagne)
-   krem hangat berlapis, kontras teks tetap AA, bayangan lembut
+   2. TOKENS — LIGHT
+   putih bersih + tile abu terang (#f5f5f7), teks grafit
    ============================================================ */
 [data-theme="light"] {
   color-scheme: light;
 
-  --bg: #faf7f1;
+  --bg: #ffffff;
   --surface: #ffffff;
-  --surface-2: #f3eee4;
+  --surface-2: #f5f5f7;
 
-  --fg: #2a2419;
-  --muted: #6b6354;
-  --dim: #9a917f;
+  --fg: #1d1d1f;
+  --muted: #6e6e73;
+  --dim: #86868b;
 
-  --line: rgb(120 96 48 / 0.1);
-  --line-strong: rgb(120 96 48 / 0.2);
+  --line: rgb(0 0 0 / 0.08);
+  --line-strong: rgb(0 0 0 / 0.14);
 
-  --gold: #a87b1c;
-  --gold-hover: #8e6512;
-  --gold-soft: rgb(212 168 72 / 0.12);
-  --on-gold: #2a1d05;
-  --gold-grad: linear-gradient(180deg, #f6dd9a 0%, #e2b85a 52%, #c9963a 100%);
-  --gold-text: linear-gradient(180deg, #d4a441 0%, #b08223 55%, #8a6212 100%);
+  --gold: #94670f;
+  --gold-hover: #7a540a;
+  --gold-soft: rgb(214 160 50 / 0.12);
+  --on-gold: #1a1204;
+
+  --brand: #e8bf62;
+  --brand-hover: #dcae4c;
+  --on-brand: #16110a;
+
+  --gold-grad: linear-gradient(180deg, #eec86f 0%, #dfb04c 100%);
+  --gold-text: linear-gradient(180deg, var(--gold), var(--gold));
 
   --green: #16a34a;
   --silver: #7c7668;
 
-  --shadow: 0 1px 2px rgb(120 96 48 / 0.05), 0 12px 32px -14px rgb(120 96 48 / 0.18);
-  --glow: rgb(236 196 110 / 0.28);
+  --shadow: 0 1px 2px rgb(17 17 19 / 0.04), 0 12px 32px -16px rgb(17 17 19 / 0.14);
+  --shadow-lg: 0 2px 4px rgb(17 17 19 / 0.04), 0 40px 80px -32px rgb(17 17 19 / 0.22);
+  --glow: rgb(236 196 110 / 0.22);
 }
 
 /* ============================================================
@@ -88,14 +104,18 @@
   --color-gold-hover: var(--gold-hover);
   --color-gold-soft: var(--gold-soft);
   --color-on-gold: var(--on-gold);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-on-brand: var(--on-brand);
   --color-green: var(--green);
   --color-silver: var(--silver);
 
   --shadow-card: var(--shadow);
+  --shadow-float: var(--shadow-lg);
 
-  --font-display: var(--font-barlow), ui-sans-serif, system-ui;
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui;
-  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --font-display: var(--font-geist), ui-sans-serif, system-ui;
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 /* ============================================================
@@ -103,7 +123,7 @@
    ============================================================ */
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 5rem;
+  scroll-padding-top: 6rem;
 }
 
 body {
@@ -122,8 +142,8 @@ body {
 }
 
 ::selection {
-  background: var(--gold);
-  color: var(--on-gold);
+  background: var(--brand);
+  color: var(--on-brand);
 }
 
 :focus-visible {
@@ -135,7 +155,35 @@ body {
    5. UTILITIES
    ============================================================ */
 
-/* sudut terpotong ala UI game */
+/* judul: rapat, sentence case — dipakai semua heading besar */
+@utility text-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+/* judul hero raksasa ala halaman mobil sport */
+@utility text-hero {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.055em;
+  line-height: 0.92;
+  text-wrap: balance;
+}
+
+/* label kecil ala spesifikasi: mono, huruf kapital, redup */
+@utility text-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* sudut terpotong ala UI game (dashboard) */
 @utility chamfer {
   clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
 }
@@ -147,7 +195,6 @@ body {
   background-image: var(--gold-grad);
 }
 
-/* teks emas metalik — dipakai hemat, hanya untuk kata kunci */
 @utility text-gold-metal {
   background-image: var(--gold-text);
   -webkit-background-clip: text;
@@ -155,12 +202,10 @@ body {
   color: transparent;
 }
 
-/* garis tipis emas yang memudar di kedua ujung */
 @utility hairline-gold {
   background-image: linear-gradient(90deg, transparent, var(--gold), transparent);
 }
 
-/* butiran film halus */
 @utility grain {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
 }
@@ -172,18 +217,9 @@ body {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
-@keyframes scan {
-  0%   { top: -2%; }
-  100% { top: 102%; }
-}
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-12px); }
-}
-@keyframes rise {
-  from { transform: translateY(0); opacity: 0; }
-  15%  { opacity: 0.9; }
-  to   { transform: translateY(-110vh); opacity: 0; }
 }
 @keyframes shine {
   from { transform: translateX(-120%) skewX(-20deg); }
@@ -192,22 +228,29 @@ body {
 @keyframes blink {
   50% { opacity: 0; }
 }
-@keyframes draw {
-  from { stroke-dashoffset: 1; }
-  to   { stroke-dashoffset: 0; }
-}
 @keyframes pagein {
   from { opacity: 0; transform: translateY(6px); }
 }
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(24px) scale(0.985); }
+}
 @keyframes grow {
   from { transform: scaleX(0); }
+}
+@keyframes kenburns {
+  from { transform: scale(1.08); }
+  to   { transform: scale(1); }
+}
+@keyframes pulse-dot {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--green) 55%, transparent); }
+  100% { box-shadow: 0 0 0 6px transparent; }
 }
 
 /* muncul saat masuk viewport — kelas `is-in` dipasang oleh <Reveal> */
 .reveal {
   opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.8s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transform: translateY(20px);
+  transition: opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
   transition-delay: var(--reveal-delay, 0ms);
 }
 .reveal.is-in {
@@ -215,7 +258,6 @@ body {
   transform: none;
 }
 
-/* kartu yang terangkat + sorot emas mengikuti kursor (--mx/--my dari <Spotlight>) */
 @utility card-lift {
   transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.35s ease;
   &:hover {
@@ -237,8 +279,10 @@ body {
 }
 
 /* ============================================================
-   7. SCRIPT TANPA SPASI HURUF (Thai) — tracking lebar memecah glyph
+   7. SCRIPT TANPA SPASI HURUF (Thai) — tracking memecah glyph
    ============================================================ */
-html:lang(th) [class*="tracking-"] {
+html:lang(th) [class*="tracking-"],
+html:lang(th) .text-display,
+html:lang(th) .text-label {
   letter-spacing: 0 !important;
 }

@@ -35,7 +35,7 @@ export default function LanguageSwitcher({ lang, label }: { lang: Locale; label:
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={label}
-        className="flex h-9 items-center gap-1.5 rounded-md px-2 text-sm font-medium uppercase text-muted transition-colors hover:bg-surface-2 hover:text-fg"
+        className="flex h-9 items-center gap-1 rounded-full px-2.5 text-sm uppercase text-muted transition-colors hover:bg-surface-2 hover:text-fg"
       >
         <Globe size={16} strokeWidth={1.75} />
         {lang}

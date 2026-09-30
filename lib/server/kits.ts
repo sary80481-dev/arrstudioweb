@@ -3,6 +3,8 @@ import { FieldValue, type Timestamp } from "firebase-admin/firestore";
 import { db } from "@/lib/firebase/admin";
 import { EMPTY_STATS, slugify, type Kit, type KitInput, type PublicStats } from "@/lib/kits";
 import { DEFAULT_PRICING, type PricingSettings } from "@/lib/pricing";
+import { deleteBlobs, videoFiles } from "./blob";
+import { removePackage } from "./packages";
 import { getPricing } from "./settings";
 import { ApiError } from "./http";
 
@@ -28,6 +30,7 @@ export function toKit(id: string, d: KitDoc): Kit {
     configPath: d.configPath,
     rating: d.rating ?? null,
     order: d.order ?? 0,
+    video: d.video ?? null,
     stats: { licenses: d.stats?.licenses ?? 0, activePlaces: d.stats?.activePlaces ?? 0 },
     updatedAt: d.updatedAt?.toDate().toISOString() ?? null,
   };
@@ -63,11 +66,16 @@ export async function createKit(input: KitInput): Promise<Kit> {
 }
 
 export async function updateKit(id: string, patch: Partial<KitInput>): Promise<Kit> {
-  const ref = kitsCol().doc(id);
-  if (!(await ref.get()).exists) throw new ApiError(404, "KIT_NOT_FOUND", "Kit not found.");
+  const before = await getKit(id);
+  if (!before) throw new ApiError(404, "KIT_NOT_FOUND", "Kit not found.");
   const { id: _omit, ...data } = patch;
   void _omit;
-  await ref.update({ ...data, updatedAt: FieldValue.serverTimestamp() });
+  await kitsCol().doc(id).update({ ...data, updatedAt: FieldValue.serverTimestamp() });
+
+  // video diganti / dilepas → file lama di Blob tidak dipakai lagi
+  if (patch.video !== undefined && before.video && before.video.url !== patch.video?.url) {
+    await deleteBlobs(videoFiles(before.video));
+  }
   return (await getKit(id))!;
 }
 
@@ -79,6 +87,8 @@ export async function deleteKit(id: string) {
     throw new ApiError(409, "KIT_HAS_LICENSES", "This kit has licenses. Set it to Draft instead of deleting it.");
   }
   await kitsCol().doc(id).delete();
+  await deleteBlobs(videoFiles(kit.video));
+  await removePackage(id);
 }
 
 export async function getPublicStats(): Promise<PublicStats> {

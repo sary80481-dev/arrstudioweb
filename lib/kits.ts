@@ -58,6 +58,22 @@ export interface KitStats {
   activePlaces: number;
 }
 
+/** Video showcase kit — dikompres di browser admin lalu disimpan di Vercel Blob */
+export interface KitVideo {
+  url: string;
+  /** frame dari video sebagai gambar (webp), tampil sebelum video dimuat */
+  poster: string | null;
+  width: number;
+  height: number;
+  /** detik */
+  duration: number;
+  /** byte, setelah kompresi */
+  size: number;
+}
+
+/** Host tempat video kit boleh berada (dicek juga di skema input) */
+export const VIDEO_HOST_PATTERN = /.public.blob.vercel-storage.com$/;
+
 /** Bentuk kit yang dikirim ke UI (tanggal sudah jadi ISO string) */
 export interface Kit {
   id: string;
@@ -75,6 +91,7 @@ export interface Kit {
   configPath: string;
   rating: number | null;
   order: number;
+  video: KitVideo | null;
   stats: KitStats;
   updatedAt: string | null;
 }
@@ -130,6 +147,7 @@ export const DEFAULT_KITS: KitInput[] = [
     configPath: "ClubKit/Config",
     rating: 4.9,
     order: 1,
+    video: null,
   },
   {
     id: "summitkit",
@@ -148,6 +166,7 @@ export const DEFAULT_KITS: KitInput[] = [
     configPath: "SummitKit/Config",
     rating: 4.8,
     order: 2,
+    video: null,
   },
 ];
 

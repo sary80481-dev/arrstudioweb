@@ -1,15 +1,19 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Check } from "lucide-react";
 /** Firebase SDK baru di-load saat form dikirim */
 const authClient = () => import("@/lib/auth-client");
 import MathCaptcha, { type MathCaptchaHandle } from "../_components/MathCaptcha";
 import {
-  Alert, AuthHeading, Divider, DiscordButton, Field, PasswordField, StrengthMeter, SubmitButton, passwordScore,
+  Alert, AuthHeading, Divider, DiscordButton, Field, PasswordField, StrengthMeter, SubmitButton, passwordScore, safeNext,
 } from "../_components/AuthUI";
+
+function DiscordWithNext() {
+  return <DiscordButton label="Sign up with Discord" next={safeNext(useSearchParams().get("next"))} />;
+}
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -37,7 +41,7 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await action();
-      router.push("/dashboard");
+      router.push(safeNext(new URLSearchParams(window.location.search).get("next")) ?? "/dashboard");
       router.refresh();
     } catch (err) {
       setError((await authClient()).authErrorMessage(err));
@@ -50,7 +54,9 @@ export default function RegisterPage() {
     <>
       <AuthHeading title="Create account" desc="Your license keys and place bindings, all in one account." />
 
-      <DiscordButton label="Sign up with Discord" />
+      <Suspense fallback={<DiscordButton label="Sign up with Discord" />}>
+        <DiscordWithNext />
+      </Suspense>
       <Divider>or sign up with email</Divider>
 
       <form
@@ -112,7 +118,7 @@ export default function RegisterPage() {
 
         <label className="flex cursor-pointer select-none items-start gap-3 text-sm text-muted">
           <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="peer sr-only" />
-          <span className="mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border border-line-strong text-transparent transition-colors peer-checked:border-gold peer-checked:bg-gold peer-checked:text-on-gold peer-focus-visible:ring-2 peer-focus-visible:ring-gold">
+          <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-surface-2 text-transparent transition-colors peer-checked:bg-brand peer-checked:text-on-brand peer-focus-visible:ring-2 peer-focus-visible:ring-gold">
             <Check size={13} strokeWidth={3} />
           </span>
           <span>
@@ -127,9 +133,9 @@ export default function RegisterPage() {
         </div>
       </form>
 
-      <p className="mt-8 text-center text-sm text-muted">
+      <p className="mt-9 text-center text-[15px] text-muted">
         Already have an account?{" "}
-        <Link href="/login" className="font-semibold text-fg underline decoration-gold decoration-2 underline-offset-4 hover:text-gold">
+        <Link href="/login" className="font-medium text-gold hover:underline hover:underline-offset-4">
           Sign in
         </Link>
       </p>

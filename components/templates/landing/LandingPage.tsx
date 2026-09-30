@@ -21,14 +21,14 @@ export default function LandingPage(props: SectionProps) {
       <PublicSync />
       <Navbar lang={props.lang} t={props.t.nav} />
       <main>
-        <Hero {...props} />
-        <Marketplace t={props.t.kits} />
+        <Hero t={props.t} stats={props.stats} />
+        <Marketplace t={props.t.kits} lang={props.lang} />
         <License {...props} />
         <HowItWorks {...props} />
         <Studio {...props} />
         <Services t={props.t.services} />
-        <Testimonials {...props} />
-        <Pricing t={props.t.pricing} />
+        <Testimonials t={props.t.testimonials} />
+        <Pricing t={props.t.pricing} lang={props.lang} />
         <FAQ {...props} />
         <CTAFinal {...props} />
       </main>
