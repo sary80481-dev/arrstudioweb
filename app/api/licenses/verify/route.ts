@@ -25,7 +25,9 @@ export const POST = handle(async (req: Request) => {
   rateLimit(`verify:ip:${clientIp(req)}`, 120, 60_000);
   rateLimit(`verify:key:${key}`, 30, 60_000);
 
-  const placeId = req.headers.get("roblox-id") ?? body.placeId;
+  const headerPlaceId = req.headers.get("roblox-id");
+  const placeId =
+  headerPlaceId ?? (process.env.NODE_ENV !== "production" ? body.placeId : null);
   if (!placeId || !/^\d{1,20}$/.test(placeId)) {
     throw new ApiError(400, "MISSING_PLACE_ID", "Place ID is missing. Call this endpoint from a Roblox game server.");
   }

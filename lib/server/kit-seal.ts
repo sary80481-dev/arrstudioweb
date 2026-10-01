@@ -10,8 +10,11 @@ import { createHmac } from "node:crypto";
  *
  * Mengganti KIT_SEAL_SECRET = semua kit yang sudah disegel harus disegel ulang.
  */
-export function kitUnlockKey(kit: string): string | null {
+export function kitUnlockKey(kit: string, opts?: { version?: string; licenseId?: string }): string | null {
   const secret = process.env.KIT_SEAL_SECRET;
   if (!secret) return null;
-  return createHmac("sha256", secret).update(`arr-seal:v1:${kit}`).digest("hex");
+  const label = opts?.version && opts?.licenseId
+    ? `arr-seal:v2:${kit}:${opts.version}:${opts.licenseId}`
+    : `arr-seal:v1:${kit}`;
+  return createHmac("sha256", secret).update(label).digest("hex");
 }
