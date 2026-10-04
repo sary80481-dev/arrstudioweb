@@ -5,10 +5,11 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  ArrowUpRight, BookOpen, Check, Copy, Download, KeyRound, Loader2, LogOut, MoreHorizontal, Plus, Radio, Sparkles, Users, X,
+  ArrowUpRight, BookOpen, Check, ChevronDown, Copy, Download, KeyRound, Loader2, Lock, LogOut, MoreHorizontal, Plus, Radio, Sparkles, Users, X,
 } from "lucide-react";
 import { KitIcon } from "@/components/common/KitIcon";
-import { isLocked } from "@/lib/installment";
+import { isLocked, type InstallmentDto } from "@/lib/installment";
+import { DISCORD_INVITE } from "@/lib/links";
 import { formatIDR } from "@/lib/kits";
 import { signOut } from "@/lib/auth-client";
 import type { LicenseDto } from "@/lib/server/licenses";
@@ -185,10 +186,10 @@ export function LiveLicenses({
       {/* ─── SAPAAN + RINGKASAN ─── */}
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
-          <h1 className="text-display text-[2.75rem] text-fg md:text-6xl">
+          <h1 className="text-display text-4xl text-fg sm:text-5xl md:text-6xl">
             Hi, {first}. <span className="text-muted">Your kits.</span>
           </h1>
-          <p className="mt-3 flex flex-wrap items-center gap-3 text-[17px] text-muted">
+          <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-base text-muted sm:text-[17px]">
             Keys, files and the places they run in. <LiveBadge live={live} />
           </p>
         </div>
@@ -197,13 +198,13 @@ export function LiveLicenses({
         </Link>
       </div>
 
-      <dl className="mt-10 grid grid-cols-3 gap-3">
+      <dl className="mt-8 grid grid-cols-3 gap-2.5 sm:mt-10 sm:gap-3">
         {[
           [licenses.length, licenses.length === 1 ? "License" : "Licenses"],
           [`${places.length}/${slots}`, "Places in use"],
           [kitCount, kitCount === 1 ? "Kit" : "Kits"],
         ].map(([v, l]) => (
-          <div key={String(l)} className="flex flex-col-reverse rounded-[22px] bg-surface-2 px-5 py-5 md:px-7 md:py-6">
+          <div key={String(l)} className="flex flex-col-reverse rounded-2xl bg-surface-2 px-4 py-4 sm:rounded-[22px] sm:px-5 sm:py-5 md:px-7 md:py-6">
             <dt className="mt-1 text-[13px] text-muted md:text-sm">{l}</dt>
             <dd className="text-display text-3xl text-fg tabular-nums md:text-4xl">{v}</dd>
           </div>
@@ -253,145 +254,250 @@ function LicenseCard({
   const inst = license.installment;
   const locked = isLocked(license);
 
+  const status = revoked
+    ? { label: "Revoked", cls: "bg-red-500/10 text-red-500" }
+    : locked
+      ? { label: "Awaiting payment", cls: "bg-gold-soft text-gold" }
+      : used
+        ? { label: "Active", cls: "bg-green/10 text-green" }
+        : { label: "Not used yet", cls: "bg-bg text-muted" };
+
   return (
-    <article className={`overflow-hidden rounded-[28px] bg-surface-2 ${revoked ? "opacity-70" : ""}`}>
+    <article className={`overflow-hidden rounded-[24px] bg-surface-2 sm:rounded-[28px] ${revoked ? "opacity-70" : ""}`}>
       {/* ─── KEPALA ─── */}
-      <div className="relative isolate overflow-hidden px-6 pb-6 pt-7 md:px-8">
+      <div className="relative isolate overflow-hidden px-5 pb-5 pt-5 sm:px-8 sm:pb-6 sm:pt-7">
         {kit?.poster && (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element -- poster dari Vercel Blob, sudah webp kecil */}
-            <img src={kit.poster} alt="" aria-hidden className="absolute inset-0 -z-20 h-full w-full object-cover opacity-25" />
-            <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-r from-surface-2 via-surface-2/85 to-surface-2/40" />
+            <img src={kit.poster} alt="" aria-hidden className="absolute inset-0 -z-20 h-full w-full object-cover opacity-20" />
+            <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-surface-2/70 via-surface-2/90 to-surface-2" />
           </>
         )}
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[18px] bg-bg text-gold">
-              <KitIcon icon={kit?.icon ?? "sparkles"} size={26} strokeWidth={1.6} />
-            </span>
-            <div>
-              <h2 className="text-2xl font-semibold tracking-[-0.025em] text-fg">{license.kitName}</h2>
-              <p className="mt-0.5 text-sm text-muted">{kit?.tagline || "License"}</p>
+        <div className="flex items-start gap-3.5 sm:gap-4">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-bg text-gold sm:h-14 sm:w-14 sm:rounded-[18px]">
+            <KitIcon icon={kit?.icon ?? "sparkles"} size={24} strokeWidth={1.6} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h2 className="truncate text-xl font-semibold tracking-[-0.025em] text-fg sm:text-2xl">{license.kitName}</h2>
+            <p className="mt-0.5 truncate text-sm text-muted">{kit?.tagline || "License"}</p>
+            <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+              <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${status.cls}`}>{status.label}</span>
+              {outdated && !revoked && !locked && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-gold-soft px-2.5 py-1 text-xs text-gold">
+                  <Sparkles size={12} /> v{kit?.version} available
+                </span>
+              )}
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {outdated && !revoked && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-gold-soft px-2.5 py-1 text-xs text-gold">
-                <Sparkles size={12} /> v{kit?.version} available
-              </span>
-            )}
-            <span
-              className={`rounded-full px-2.5 py-1 text-xs ${
-                revoked ? "bg-red-500/10 text-red-500" : locked ? "bg-gold-soft text-gold" : used ? "bg-green/10 text-green" : "bg-bg text-muted"
-              }`}
-            >
-              {revoked ? "Revoked" : locked ? "Awaiting payment" : used ? "Active" : "Not used yet"}
-            </span>
-          </div>
         </div>
+      </div>
+
+      <div className="space-y-4 px-5 pb-5 sm:px-8 sm:pb-6">
+        {/* ─── BELUM LUNAS: pembayaran + key terkunci ─── */}
+        {!revoked && inst && locked && <PaymentPanel installment={inst} />}
 
         {/* ─── KEY ─── */}
-        <div className="mt-6 flex flex-wrap items-center gap-3 rounded-[20px] bg-bg p-2 pl-5">
-          <code className="min-w-0 flex-1 break-all py-1.5 font-mono text-[15px] tracking-wide text-fg sm:text-lg md:text-xl">{license.key}</code>
-          <div className="flex gap-1.5">
-            <CopyButton text={license.key} label="Copy key" className="bg-surface-2!" />
-            <CopyButton text={`LicenseKey = "${license.key}",`} label="Config line" className="bg-surface-2! max-sm:hidden" />
+        {locked ? (
+          <div className="flex items-center gap-3 rounded-2xl border border-dashed border-line-strong p-3 pl-4 opacity-80 sm:rounded-[20px]">
+            <Lock size={16} className="shrink-0 text-dim" />
+            <code className="min-w-0 flex-1 truncate font-mono text-[15px] tracking-wide text-dim sm:text-lg">ARR-••••-••••-••••</code>
+            <span className="shrink-0 rounded-full bg-bg px-3 py-1.5 text-xs text-dim">Locked</span>
           </div>
-        </div>
-
-        {!revoked && inst && (
-          <div className="mt-4 rounded-[20px] bg-bg p-5">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <p className="text-sm font-medium text-fg">{locked ? "Installment plan" : "Fully paid"}</p>
-              <p className="text-sm text-muted">
-                <span className="tabular-nums text-fg">{formatIDR(inst.paid)}</span> of {formatIDR(inst.total)}
-                {locked && <> · <span className="tabular-nums text-fg">{formatIDR(inst.remaining)}</span> left</>}
-              </p>
+        ) : (
+          <div className="rounded-2xl bg-bg p-3 sm:rounded-[20px] sm:p-2 sm:pl-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <code className="min-w-0 flex-1 break-all px-1 font-mono text-[15px] tracking-wide text-fg sm:py-1.5 sm:text-lg md:text-xl">{license.key}</code>
+              <div className="grid grid-cols-2 gap-1.5 sm:flex">
+                <CopyButton text={license.key} label="Copy key" className="justify-center bg-surface-2! py-2" />
+                <CopyButton text={`LicenseKey = "${license.key}",`} label="Config line" className="justify-center bg-surface-2! py-2" />
+              </div>
             </div>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-2" role="progressbar" aria-valuenow={inst.paid} aria-valuemin={0} aria-valuemax={inst.total}>
-              <div className="h-full rounded-full bg-gold-grad" style={{ width: `${Math.min(100, (inst.paid / inst.total) * 100)}%` }} />
-            </div>
-            {locked && (
-              <p className="mt-3 text-[13px] leading-relaxed text-dim">
-                The kit file and license check unlock as soon as the last installment is confirmed. Sent a transfer? Share the proof with us on Discord and we&apos;ll update this.
-              </p>
-            )}
-            {inst.payments.length > 0 && (
-              <ul className="mt-3 space-y-1 text-[13px] text-muted">
-                {inst.payments.map((p, i) => (
-                  <li key={i} className="flex justify-between gap-3">
-                    <span>{fullDate(p.at)}{p.note && ` · ${p.note}`}</span>
-                    <span className="tabular-nums text-fg">{formatIDR(p.amount)}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
         )}
 
+        {/* ─── UNDUH ─── */}
         {!revoked && (
-          <div className="mt-4 flex flex-wrap items-center gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             {locked ? (
-              <span className={buttonClass("outline", "md", "pointer-events-none text-muted!")}>
-                <Download size={16} /> Locked until fully paid
+              <span className={buttonClass("outline", "md", "pointer-events-none text-muted! max-sm:w-full")}>
+                <Lock size={15} /> Download unlocks when fully paid
               </span>
             ) : downloadable ? (
-              <a href={`/api/kits/${encodeURIComponent(license.kit)}/download`} download className={buttonClass("gold", "md")}>
+              <a href={`/api/kits/${encodeURIComponent(license.kit)}/download`} download className={buttonClass("gold", "md", "max-sm:w-full")}>
                 <Download size={16} /> Download .rbxm
               </a>
             ) : (
-              <span className={buttonClass("outline", "md", "pointer-events-none text-muted!")}>
+              <span className={buttonClass("outline", "md", "pointer-events-none text-muted! max-sm:w-full")}>
                 <Download size={16} /> File coming soon
               </span>
             )}
-            <p className="text-[13px] text-dim">
-              Paste the key into <code className="font-mono text-muted">Config</code>, then publish.
-            </p>
+            {!locked && (
+              <p className="text-[13px] text-dim">
+                Paste the key into <code className="font-mono text-muted">Config</code>, then publish.
+              </p>
+            )}
           </div>
+        )}
+
+        {/* riwayat cicilan yang sudah lunas */}
+        {!revoked && inst && !locked && inst.payments.length > 0 && (
+          <details className="group rounded-2xl bg-bg px-4 py-3 text-sm">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-muted [&::-webkit-details-marker]:hidden">
+              <span className="inline-flex items-center gap-2"><Check size={14} className="text-green" /> Paid in full · {formatIDR(inst.total)}</span>
+              <ChevronDown size={15} className="transition-transform group-open:rotate-180" />
+            </summary>
+            <PaymentHistory payments={inst.payments} />
+          </details>
         )}
       </div>
 
       {/* ─── PLACES ─── */}
-      <div className="px-6 pb-6 md:px-8">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
+      <div className="px-5 pb-5 sm:px-8 sm:pb-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
           <h3 className="text-[17px] font-semibold tracking-[-0.01em] text-fg">Places</h3>
           <p className="text-sm text-muted">
             <span className="tabular-nums text-fg">{used}</span> of {license.maxPlaces} used
-            {free > 0 && !revoked && <> · {free} free</>}
+            {free > 0 && !revoked && !locked && <> · {free} free</>}
           </p>
         </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {license.places.map((p) => (
-            <PlaceCard key={p} license={license} placeId={p} info={places[p]} canRemove={!revoked} />
-          ))}
-          {!revoked && !locked && Array.from({ length: free }, (_, i) => <AddPlace key={`free-${i}`} license={license} first={i === 0} />)}
-        </div>
-
-        {!revoked && (
-          <p className="mt-4 text-[13px] leading-relaxed text-dim">
-            A new place also links itself the first time its server starts with this key.
-            {license.releaseAvailableAt && <> You can remove a place again {ago(license.releaseAvailableAt)}.</>}
+        {locked ? (
+          <p className="mt-3 flex items-start gap-2.5 rounded-2xl border border-dashed border-line-strong p-4 text-[13px] leading-relaxed text-dim">
+            <Lock size={14} className="mt-0.5 shrink-0" />
+            Places can be added once this license is fully paid. The kit won&apos;t pass its license check until then.
           </p>
+        ) : (
+          <>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {license.places.map((p) => (
+                <PlaceCard key={p} license={license} placeId={p} info={places[p]} canRemove={!revoked} />
+              ))}
+              {!revoked && Array.from({ length: free }, (_, i) => <AddPlace key={`free-${i}`} license={license} first={i === 0} />)}
+            </div>
+            {!revoked && (
+              <p className="mt-4 text-[13px] leading-relaxed text-dim">
+                A new place also links itself the first time its server starts with this key.
+                {license.releaseAvailableAt && <> You can remove a place again {ago(license.releaseAvailableAt)}.</>}
+              </p>
+            )}
+          </>
         )}
       </div>
 
       {/* ─── KAKI: status teknis ─── */}
-      <dl className="grid grid-cols-3 gap-4 bg-bg/40 px-6 py-4 text-sm md:px-8">
-        <div>
+      <dl className="grid grid-cols-3 gap-3 bg-bg/40 px-5 py-4 text-sm sm:gap-4 sm:px-8">
+        <div className="min-w-0">
           <dt className="text-dim">Last check</dt>
-          <dd className="mt-0.5 text-fg" title={fullDate(license.lastVerifiedAt)}>{ago(license.lastVerifiedAt)}</dd>
+          <dd className="mt-0.5 truncate text-fg" title={fullDate(license.lastVerifiedAt)}>{ago(license.lastVerifiedAt)}</dd>
         </div>
-        <div>
+        <div className="min-w-0">
           <dt className="text-dim">Installed</dt>
-          <dd className="mt-0.5 font-mono text-fg">{license.lastKitVersion ? `v${license.lastKitVersion}` : "—"}</dd>
+          <dd className="mt-0.5 truncate font-mono text-fg">{license.lastKitVersion ? `v${license.lastKitVersion}` : "—"}</dd>
         </div>
-        <div>
+        <div className="min-w-0">
           <dt className="text-dim">Checks</dt>
-          <dd className="mt-0.5 font-mono text-fg">{compact(license.verifyCount)}</dd>
+          <dd className="mt-0.5 truncate font-mono text-fg">{compact(license.verifyCount)}</dd>
         </div>
       </dl>
     </article>
+  );
+}
+
+/* ─── CICILAN: progres, sisa, langkah berikutnya ─── */
+function PaymentPanel({ installment: inst }: { installment: InstallmentDto }) {
+  const pct = Math.min(100, Math.round((inst.paid / inst.total) * 100));
+  const steps = [
+    ["Transfer", "Pay the next installment."],
+    ["Send proof", "Share the transfer receipt with us on Discord."],
+    ["Unlocked", "We confirm it and everything opens up here."],
+  ];
+
+  return (
+    <section className="rounded-2xl bg-bg p-4 sm:rounded-[20px] sm:p-6" aria-label="Installment payment">
+      <div className="flex items-start gap-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold-soft text-gold">
+          <Lock size={16} />
+        </span>
+        <div className="min-w-0">
+          <h3 className="text-base font-semibold text-fg sm:text-lg">Finish your payment to unlock</h3>
+          <p className="mt-0.5 text-[13px] leading-relaxed text-muted sm:text-sm">
+            Your key, kit file and places open as soon as the last installment is confirmed.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5">
+        <div className="flex items-baseline justify-between gap-3">
+          <span className="text-display text-3xl text-fg tabular-nums sm:text-4xl">{pct}%</span>
+          <span className="text-[13px] text-muted">paid</span>
+        </div>
+        <div
+          className="mt-2 h-2.5 overflow-hidden rounded-full bg-surface-2"
+          role="progressbar"
+          aria-label="Amount paid"
+          aria-valuenow={pct}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div className="h-full rounded-full bg-gold-grad transition-[width] duration-500" style={{ width: `${pct}%` }} />
+        </div>
+      </div>
+
+      <dl className="mt-4 grid grid-cols-3 gap-2 text-center sm:gap-3 sm:text-left">
+        {[
+          ["Total", formatIDR(inst.total), "text-fg"],
+          ["Paid", formatIDR(inst.paid), "text-green"],
+          ["Remaining", formatIDR(inst.remaining), "text-gold"],
+        ].map(([label, value, tone]) => (
+          <div key={label} className="min-w-0 rounded-xl bg-surface-2 px-2 py-2.5 sm:px-4 sm:py-3">
+            <dt className="text-[11px] text-dim sm:text-xs">{label}</dt>
+            <dd className={`mt-0.5 truncate text-[13px] font-semibold tabular-nums sm:text-base ${tone}`}>{value}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <ol className="mt-5 grid gap-3 sm:grid-cols-3">
+        {steps.map(([title, text], i) => (
+          <li key={title} className="flex items-start gap-3">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-2 text-xs font-semibold text-fg">{i + 1}</span>
+            <span className="min-w-0 text-[13px] leading-snug text-muted">
+              <span className="block font-medium text-fg">{title}</span>
+              {text}
+            </span>
+          </li>
+        ))}
+      </ol>
+
+      <a href={DISCORD_INVITE} target="_blank" rel="noreferrer" className={buttonClass("gold", "md", "mt-5 w-full sm:w-auto")}>
+        Send proof on Discord <ArrowUpRight size={16} />
+      </a>
+
+      {inst.payments.length > 0 && (
+        <details className="group mt-4 border-t border-line pt-3 text-sm">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-muted [&::-webkit-details-marker]:hidden">
+            Payment history ({inst.payments.length})
+            <ChevronDown size={15} className="transition-transform group-open:rotate-180" />
+          </summary>
+          <PaymentHistory payments={inst.payments} />
+        </details>
+      )}
+    </section>
+  );
+}
+
+function PaymentHistory({ payments }: { payments: InstallmentDto["payments"] }) {
+  return (
+    <ul className="mt-3 divide-y divide-line text-[13px]">
+      {payments.map((p, i) => (
+        <li key={i} className="flex items-baseline justify-between gap-3 py-2">
+          <span className="min-w-0 text-muted">
+            <span className="block text-fg">{p.note || "Payment"}</span>
+            <span className="text-xs text-dim">{fullDate(p.at)}</span>
+          </span>
+          <span className="shrink-0 tabular-nums text-fg">{formatIDR(p.amount)}</span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
