@@ -375,11 +375,32 @@ function IssuePanel({ kits, onClose }: { kits: Kit[]; onClose: () => void }) {
   const [installment, setInstallment] = useState(false);
   const [total, setTotal] = useState<number | null>(null);
   const [firstPaid, setFirstPaid] = useState(0);
+  // kode promo: dihitung server untuk (total, qty) tertentu; berubah salah satunya → perlu Apply ulang
+  const [promoInput, setPromoInput] = useState("");
+  const [promo, setPromo] = useState<{ code: string; discount: number; forTotal: number; forCount: number } | null>(null);
+  const [promoBusy, setPromoBusy] = useState(false);
+  const [promoError, setPromoError] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [issued, setIssued] = useState<string[]>([]);
 
   const totalValue = total ?? issuable.find((k) => k.id === kit)?.price ?? 0;
+  const activePromo = promo && promo.forTotal === totalValue && promo.forCount === count ? promo : null;
+  const effectiveTotal = totalValue - (activePromo?.discount ?? 0);
+
+  const applyPromo = async () => {
+    if (!promoInput.trim()) return;
+    setPromoBusy(true);
+    setPromoError("");
+    setPromo(null);
+    try {
+      const r = await api<{ code: string; discount: number }>("POST", "/api/admin/discounts/check", { code: promoInput, total: totalValue, count });
+      setPromo({ code: r.code, discount: r.discount, forTotal: totalValue, forCount: count });
+    } catch (err) {
+      setPromoError((err as Error).message);
+    }
+    setPromoBusy(false);
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -394,10 +415,13 @@ function IssuePanel({ kits, onClose }: { kits: Kit[]; onClose: () => void }) {
         maxPlaces: places ?? undefined,
         note: note.trim() || undefined,
         installment: installment ? { total: totalValue, paid: firstPaid } : undefined,
+        promoCode: installment && activePromo ? activePromo.code : undefined,
       });
       setIssued(keys);
       setNote("");
       setFirstPaid(0);
+      setPromo(null);
+      setPromoInput("");
     } catch (err) {
       setError((err as Error).message);
     }
@@ -461,13 +485,49 @@ function IssuePanel({ kits, onClose }: { kits: Kit[]; onClose: () => void }) {
           <span className="font-normal text-dim">— locked until fully paid; enter the full total as first payment to unlock right away</span>
         </label>
         {installment && (
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 sm:max-w-md">
+          <div className="mt-3 grid gap-3 sm:max-w-md sm:grid-cols-2">
             <FieldShell label="Total price per license (Rp)" htmlFor="i-total">
               <TextInput id="i-total" inputMode="numeric" value={totalValue ? totalValue.toLocaleString("id-ID") : ""} onChange={(e) => setTotal(Number(e.target.value.replace(/\D/g, "")) || 0)} className="tabular-nums" />
             </FieldShell>
-            <FieldShell label="First payment (Rp)" htmlFor="i-first" hint={firstPaid >= totalValue && totalValue > 0 ? "Paid in full — unlocked right away" : `Remaining ${formatIDR(Math.max(0, totalValue - firstPaid))}`}>
-              <TextInput id="i-first" inputMode="numeric" value={firstPaid ? firstPaid.toLocaleString("id-ID") : ""} onChange={(e) => setFirstPaid(Math.min(Number(e.target.value.replace(/\D/g, "")) || 0, totalValue))} className="tabular-nums" />
+            <FieldShell label="First payment (Rp)" htmlFor="i-first" hint={firstPaid >= effectiveTotal && effectiveTotal > 0 ? "Paid in full — unlocked right away" : `Remaining ${formatIDR(Math.max(0, effectiveTotal - firstPaid))}`}>
+              <TextInput id="i-first" inputMode="numeric" value={firstPaid ? firstPaid.toLocaleString("id-ID") : ""} onChange={(e) => setFirstPaid(Math.min(Number(e.target.value.replace(/\D/g, "")) || 0, effectiveTotal))} className="tabular-nums" />
             </FieldShell>
+            <div className="sm:col-span-2">
+              <label htmlFor="i-promo" className="mb-1.5 block text-[13px] font-medium text-fg">Promo code (optional)</label>
+              <div className="flex gap-2">
+                <TextInput
+                  id="i-promo"
+                  value={promoInput}
+                  onChange={(e) => {
+                    setPromoInput(e.target.value.toUpperCase());
+                    setPromo(null);
+                    setPromoError("");
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      applyPromo();
+                    }
+                  }}
+                  placeholder="LAUNCH20"
+                  maxLength={24}
+                  className="font-mono"
+                />
+                <Btn onClick={applyPromo} disabled={promoBusy || !promoInput.trim()}>
+                  {promoBusy ? <Loader2 size={14} className="animate-spin" /> : "Apply"}
+                </Btn>
+              </div>
+              {promoError && <p role="alert" className="mt-1 text-xs text-red-500">{promoError}</p>}
+              {activePromo && (
+                <p className="mt-1.5 text-xs text-green">
+                  {activePromo.code}: −{formatIDR(activePromo.discount)} → total <span className="tabular-nums">{formatIDR(effectiveTotal)}</span>
+                  <span className="text-dim"> (was {formatIDR(totalValue)})</span>
+                </p>
+              )}
+              {promoInput.trim() && !activePromo && !promoError && !promoBusy && (
+                <p className="mt-1 text-xs text-dim">Press Apply to check the code.</p>
+              )}
+            </div>
           </div>
         )}
       </div>

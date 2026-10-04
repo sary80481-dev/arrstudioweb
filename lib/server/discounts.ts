@@ -103,7 +103,7 @@ const PENDING_TTL_MS = 24 * 60 * 60 * 1000;
  * Dipanggil DI DALAM transaksi pembuatan order: kuota = sudah lunas + order yang masih menunggu bayar.
  * Dengan begitu beberapa pembeli yang checkout bersamaan tidak bisa melewati `maxUses`.
  */
-export async function assertCapacity(tx: Transaction, code: string) {
+export async function assertCapacity(tx: Transaction, code: string, extra = 1) {
   const snap = await tx.get(discounts().doc(code));
   const d = snap.exists ? toDiscount(snap.data() as DiscountDoc) : null;
   if (!d || !d.active || d.maxUses <= 0) return;
@@ -113,12 +113,22 @@ export async function assertCapacity(tx: Transaction, code: string) {
     const v = o.data() as { status: string; createdAt?: Timestamp };
     return (v.status === "pending" || v.status === "fulfilling") && (v.createdAt?.toMillis() ?? Date.now()) > cutoff;
   }).length;
-  if (d.usedCount + inFlight >= d.maxUses) throw new ApiError(400, "INVALID_CODE", "This code isn't valid or has expired.");
+  if (d.usedCount + inFlight + extra > d.maxUses) throw new ApiError(400, "INVALID_CODE", "This code isn't valid or has expired.");
 }
 
-/** Dipanggil sekali per order lunas (lihat applyPayment) */
-export async function recordDiscountUse(code: string) {
-  await discounts().doc(code).update({ usedCount: FieldValue.increment(1) }).catch((err) => {
+/**
+ * Admin menerbitkan lisensi (cicilan) dengan kode: validasi kode terhadap total, pastikan kuota cukup untuk
+ * `count` lisensi, lalu kembalikan potongan per lisensi. Pemakaian dicatat terpisah (recordDiscountUse) setelah lisensi terbit.
+ */
+export async function checkDiscountForIssue(rawCode: string, base: number, count: number) {
+  const r = await resolveDiscount(rawCode, "kit", base);
+  await db().runTransaction((tx) => assertCapacity(tx, r.code, count));
+  return r;
+}
+
+/** Dipanggil sekali per order lunas (lihat applyPayment), atau `n` kali untuk lisensi yang diterbitkan admin */
+export async function recordDiscountUse(code: string, n = 1) {
+  await discounts().doc(code).update({ usedCount: FieldValue.increment(n) }).catch((err) => {
     console.error("[discounts] couldn't record use", code, err);
   });
 }

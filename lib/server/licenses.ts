@@ -161,6 +161,8 @@ export async function issueLicenses(input: {
   note?: string;
   /** cicilan: total harga per lisensi & pembayaran pertama (0 = belum ada) */
   installment?: { total: number; paid: number };
+  /** kode diskon yang dipakai saat penerbitan (sudah terpotong dari total cicilan) */
+  discount?: { code: string; amount: number };
 }) {
   const kitSnap = await kitsCol().doc(input.kit).get();
   if (!kitSnap.exists) throw new ApiError(404, "KIT_NOT_FOUND", "Kit not found.");
@@ -194,6 +196,7 @@ export async function issueLicenses(input: {
       lastJobId: null,
       lastKitVersion: null,
       verifyCount: 0,
+      discount: input.discount ?? null,
       installment: input.installment
         ? {
             total: input.installment.total,
