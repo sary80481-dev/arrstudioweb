@@ -1,6 +1,9 @@
 import { z } from "zod";
-import { handle, json, parseBody } from "@/lib/server/http";
-import { requireUser } from "@/lib/server/session";
+import { deleteAccount } from "@/lib/server/account";
+import { audit } from "@/lib/server/audit";
+import { ApiError, handle, json, parseBody } from "@/lib/server/http";
+import { rateLimitShared } from "@/lib/server/ratelimit";
+import { destroySession, requireUser } from "@/lib/server/session";
 import { updateUser } from "@/lib/server/users";
 
 /** GET /api/account — profil user yang login */
@@ -24,4 +27,25 @@ export const PATCH = handle(async (req: Request) => {
   const patch = await parseBody(req, Patch);
   const user = await updateUser(uid, patch);
   return json({ user });
+});
+
+const DeleteBody = z.object({ confirm: z.string().trim().min(1).max(200) });
+
+/**
+ * DELETE /api/account — hapus akun sendiri (permanen). Konfirmasi: ketik email akun
+ * (atau "DELETE" bila akun tanpa email). Lisensi dicabut; pesanan dipertahankan tanpa identitas.
+ */
+export const DELETE = handle(async (req: Request) => {
+  const user = await requireUser(req);
+  await rateLimitShared(`delete-account:${user.uid}`, 5, 60 * 60_000);
+  const { confirm } = await parseBody(req, DeleteBody);
+  const expected = (user.email || "DELETE").toLowerCase();
+  if (confirm.toLowerCase() !== expected) {
+    throw new ApiError(400, "CONFIRM_MISMATCH", `Type ${user.email || "DELETE"} to confirm.`);
+  }
+  await deleteAccount(user.uid);
+  // jejak tanpa identitas (uid saja) — email tidak ikut dicatat
+  await audit({ uid: user.uid, email: "(self-service)" }, "account.delete", user.uid);
+  await destroySession().catch(() => {});
+  return json({ ok: true });
 });

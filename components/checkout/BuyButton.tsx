@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight, Loader2, X } from "lucide-react";
+import QrisCard from "./QrisCard";
 
 /* ============================================================
    Tombol beli → Midtrans Snap (popup di halaman yang sama).
@@ -190,13 +191,15 @@ function DiscordOrderDialog({ url, onClose }: { url: string; onClose: () => void
           key and kit file right after payment.
         </p>
 
+        <QrisCard className="mt-6 bg-surface-2 text-left" />
+
         <a
           ref={joinRef}
           href={url}
           target="_blank"
           rel="noreferrer"
           onClick={onClose}
-          className="mt-8 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#5865F2] text-base font-medium text-white transition-[background-color,transform] hover:bg-[#4752c4] active:scale-[0.98]"
+          className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#5865F2] text-base font-medium text-white transition-[background-color,transform] hover:bg-[#4752c4] active:scale-[0.98]"
         >
           Join the Discord
           <ArrowUpRight size={17} />

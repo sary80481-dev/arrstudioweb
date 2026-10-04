@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowUpRight, BookOpen, Check, ChevronDown, Copy, Download, KeyRound, Layers, LayoutGrid, LifeBuoy, Loader2, Lock, LogOut,
-  MoreHorizontal, Plus, Radio, ShieldCheck, Sparkles, Users, Wallet, X,
+  MoreHorizontal, Plus, Radio, ShieldCheck, Sparkles, UserRound, Users, Wallet, X,
 } from "lucide-react";
 import { KitIcon } from "@/components/common/KitIcon";
 import { isLocked, type InstallmentDto } from "@/lib/installment";
@@ -18,6 +18,7 @@ import { useLicensesSync, useRealtimeAuthSync } from "@/lib/realtime";
 import { selectLicenses, selectRealtime, useAppSelector } from "@/lib/store/store";
 import { Logo, buttonClass } from "@/components/templates/landing/_components/ui";
 import ThemeToggle from "@/components/theme/ThemeToggle";
+import QrisCard from "@/components/checkout/QrisCard";
 
 /* ============================================================
    Dashboard pembeli — halaman akun ala produk:
@@ -156,12 +157,13 @@ function usePlaceInfo(placeIds: string[], initial: Record<string, PlaceInfo | nu
    SHELL: sidebar (desktop) / bottom bar (HP) + tiga tampilan
    Overview → apa yang perlu perhatian · Licenses → detail per lisensi · Payments → cicilan
    ============================================================ */
-type View = "overview" | "licenses" | "payments";
+type View = "overview" | "licenses" | "payments" | "account";
 
 const NAV: { id: View; label: string; icon: typeof KeyRound }[] = [
   { id: "overview", label: "Overview", icon: LayoutGrid },
   { id: "licenses", label: "Licenses", icon: KeyRound },
   { id: "payments", label: "Payments", icon: Wallet },
+  { id: "account", label: "Account", icon: UserRound },
 ];
 
 function licenseState(l: LicenseDto): { label: string; dot: string; cls: string } {
@@ -350,11 +352,13 @@ export function Dashboard({
           )}
 
           {view === "payments" && <Payments licenses={licenses} kits={kits} open={open} />}
+
+          {view === "account" && <AccountView name={name} email={email} isAdmin={isAdmin} licenseCount={licenses.length} />}
         </main>
       </div>
 
       {/* ═══ BOTTOM NAV (HP) ═══ */}
-      <nav aria-label="Dashboard" className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-line bg-bg/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
+      <nav aria-label="Dashboard" className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-line bg-bg/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
         {NAV.map((n) => {
           const on = view === n.id;
           const count = n.id === "payments" ? badge(n.id) : 0;
@@ -569,6 +573,127 @@ function Overview({
           </section>
         </div>
       )}
+    </>
+  );
+}
+
+/* ─── ACCOUNT: data pribadi, ekspor, hapus akun ─── */
+function AccountView({ name, email, isAdmin, licenseCount }: { name: string; email: string; isAdmin: boolean; licenseCount: number }) {
+  const [confirming, setConfirming] = useState(false);
+  const [typed, setTyped] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const expected = email || "DELETE";
+  const policy = "/privacy";
+
+  const remove = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      const res = await fetch("/api/account", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirm: typed }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.error?.message ?? "Couldn't delete the account.");
+      await signOut().catch(() => {});
+      window.location.href = "/";
+    } catch (e) {
+      setError((e as Error).message);
+      setBusy(false);
+    }
+  };
+
+  return (
+    <>
+      <ViewHeader title="Account" desc="Your details and your data." />
+
+      <div className="space-y-4">
+        <section className="rounded-2xl bg-surface-2 p-5">
+          <h2 className="text-base font-semibold text-fg">Profile</h2>
+          <dl className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="min-w-0">
+              <dt className="text-xs text-dim">Name</dt>
+              <dd className="mt-1 truncate text-sm text-fg">{name}</dd>
+            </div>
+            <div className="min-w-0">
+              <dt className="text-xs text-dim">Email</dt>
+              <dd className="mt-1 truncate text-sm text-fg">{email || "—"}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section className="rounded-2xl bg-surface-2 p-5">
+          <h2 className="text-base font-semibold text-fg">Your data</h2>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
+            Download a copy of everything we hold about you — profile, licenses and orders — as a JSON file. See how we handle it in the{" "}
+            <Link href={policy} className="text-fg underline underline-offset-2 hover:text-gold">Privacy Policy</Link>.
+          </p>
+          <a href="/api/account/export" download className={buttonClass("outline", "md", "mt-4 max-sm:w-full")}>
+            <Download size={16} /> Export my data
+          </a>
+        </section>
+
+        <section className="rounded-2xl border border-red-500/30 bg-red-500/5 p-5">
+          <h2 className="text-base font-semibold text-red-500">Delete account</h2>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
+            This permanently deletes your login and profile. It can&apos;t be undone.
+          </p>
+
+          {isAdmin ? (
+            <p className="mt-3 text-[13px] text-muted">Admin accounts can&apos;t be deleted here. Ask another admin to remove admin access first.</p>
+          ) : !confirming ? (
+            <button type="button" onClick={() => setConfirming(true)} className={buttonClass("outline", "md", "mt-4 border-red-500/40 text-red-500! hover:bg-red-500/10 max-sm:w-full")}>
+              Delete my account…
+            </button>
+          ) : (
+            <div className="mt-4 space-y-3">
+              <ul className="list-disc space-y-1.5 pl-5 text-[13px] leading-relaxed text-muted marker:text-red-500">
+                <li>
+                  {licenseCount > 0 ? <><span className="font-medium text-fg">{licenseCount}</span> license{licenseCount === 1 ? "" : "s"} will be revoked — kits stop working and there&apos;s no refund.</> : "You have no licenses."}
+                </li>
+                <li>Unpaid installments are cancelled with the license; you can&apos;t resume them later.</li>
+                <li>Order and payment records are kept without your identity, as tax law requires (see the Privacy Policy).</li>
+              </ul>
+              <label htmlFor="del-confirm" className="block text-[13px] text-fg">
+                Type <span className="font-mono font-semibold">{expected}</span> to confirm
+              </label>
+              <input
+                id="del-confirm"
+                value={typed}
+                onChange={(e) => setTyped(e.target.value)}
+                autoComplete="off"
+                autoCapitalize="off"
+                spellCheck={false}
+                className="h-11 w-full rounded-xl border border-line-strong bg-bg px-3.5 text-sm text-fg focus:border-red-500 focus:outline-none"
+              />
+              {error && <p role="alert" className="text-[13px] text-red-500">{error}</p>}
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <button
+                  type="button"
+                  disabled={busy || typed.trim().toLowerCase() !== expected.toLowerCase()}
+                  onClick={remove}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-red-500 px-5 text-sm font-medium text-white transition-colors hover:bg-red-600 disabled:opacity-50"
+                >
+                  {busy && <Loader2 size={15} className="animate-spin" />} Delete permanently
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirming(false);
+                    setTyped("");
+                    setError("");
+                  }}
+                  className={buttonClass("outline", "md")}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
+      </div>
     </>
   );
 }
@@ -945,6 +1070,7 @@ function PaymentTab({ installment: inst, pct, locked }: { installment: Installme
               </li>
             ))}
           </ol>
+          <QrisCard amountHint={`up to ${formatIDR(inst.remaining)}`} />
           <a href={DISCORD_INVITE} target="_blank" rel="noreferrer" className={buttonClass("gold", "md", "w-full sm:w-auto")}>
             Send proof on Discord <ArrowUpRight size={16} />
           </a>
