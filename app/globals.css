@@ -52,25 +52,27 @@
 
 /* ============================================================
    2. TOKENS — LIGHT
-   putih bersih + tile abu terang (#f5f5f7), teks grafit
+   Krem hangat redup (bukan putih): latar #eeece6, kartu sedikit lebih terang, tile sedikit lebih gelap.
+   Teks cokelat-grafit; kontras tetap ≥ AA (teks biasa 4.5:1) di atas --bg.
    ============================================================ */
 [data-theme="light"] {
   color-scheme: light;
 
-  --bg: #ffffff;
-  --surface: #ffffff;
-  --surface-2: #f5f5f7;
+  --bg: #eeece6;
+  --surface: #f4f2ed;
+  --surface-2: #e3e0d8;
 
-  --fg: #1d1d1f;
-  --muted: #6e6e73;
-  --dim: #86868b;
+  --fg: #23211c;
+  --muted: #55514a;
+  --dim: #6f6a5f;
 
-  --line: rgb(0 0 0 / 0.08);
-  --line-strong: rgb(0 0 0 / 0.14);
+  --line: rgb(40 32 16 / 0.11);
+  --line-strong: rgb(40 32 16 / 0.2);
 
-  --gold: #94670f;
-  --gold-hover: #7a540a;
-  --gold-soft: rgb(214 160 50 / 0.12);
+  /* emas lebih tua agar terbaca di atas krem */
+  --gold: #7f5a0c;
+  --gold-hover: #684a08;
+  --gold-soft: rgb(160 110 20 / 0.14);
   --on-gold: #1a1204;
 
   --brand: #e8bf62;
@@ -80,12 +82,12 @@
   --gold-grad: linear-gradient(180deg, #eec86f 0%, #dfb04c 100%);
   --gold-text: linear-gradient(180deg, var(--gold), var(--gold));
 
-  --green: #16a34a;
-  --silver: #7c7668;
+  --green: #15803d;
+  --silver: #6f6a5f;
 
-  --shadow: 0 1px 2px rgb(17 17 19 / 0.04), 0 12px 32px -16px rgb(17 17 19 / 0.14);
-  --shadow-lg: 0 2px 4px rgb(17 17 19 / 0.04), 0 40px 80px -32px rgb(17 17 19 / 0.22);
-  --glow: rgb(236 196 110 / 0.22);
+  --shadow: 0 1px 2px rgb(40 32 16 / 0.06), 0 12px 32px -16px rgb(40 32 16 / 0.2);
+  --shadow-lg: 0 2px 4px rgb(40 32 16 / 0.06), 0 40px 80px -32px rgb(40 32 16 / 0.28);
+  --glow: rgb(220 170 80 / 0.16);
 }
 
 /* ============================================================
