@@ -52,42 +52,43 @@
 
 /* ============================================================
    2. TOKENS — LIGHT
-   Krem hangat redup (bukan putih): latar #eeece6, kartu sedikit lebih terang, tile sedikit lebih gelap.
+   Krem-pasir redup (bukan putih): latar #dcd8ce, kartu sedikit lebih terang, tile sedikit lebih gelap.
    Teks cokelat-grafit; kontras tetap ≥ AA (teks biasa 4.5:1) di atas --bg.
    ============================================================ */
 [data-theme="light"] {
   color-scheme: light;
 
-  --bg: #eeece6;
-  --surface: #f4f2ed;
-  --surface-2: #e3e0d8;
+  /* redup & hangat: luminansi latar ±70% (bukan 95%+) supaya tidak menyilaukan di mata */
+  --bg: #dcd8ce;
+  --surface: #e5e1d8;
+  --surface-2: #cdc9be;
 
-  --fg: #23211c;
-  --muted: #55514a;
-  --dim: #6f6a5f;
+  --fg: #1f1c17;
+  --muted: #47433a;
+  --dim: #544f45;
 
-  --line: rgb(40 32 16 / 0.11);
-  --line-strong: rgb(40 32 16 / 0.2);
+  --line: rgb(40 32 16 / 0.14);
+  --line-strong: rgb(40 32 16 / 0.24);
 
-  /* emas lebih tua agar terbaca di atas krem */
-  --gold: #7f5a0c;
-  --gold-hover: #684a08;
-  --gold-soft: rgb(160 110 20 / 0.14);
+  /* emas lebih tua agar terbaca di atas krem gelap */
+  --gold: #6b4a07;
+  --gold-hover: #573b04;
+  --gold-soft: rgb(150 100 15 / 0.16);
   --on-gold: #1a1204;
 
-  --brand: #e8bf62;
-  --brand-hover: #dcae4c;
+  --brand: #e2b955;
+  --brand-hover: #d6a93f;
   --on-brand: #16110a;
 
-  --gold-grad: linear-gradient(180deg, #eec86f 0%, #dfb04c 100%);
+  --gold-grad: linear-gradient(180deg, #e8c066 0%, #d6a945 100%);
   --gold-text: linear-gradient(180deg, var(--gold), var(--gold));
 
-  --green: #15803d;
-  --silver: #6f6a5f;
+  --green: #0f5f2f;
+  --silver: #544f45;
 
-  --shadow: 0 1px 2px rgb(40 32 16 / 0.06), 0 12px 32px -16px rgb(40 32 16 / 0.2);
-  --shadow-lg: 0 2px 4px rgb(40 32 16 / 0.06), 0 40px 80px -32px rgb(40 32 16 / 0.28);
-  --glow: rgb(220 170 80 / 0.16);
+  --shadow: 0 1px 2px rgb(40 32 16 / 0.08), 0 12px 32px -16px rgb(40 32 16 / 0.28);
+  --shadow-lg: 0 2px 4px rgb(40 32 16 / 0.08), 0 40px 80px -32px rgb(40 32 16 / 0.34);
+  --glow: rgb(210 160 70 / 0.14);
 }
 
 /* ============================================================

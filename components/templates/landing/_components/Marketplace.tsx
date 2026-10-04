@@ -26,7 +26,7 @@ const FILTER_FROM = 5;
  * media + nama + harga di kartu, detail lengkap di dialog.
  */
 export default function Marketplace({ t, lang }: { t: T; lang: Locale }) {
-  // katalog dari Redux — diperbarui realtime oleh PublicSync saat /admin mengubah kit
+  // katalog dari Redux — dari render server; /admin membuang cache landing saat kit berubah
   const kits = useAppSelector(selectKits);
   const [query, setQuery] = useState("");
   const [tag, setTag] = useState<string | null>(null);

@@ -505,7 +505,7 @@ Firestore ──onSnapshot──▶ lib/realtime.ts (sync hooks) ──dispatch�
 
 | Area | Sync (dipasang sekali) | Data |
 | --- | --- | --- |
-| Landing | `PublicSync` → `usePublicSync()` | kit publik, `stats/public` (tanpa login) |
+| Landing | — (statis, ISR 60 dtk + dibuang dari cache saat admin ubah kit/harga) | tanpa listener realtime, hemat ±600 KB JS |
 | Dashboard | `LiveLicenses` → `useRealtimeAuthSync()` + `useLicensesSync({ ownerUid })` | lisensi milik user |
 | Admin | `AdminSync` → auth + `useAllKitsSync` + `useStatsSync` + `useLicensesSync({ all })` | semua kit, lisensi, statistik |
 

@@ -5,6 +5,7 @@ import { DEFAULT_PLACES_PER_LICENSE, EMPTY_STATS, slugify, type Kit, type KitInp
 import { DEFAULT_PRICING, type PricingSettings } from "@/lib/pricing";
 import { deleteBlobs, videoFiles } from "./blob";
 import { removePackage } from "./packages";
+import { revalidateLanding } from "./revalidate";
 import { getPricing } from "./settings";
 import { ApiError } from "./http";
 
@@ -63,6 +64,7 @@ export async function createKit(input: KitInput): Promise<Kit> {
     createdAt: FieldValue.serverTimestamp(),
     updatedAt: FieldValue.serverTimestamp(),
   });
+  revalidateLanding();
   return (await getKit(id))!;
 }
 
@@ -77,6 +79,7 @@ export async function updateKit(id: string, patch: Partial<KitInput>): Promise<K
   if (patch.video !== undefined && before.video && before.video.url !== patch.video?.url) {
     await deleteBlobs(videoFiles(before.video));
   }
+  revalidateLanding();
   return (await getKit(id))!;
 }
 
@@ -90,6 +93,7 @@ export async function deleteKit(id: string) {
   await kitsCol().doc(id).delete();
   await deleteBlobs(videoFiles(kit.video));
   await removePackage(id);
+  revalidateLanding();
 }
 
 export async function getPublicStats(): Promise<PublicStats> {

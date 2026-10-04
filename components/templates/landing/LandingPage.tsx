@@ -12,13 +12,11 @@ import Pricing from "./_components/Pricing";
 import FAQ from "./_components/FAQ";
 import CTAFinal from "./_components/CTAFinal";
 import Footer from "./_components/Footer";
-import PublicSync from "./_components/PublicSync";
 
 export default function LandingPage(props: SectionProps) {
   return (
-    // data server jadi state awal Redux; PublicSync lalu menyambung onSnapshot
+    // data server jadi state Redux; halaman statis (ISR) — /admin membuangnya dari cache saat kit/harga berubah
     <StoreProvider preloaded={{ catalog: { kits: props.kits, live: false }, stats: props.stats, pricing: props.pricing }}>
-      <PublicSync />
       <Navbar lang={props.lang} t={props.t.nav} />
       <main>
         <Hero t={props.t} stats={props.stats} />
