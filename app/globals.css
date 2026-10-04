@@ -545,31 +545,52 @@ html:lang(th) .text-label {
 }
 
 /* ============================================================
-   9. SCROLLBAR KARTUN — thumb kuning ber-outline di atas trek krem
+   9. SCROLLBAR — kartun hanya untuk scrollbar utama halaman;
+   area scroll di dalam (dialog, tabel, kode) memakai scrollbar tipis yang tenang
    ============================================================ */
-::-webkit-scrollbar {
+html::-webkit-scrollbar {
   width: 14px;
   height: 14px;
 }
-::-webkit-scrollbar-track {
+html::-webkit-scrollbar-track {
   background: var(--surface-2);
   border-left: 2px solid var(--ink);
 }
-::-webkit-scrollbar-thumb {
+html::-webkit-scrollbar-thumb {
   background: var(--brand);
   border: 3px solid var(--surface-2);
   border-radius: 9999px;
   box-shadow: inset 0 0 0 2px var(--ink);
 }
-::-webkit-scrollbar-thumb:hover {
+html::-webkit-scrollbar-thumb:hover {
   background: var(--brand-hover);
 }
-::-webkit-scrollbar-corner {
-  background: var(--surface-2);
+/* area scroll di dalam (dialog, tabel, kode): versi ramping — thumb kuning ber-outline, trek transparan */
+body ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+body ::-webkit-scrollbar-track {
+  background: transparent;
+}
+body ::-webkit-scrollbar-thumb {
+  background: var(--brand);
+  border: 2px solid var(--ink);
+  border-radius: 9999px;
+}
+body ::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-hover);
+}
+body ::-webkit-scrollbar-corner {
+  background: transparent;
 }
 /* Firefox (tidak mendukung pseudo-element di atas) */
 @supports (-moz-appearance: none) {
   html {
     scrollbar-color: var(--brand) var(--surface-2);
+  }
+  body * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--brand) transparent;
   }
 }

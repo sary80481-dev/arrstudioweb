@@ -265,112 +265,151 @@ function KitDialog({ kit, t, lang, onClose }: { kit: Kit; t: T; lang: Locale; on
     };
   }, [onClose]);
 
+  const facts = [
+    kit.rating != null && {
+      label: "Rating",
+      value: (
+        <span className="flex items-center gap-1.5">
+          <Star size={14} strokeWidth={2.25} className="fill-brand text-ink" />
+          {kit.rating.toFixed(1)}
+          {kit.stats.activePlaces > 0 && <span className="font-semibold text-dim">· {fmt(t.liveIn, { n: kit.stats.activePlaces })}</span>}
+        </span>
+      ),
+    },
+    { label: "Version", value: <span className="font-mono">v{kit.version}</span> },
+    { label: t.licenseGoesIn, value: <span className="break-all font-mono">{kit.configPath}</span> },
+  ].filter((f) => f !== false);
+
   return createPortal(
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="kit-dialog-title"
       onClick={onClose}
-      className="fixed inset-0 z-[80] flex items-end justify-center bg-[#241a0b]/55 backdrop-blur-[3px] animate-[pagein_0.2s_ease-out] sm:items-center sm:p-6"
+      className="fixed inset-0 z-[80] flex items-end justify-center bg-[#241a0b]/60 animate-[pagein_0.2s_ease-out] sm:items-center sm:p-6"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="pop-lg relative flex max-h-[92svh] w-full max-w-3xl flex-col overflow-hidden rounded-t-panel bg-surface text-fg animate-[sheet-up_0.3s_cubic-bezier(0.2,0.7,0.2,1)] max-sm:border-b-0 sm:animate-[rise-in_0.45s_cubic-bezier(0.34,1.56,0.64,1)] sm:rounded-panel"
+        className="pop-lg relative flex max-h-[92svh] w-full max-w-5xl flex-col overflow-hidden rounded-t-panel bg-surface text-fg animate-[sheet-up_0.3s_cubic-bezier(0.2,0.7,0.2,1)] max-sm:border-b-0 sm:animate-[rise-in_0.45s_cubic-bezier(0.34,1.56,0.64,1)] sm:rounded-panel"
       >
         <button
           ref={closeRef}
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="btn-pop absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-[#fffdf7] text-[#241a0b] hover:rotate-90"
+          className="btn-pop absolute right-5 top-5 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-[#fffdf7] text-[#241a0b] hover:rotate-90 sm:right-6 sm:top-6 lg:right-6 lg:top-6"
         >
           <X size={18} strokeWidth={2.5} />
         </button>
 
-        <div className="overflow-y-auto">
-          {kit.video ? (
-            <KitVideoPlayer video={kit.video} title={kit.name} mode="view" className="aspect-video border-b-2 border-ink" />
-          ) : kit.gallery.length > 0 ? (
-            <KitSlideshow photos={kit.gallery} title={kit.name} mode="view" className="aspect-video border-b-2 border-ink" />
-          ) : (
-            <KitArt kit={kit} className="aspect-[21/9] border-b-2 border-ink" />
-          )}
-
-          <div className="grid gap-8 p-6 sm:p-8 md:grid-cols-[1fr_15rem]">
-            <div>
-              <p className="pop-sm inline-flex -rotate-2 rounded-full bg-brand px-3 py-0.5 font-display text-sm font-semibold text-on-brand">{soon ? t.comingSoon : kit.tag}</p>
-              <h3 id="kit-dialog-title" className="t-sub mt-3 text-fg">{kit.name}</h3>
-              {kit.tagline && <p className="mt-2 text-lg text-muted">{kit.tagline}</p>}
-              <p className="mt-5 text-[15px] leading-relaxed text-muted">{kit.description}</p>
-
-              {kit.features.length > 0 && (
-                <>
-                  <p className="mt-7 font-display text-lg font-semibold text-fg">{t.features}</p>
-                  <ul className="mt-3 grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
-                    {kit.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2.5 text-[15px] font-semibold text-fg">
-                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-brand text-on-brand"><Check size={12} strokeWidth={3.5} /></span> {f}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-            </div>
-
-            {/* ─── kotak beli ─── */}
-            <aside className="pop h-fit rounded-card bg-surface-2 p-5">
-              {soon ? (
-                <p className="text-display text-2xl text-fg">{t.comingSoon}</p>
+        {/* ─── ISI (scroll): kiri media + detail (menempel), kanan teks ─── */}
+        <div data-lenis-prevent className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <div className="grid lg:grid-cols-[1.1fr_1fr] lg:items-start">
+            {/* kiri */}
+            <div className="space-y-4 p-3 sm:p-4 lg:sticky lg:top-0 lg:p-6 lg:pr-3">
+              {kit.video ? (
+                <KitVideoPlayer video={kit.video} title={kit.name} mode="view" className="aspect-video overflow-hidden rounded-card border-2 border-ink" />
+              ) : kit.gallery.length > 0 ? (
+                <KitSlideshow photos={kit.gallery} title={kit.name} mode="view" className="aspect-video overflow-hidden rounded-card border-2 border-ink" />
               ) : (
-                <p className="text-display text-3xl text-fg tabular-nums">
-                  <Price price={kit.price} applied={promo} oldClassName="text-lg font-normal text-dim" />
-                </p>
+                <KitArt kit={kit} className="aspect-video rounded-card border-2 border-ink" />
               )}
-              <p className="mt-1 text-sm text-dim">
-                {soon ? fmt(t.placesPerKey, { n: kit.placesPerLicense }) : `${t.oneTime} · ${fmt(t.placesPerKey, { n: kit.placesPerLicense })}`}
-              </p>
-              {soon ? null : (
-                <>
-                  <BuyButton
-                    item={{ type: "kit", kitId: kit.id }}
-                    code={promo?.code}
-                    returnTo={`/${lang}#kit-${kit.id}`}
-                    className={buttonClass("gold", "md", "mt-5 w-full")}
-                    block
-                  >
-                    {t.buy}
-                  </BuyButton>
-                  <PromoCode item={{ type: "kit", kitId: kit.id }} applied={promo} onChange={setPromo} className="mt-3 text-center" />
-                </>
-              )}
-              <dl className="mt-5 space-y-3 text-sm">
-                {kit.rating != null && (
-                  <div className="flex items-center gap-1.5 text-fg">
-                    <Star size={14} strokeWidth={2.25} className="fill-brand text-ink" /> <b>{kit.rating.toFixed(1)}</b>
-                    {kit.stats.activePlaces > 0 && <span className="text-dim">· {fmt(t.liveIn, { n: kit.stats.activePlaces })}</span>}
+
+              <dl className="divide-y-2 divide-ink/10 rounded-card border-2 border-ink bg-surface-2 px-5 text-sm max-lg:hidden">
+                {facts.map((f) => (
+                  <div key={f.label} className="flex items-center justify-between gap-4 py-3">
+                    <dt className="shrink-0 text-label">{f.label}</dt>
+                    <dd className="text-right font-bold text-fg">{f.value}</dd>
                   </div>
-                )}
+                ))}
                 {kit.integrations.length > 0 && (
-                  <div>
+                  <div className="py-3">
                     <dt className="text-label">{t.plugsInto}</dt>
-                    <dd className="mt-1.5 flex flex-wrap gap-1.5">
+                    <dd className="mt-2 flex flex-wrap gap-1.5">
                       {kit.integrations.map((i) => (
                         <span key={i} className="rounded-full border-2 border-ink bg-surface px-2.5 py-0.5 text-xs font-bold text-fg">{i}</span>
                       ))}
                     </dd>
                   </div>
                 )}
-                <div>
-                  <dt className="text-label">{t.licenseGoesIn}</dt>
-                  <dd className="mt-1 font-mono text-[13px] text-fg">{kit.configPath}</dd>
-                </div>
-                <div>
-                  <dt className="text-label">Version</dt>
-                  <dd className="mt-1 font-mono text-[13px] text-fg">v{kit.version}</dd>
-                </div>
               </dl>
-            </aside>
+            </div>
+
+            {/* kanan */}
+            <div className="px-5 pb-8 pt-3 sm:px-8 lg:py-8 lg:pl-5 lg:pr-8">
+              <span className="pop-sm inline-flex -rotate-2 rounded-full bg-brand px-3 py-0.5 font-display text-sm font-semibold text-on-brand">
+                {soon ? t.comingSoon : kit.tag}
+              </span>
+              <h3 id="kit-dialog-title" className="t-sub mt-4 pr-12 text-fg">{kit.name}</h3>
+              {kit.tagline && <p className="mt-1.5 text-lg text-muted">{kit.tagline}</p>}
+
+              <p className="mt-6 text-base leading-relaxed text-muted">{kit.description}</p>
+
+              {kit.features.length > 0 && (
+                <div className="mt-8 border-t-2 border-ink/10 pt-6">
+                  <p className="text-label">{t.features}</p>
+                  <ul className="mt-3.5 grid gap-3">
+                    {kit.features.map((f) => (
+                      <li key={f} className="flex items-start gap-3 text-[15px] font-semibold text-fg">
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-brand text-on-brand">
+                          <Check size={11} strokeWidth={3.5} />
+                        </span>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* detail versi HP (di layar lebar ada di kolom kiri) */}
+              <dl className="mt-8 divide-y-2 divide-ink/10 rounded-card border-2 border-ink bg-surface-2 px-5 text-sm lg:hidden">
+                {facts.map((f) => (
+                  <div key={f.label} className="flex items-center justify-between gap-4 py-3">
+                    <dt className="shrink-0 text-label">{f.label}</dt>
+                    <dd className="text-right font-bold text-fg">{f.value}</dd>
+                  </div>
+                ))}
+                {kit.integrations.length > 0 && (
+                  <div className="py-3">
+                    <dt className="text-label">{t.plugsInto}</dt>
+                    <dd className="mt-2 flex flex-wrap gap-1.5">
+                      {kit.integrations.map((i) => (
+                        <span key={i} className="rounded-full border-2 border-ink bg-surface px-2.5 py-0.5 text-xs font-bold text-fg">{i}</span>
+                      ))}
+                    </dd>
+                  </div>
+                )}
+              </dl>
+            </div>
           </div>
+        </div>
+
+        {/* ─── BAR BELI (selalu terlihat): harga + promo kiri, tombol kanan ─── */}
+        <div className="flex items-center justify-between gap-4 border-t-2 border-ink bg-surface-2 px-5 py-3.5 pb-[max(0.875rem,env(safe-area-inset-bottom))] sm:px-8 sm:py-4">
+          <div className="min-w-0">
+            {soon ? (
+              <p className="t-card text-fg">{t.comingSoon}</p>
+            ) : (
+              <p className="font-display text-xl font-bold text-fg tabular-nums sm:text-2xl">
+                <Price price={kit.price} applied={promo} oldClassName="text-sm font-semibold text-dim" />
+              </p>
+            )}
+            <p className="mt-0.5 truncate text-xs font-bold text-dim">
+              {soon ? fmt(t.placesPerKey, { n: kit.placesPerLicense }) : `${t.oneTime} · ${fmt(t.placesPerKey, { n: kit.placesPerLicense })}`}
+            </p>
+            {!soon && <PromoCode item={{ type: "kit", kitId: kit.id }} applied={promo} onChange={setPromo} className="mt-1.5" />}
+          </div>
+          {!soon && (
+            <BuyButton
+              item={{ type: "kit", kitId: kit.id }}
+              code={promo?.code}
+              returnTo={`/${lang}#kit-${kit.id}`}
+              className={buttonClass("gold", "lg", "min-w-28 sm:min-w-44")}
+              wrapperClassName="flex shrink-0 flex-col items-end gap-1.5"
+            >
+              {t.buy}
+            </BuyButton>
+          )}
         </div>
       </div>
     </div>,
