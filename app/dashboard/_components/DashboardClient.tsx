@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  ArrowUpRight, BookOpen, Check, ChevronDown, Copy, Download, KeyRound, Loader2, Lock, LogOut, MoreHorizontal, Plus, Radio, Sparkles, Users, X,
+  ArrowUpRight, BookOpen, Check, Copy, Download, KeyRound, Loader2, Lock, LogOut, MoreHorizontal, Plus, Radio, Sparkles, Users, X,
 } from "lucide-react";
 import { KitIcon } from "@/components/common/KitIcon";
 import { isLocked, type InstallmentDto } from "@/lib/installment";
@@ -236,6 +236,8 @@ export function LiveLicenses({
 /* ============================================================
    KARTU LISENSI
    ============================================================ */
+type Tab = "payment" | "places" | "activity";
+
 function LicenseCard({
   license,
   kit,
@@ -253,6 +255,26 @@ function LicenseCard({
   const outdated = older(license.lastKitVersion, kit?.version ?? null);
   const inst = license.installment;
   const locked = isLocked(license);
+  const pct = inst ? Math.min(100, Math.round((inst.paid / inst.total) * 100)) : 100;
+
+  const tabs: { id: Tab; label: string; badge?: string; alert?: boolean }[] = [
+    ...(inst ? [{ id: "payment" as const, label: "Payment", badge: locked ? `${pct}%` : "Paid", alert: locked }] : []),
+    { id: "places", label: "Places", badge: `${used}/${license.maxPlaces}` },
+    { id: "activity", label: "Activity" },
+  ];
+  // belum lunas → buka tab Payment dulu; selebihnya Places
+  const [picked, setPicked] = useState<Tab>(locked ? "payment" : "places");
+  const tab = tabs.some((t) => t.id === picked) ? picked : tabs[0].id;
+
+  const onTabKey = (e: React.KeyboardEvent) => {
+    const i = tabs.findIndex((t) => t.id === tab);
+    const next = e.key === "ArrowRight" ? i + 1 : e.key === "ArrowLeft" ? i - 1 : null;
+    if (next === null) return;
+    e.preventDefault();
+    const target = tabs[(next + tabs.length) % tabs.length];
+    setPicked(target.id);
+    document.getElementById(`${license.key}-tab-${target.id}`)?.focus();
+  };
 
   const status = revoked
     ? { label: "Revoked", cls: "bg-red-500/10 text-red-500" }
@@ -263,233 +285,259 @@ function LicenseCard({
         : { label: "Not used yet", cls: "bg-bg text-muted" };
 
   return (
-    <article className={`overflow-hidden rounded-[24px] bg-surface-2 sm:rounded-[28px] ${revoked ? "opacity-70" : ""}`}>
-      {/* ─── KEPALA ─── */}
-      <div className="relative isolate overflow-hidden px-5 pb-5 pt-5 sm:px-8 sm:pb-6 sm:pt-7">
+    <article className={`grid overflow-hidden rounded-[24px] bg-surface-2 sm:rounded-[28px] lg:grid-cols-[minmax(0,340px)_1fr] ${revoked ? "opacity-70" : ""}`}>
+      {/* ═══ KIRI: identitas, key, unduh ═══ */}
+      <aside className="relative isolate flex flex-col gap-5 overflow-hidden p-5 sm:p-6 lg:border-r lg:border-line">
         {kit?.poster && (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element -- poster dari Vercel Blob, sudah webp kecil */}
             <img src={kit.poster} alt="" aria-hidden className="absolute inset-0 -z-20 h-full w-full object-cover opacity-20" />
-            <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-surface-2/70 via-surface-2/90 to-surface-2" />
+            <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-surface-2/60 via-surface-2/90 to-surface-2" />
           </>
         )}
-        <div className="flex items-start gap-3.5 sm:gap-4">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-bg text-gold sm:h-14 sm:w-14 sm:rounded-[18px]">
+
+        <div className="flex items-start gap-3.5">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-bg text-gold">
             <KitIcon icon={kit?.icon ?? "sparkles"} size={24} strokeWidth={1.6} />
           </span>
           <div className="min-w-0 flex-1">
-            <h2 className="truncate text-xl font-semibold tracking-[-0.025em] text-fg sm:text-2xl">{license.kitName}</h2>
+            <h2 className="truncate text-xl font-semibold tracking-[-0.025em] text-fg">{license.kitName}</h2>
             <p className="mt-0.5 truncate text-sm text-muted">{kit?.tagline || "License"}</p>
             <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
               <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${status.cls}`}>{status.label}</span>
               {outdated && !revoked && !locked && (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-gold-soft px-2.5 py-1 text-xs text-gold">
-                  <Sparkles size={12} /> v{kit?.version} available
+                  <Sparkles size={12} /> v{kit?.version}
                 </span>
               )}
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="space-y-4 px-5 pb-5 sm:px-8 sm:pb-6">
-        {/* ─── BELUM LUNAS: pembayaran + key terkunci ─── */}
-        {!revoked && inst && locked && <PaymentPanel installment={inst} />}
-
-        {/* ─── KEY ─── */}
-        {locked ? (
-          <div className="flex items-center gap-3 rounded-2xl border border-dashed border-line-strong p-3 pl-4 opacity-80 sm:rounded-[20px]">
-            <Lock size={16} className="shrink-0 text-dim" />
-            <code className="min-w-0 flex-1 truncate font-mono text-[15px] tracking-wide text-dim sm:text-lg">ARR-••••-••••-••••</code>
-            <span className="shrink-0 rounded-full bg-bg px-3 py-1.5 text-xs text-dim">Locked</span>
-          </div>
-        ) : (
-          <div className="rounded-2xl bg-bg p-3 sm:rounded-[20px] sm:p-2 sm:pl-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <code className="min-w-0 flex-1 break-all px-1 font-mono text-[15px] tracking-wide text-fg sm:py-1.5 sm:text-lg md:text-xl">{license.key}</code>
-              <div className="grid grid-cols-2 gap-1.5 sm:flex">
+        {/* KEY */}
+        <div>
+          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-dim">License key</p>
+          {locked ? (
+            <div className="flex items-center gap-2.5 rounded-2xl border border-dashed border-line-strong p-3 pl-3.5">
+              <Lock size={15} className="shrink-0 text-dim" />
+              <code className="min-w-0 flex-1 truncate font-mono text-[15px] tracking-wide text-dim">ARR-••••-••••-••••</code>
+            </div>
+          ) : (
+            <div className="rounded-2xl bg-bg p-3">
+              <code className="block break-all px-1 py-1 font-mono text-[15px] tracking-wide text-fg">{license.key}</code>
+              <div className="mt-2 grid grid-cols-2 gap-1.5">
                 <CopyButton text={license.key} label="Copy key" className="justify-center bg-surface-2! py-2" />
                 <CopyButton text={`LicenseKey = "${license.key}",`} label="Config line" className="justify-center bg-surface-2! py-2" />
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* ─── UNDUH ─── */}
+        {/* UNDUH */}
         {!revoked && (
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="mt-auto">
             {locked ? (
-              <span className={buttonClass("outline", "md", "pointer-events-none text-muted! max-sm:w-full")}>
-                <Lock size={15} /> Download unlocks when fully paid
-              </span>
+              <button type="button" onClick={() => setPicked("payment")} className={buttonClass("gold", "md", "w-full")}>
+                <Lock size={15} /> Unlock — {formatIDR(inst!.remaining)} left
+              </button>
             ) : downloadable ? (
-              <a href={`/api/kits/${encodeURIComponent(license.kit)}/download`} download className={buttonClass("gold", "md", "max-sm:w-full")}>
+              <a href={`/api/kits/${encodeURIComponent(license.kit)}/download`} download className={buttonClass("gold", "md", "w-full")}>
                 <Download size={16} /> Download .rbxm
               </a>
             ) : (
-              <span className={buttonClass("outline", "md", "pointer-events-none text-muted! max-sm:w-full")}>
+              <span className={buttonClass("outline", "md", "pointer-events-none w-full text-muted!")}>
                 <Download size={16} /> File coming soon
               </span>
             )}
-            {!locked && (
-              <p className="text-[13px] text-dim">
-                Paste the key into <code className="font-mono text-muted">Config</code>, then publish.
-              </p>
-            )}
+            <p className="mt-2.5 text-center text-xs text-dim">
+              {locked ? "Key, file and places unlock when fully paid." : <>Paste the key into <code className="font-mono text-muted">Config</code>, then publish.</>}
+            </p>
           </div>
         )}
+      </aside>
 
-        {/* riwayat cicilan yang sudah lunas */}
-        {!revoked && inst && !locked && inst.payments.length > 0 && (
-          <details className="group rounded-2xl bg-bg px-4 py-3 text-sm">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-muted [&::-webkit-details-marker]:hidden">
-              <span className="inline-flex items-center gap-2"><Check size={14} className="text-green" /> Paid in full · {formatIDR(inst.total)}</span>
-              <ChevronDown size={15} className="transition-transform group-open:rotate-180" />
-            </summary>
-            <PaymentHistory payments={inst.payments} />
-          </details>
-        )}
-      </div>
-
-      {/* ─── PLACES ─── */}
-      <div className="px-5 pb-5 sm:px-8 sm:pb-6">
-        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-          <h3 className="text-[17px] font-semibold tracking-[-0.01em] text-fg">Places</h3>
-          <p className="text-sm text-muted">
-            <span className="tabular-nums text-fg">{used}</span> of {license.maxPlaces} used
-            {free > 0 && !revoked && !locked && <> · {free} free</>}
-          </p>
+      {/* ═══ KANAN: tab ═══ */}
+      <div className="flex min-w-0 flex-col">
+        <div role="tablist" aria-label={`${license.kitName} sections`} onKeyDown={onTabKey} className="flex gap-1 overflow-x-auto border-b border-line px-3 pt-3 sm:px-5 sm:pt-4">
+          {tabs.map((t) => {
+            const on = t.id === tab;
+            return (
+              <button
+                key={t.id}
+                id={`${license.key}-tab-${t.id}`}
+                role="tab"
+                type="button"
+                aria-selected={on}
+                aria-controls={`${license.key}-panel-${t.id}`}
+                tabIndex={on ? 0 : -1}
+                onClick={() => setPicked(t.id)}
+                className={`relative flex shrink-0 items-center gap-2 rounded-t-xl px-3.5 py-2.5 text-sm font-medium transition-colors sm:px-4 ${
+                  on ? "text-fg" : "text-muted hover:text-fg"
+                }`}
+              >
+                {t.label}
+                {t.badge && (
+                  <span className={`rounded-full px-2 py-0.5 text-[11px] tabular-nums ${t.alert ? "bg-gold-soft text-gold" : "bg-bg text-muted"}`}>{t.badge}</span>
+                )}
+                <span aria-hidden className={`absolute inset-x-3 -bottom-px h-0.5 rounded-full bg-gold transition-opacity ${on ? "opacity-100" : "opacity-0"}`} />
+              </button>
+            );
+          })}
         </div>
 
-        {locked ? (
-          <p className="mt-3 flex items-start gap-2.5 rounded-2xl border border-dashed border-line-strong p-4 text-[13px] leading-relaxed text-dim">
-            <Lock size={14} className="mt-0.5 shrink-0" />
-            Places can be added once this license is fully paid. The kit won&apos;t pass its license check until then.
-          </p>
-        ) : (
-          <>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {license.places.map((p) => (
-                <PlaceCard key={p} license={license} placeId={p} info={places[p]} canRemove={!revoked} />
-              ))}
-              {!revoked && Array.from({ length: free }, (_, i) => <AddPlace key={`free-${i}`} license={license} first={i === 0} />)}
-            </div>
-            {!revoked && (
+        <div role="tabpanel" id={`${license.key}-panel-${tab}`} aria-labelledby={`${license.key}-tab-${tab}`} className="flex-1 p-5 sm:p-6">
+          {tab === "payment" && inst && <PaymentTab installment={inst} pct={pct} locked={locked} />}
+
+          {tab === "places" &&
+            (locked ? (
+              <div className="flex flex-col items-center rounded-2xl border border-dashed border-line-strong px-6 py-10 text-center">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-bg text-dim"><Lock size={18} /></span>
+                <p className="mt-4 font-medium text-fg">Places are locked</p>
+                <p className="mt-1 max-w-xs text-[13px] leading-relaxed text-muted">
+                  You can add places once this license is fully paid. Until then the kit won&apos;t pass its license check.
+                </p>
+                <button type="button" onClick={() => setPicked("payment")} className={buttonClass("outline", "sm", "mt-4")}>View payment</button>
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                  <h3 className="text-[15px] font-semibold text-fg">Where this key runs</h3>
+                  <p className="text-sm text-muted">
+                    <span className="tabular-nums text-fg">{used}</span> of {license.maxPlaces} used
+                    {free > 0 && !revoked && <> · {free} free</>}
+                  </p>
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {license.places.map((p) => (
+                    <PlaceCard key={p} license={license} placeId={p} info={places[p]} canRemove={!revoked} />
+                  ))}
+                  {!revoked && Array.from({ length: free }, (_, i) => <AddPlace key={`free-${i}`} license={license} first={i === 0} />)}
+                </div>
+                {!revoked && (
+                  <p className="mt-4 text-[13px] leading-relaxed text-dim">
+                    A new place also links itself the first time its server starts with this key.
+                    {license.releaseAvailableAt && <> You can remove a place again {ago(license.releaseAvailableAt)}.</>}
+                  </p>
+                )}
+              </>
+            ))}
+
+          {tab === "activity" && (
+            <>
+              <dl className="grid gap-3 sm:grid-cols-3">
+                {[
+                  ["Last check", ago(license.lastVerifiedAt), fullDate(license.lastVerifiedAt)],
+                  ["Installed", license.lastKitVersion ? `v${license.lastKitVersion}` : "—", ""],
+                  ["Total checks", compact(license.verifyCount), ""],
+                ].map(([label, value, title]) => (
+                  <div key={label} className="rounded-2xl bg-bg px-4 py-3.5">
+                    <dt className="text-xs text-dim">{label}</dt>
+                    <dd className="mt-1 truncate text-lg font-semibold text-fg" title={title}>{value}</dd>
+                  </div>
+                ))}
+              </dl>
+              {outdated && !revoked && !locked && (
+                <p className="mt-4 flex items-start gap-2.5 rounded-2xl bg-gold-soft p-4 text-[13px] leading-relaxed text-gold">
+                  <Sparkles size={15} className="mt-0.5 shrink-0" />
+                  Version v{kit?.version} is available — download the latest file and replace the kit in your places.
+                </p>
+              )}
               <p className="mt-4 text-[13px] leading-relaxed text-dim">
-                A new place also links itself the first time its server starts with this key.
-                {license.releaseAvailableAt && <> You can remove a place again {ago(license.releaseAvailableAt)}.</>}
+                {locked ? "No checks yet — the license check starts working once this license is fully paid." : "The kit checks this license each time a game server starts."}
               </p>
-            )}
-          </>
-        )}
+            </>
+          )}
+        </div>
       </div>
-
-      {/* ─── KAKI: status teknis ─── */}
-      <dl className="grid grid-cols-3 gap-3 bg-bg/40 px-5 py-4 text-sm sm:gap-4 sm:px-8">
-        <div className="min-w-0">
-          <dt className="text-dim">Last check</dt>
-          <dd className="mt-0.5 truncate text-fg" title={fullDate(license.lastVerifiedAt)}>{ago(license.lastVerifiedAt)}</dd>
-        </div>
-        <div className="min-w-0">
-          <dt className="text-dim">Installed</dt>
-          <dd className="mt-0.5 truncate font-mono text-fg">{license.lastKitVersion ? `v${license.lastKitVersion}` : "—"}</dd>
-        </div>
-        <div className="min-w-0">
-          <dt className="text-dim">Checks</dt>
-          <dd className="mt-0.5 truncate font-mono text-fg">{compact(license.verifyCount)}</dd>
-        </div>
-      </dl>
     </article>
   );
 }
 
-/* ─── CICILAN: progres, sisa, langkah berikutnya ─── */
-function PaymentPanel({ installment: inst }: { installment: InstallmentDto }) {
-  const pct = Math.min(100, Math.round((inst.paid / inst.total) * 100));
+/* ─── TAB PEMBAYARAN: ringkasan, langkah, riwayat ─── */
+function PaymentTab({ installment: inst, pct, locked }: { installment: InstallmentDto; pct: number; locked: boolean }) {
   const steps = [
-    ["Transfer", "Pay the next installment."],
-    ["Send proof", "Share the transfer receipt with us on Discord."],
-    ["Unlocked", "We confirm it and everything opens up here."],
+    ["Transfer", "Pay the next installment"],
+    ["Send proof", "Share the receipt on Discord"],
+    ["Unlocked", "We confirm — everything opens"],
   ];
+  const R = 38;
+  const C = 2 * Math.PI * R;
 
   return (
-    <section className="rounded-2xl bg-bg p-4 sm:rounded-[20px] sm:p-6" aria-label="Installment payment">
-      <div className="flex items-start gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold-soft text-gold">
-          <Lock size={16} />
-        </span>
-        <div className="min-w-0">
-          <h3 className="text-base font-semibold text-fg sm:text-lg">Finish your payment to unlock</h3>
-          <p className="mt-0.5 text-[13px] leading-relaxed text-muted sm:text-sm">
-            Your key, kit file and places open as soon as the last installment is confirmed.
-          </p>
+    <div className="space-y-5">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+        {/* cincin progres */}
+        <div className="relative mx-auto h-28 w-28 shrink-0 sm:mx-0" role="img" aria-label={`${pct}% paid`}>
+          <svg viewBox="0 0 100 100" className="-rotate-90">
+            <circle cx="50" cy="50" r={R} fill="none" strokeWidth="9" className="stroke-bg" />
+            <circle
+              cx="50"
+              cy="50"
+              r={R}
+              fill="none"
+              strokeWidth="9"
+              strokeLinecap="round"
+              strokeDasharray={C}
+              strokeDashoffset={C * (1 - pct / 100)}
+              className={`${locked ? "stroke-gold" : "stroke-green"} transition-[stroke-dashoffset] duration-700`}
+            />
+          </svg>
+          <span className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-display text-2xl text-fg tabular-nums">{pct}%</span>
+            <span className="text-[11px] text-dim">paid</span>
+          </span>
         </div>
+
+        <dl className="grid flex-1 grid-cols-3 gap-2 sm:gap-3">
+          {[
+            ["Total", formatIDR(inst.total), "text-fg"],
+            ["Paid", formatIDR(inst.paid), "text-green"],
+            ["Remaining", formatIDR(inst.remaining), locked ? "text-gold" : "text-dim"],
+          ].map(([label, value, tone]) => (
+            <div key={label} className="min-w-0 rounded-2xl bg-bg px-3 py-3 sm:px-4">
+              <dt className="text-[11px] text-dim sm:text-xs">{label}</dt>
+              <dd className={`mt-1 truncate text-[13px] font-semibold tabular-nums sm:text-base ${tone}`}>{value}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
 
-      <div className="mt-5">
-        <div className="flex items-baseline justify-between gap-3">
-          <span className="text-display text-3xl text-fg tabular-nums sm:text-4xl">{pct}%</span>
-          <span className="text-[13px] text-muted">paid</span>
-        </div>
-        <div
-          className="mt-2 h-2.5 overflow-hidden rounded-full bg-surface-2"
-          role="progressbar"
-          aria-label="Amount paid"
-          aria-valuenow={pct}
-          aria-valuemin={0}
-          aria-valuemax={100}
-        >
-          <div className="h-full rounded-full bg-gold-grad transition-[width] duration-500" style={{ width: `${pct}%` }} />
-        </div>
-      </div>
-
-      <dl className="mt-4 grid grid-cols-3 gap-2 text-center sm:gap-3 sm:text-left">
-        {[
-          ["Total", formatIDR(inst.total), "text-fg"],
-          ["Paid", formatIDR(inst.paid), "text-green"],
-          ["Remaining", formatIDR(inst.remaining), "text-gold"],
-        ].map(([label, value, tone]) => (
-          <div key={label} className="min-w-0 rounded-xl bg-surface-2 px-2 py-2.5 sm:px-4 sm:py-3">
-            <dt className="text-[11px] text-dim sm:text-xs">{label}</dt>
-            <dd className={`mt-0.5 truncate text-[13px] font-semibold tabular-nums sm:text-base ${tone}`}>{value}</dd>
-          </div>
-        ))}
-      </dl>
-
-      <ol className="mt-5 grid gap-3 sm:grid-cols-3">
-        {steps.map(([title, text], i) => (
-          <li key={title} className="flex items-start gap-3">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-2 text-xs font-semibold text-fg">{i + 1}</span>
-            <span className="min-w-0 text-[13px] leading-snug text-muted">
-              <span className="block font-medium text-fg">{title}</span>
-              {text}
-            </span>
-          </li>
-        ))}
-      </ol>
-
-      <a href={DISCORD_INVITE} target="_blank" rel="noreferrer" className={buttonClass("gold", "md", "mt-5 w-full sm:w-auto")}>
-        Send proof on Discord <ArrowUpRight size={16} />
-      </a>
-
-      {inst.payments.length > 0 && (
-        <details className="group mt-4 border-t border-line pt-3 text-sm">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-muted [&::-webkit-details-marker]:hidden">
-            Payment history ({inst.payments.length})
-            <ChevronDown size={15} className="transition-transform group-open:rotate-180" />
-          </summary>
-          <PaymentHistory payments={inst.payments} />
-        </details>
+      {locked ? (
+        <>
+          <ol className="grid gap-2 sm:grid-cols-3">
+            {steps.map(([title, text], i) => (
+              <li key={title} className={`flex items-start gap-3 rounded-2xl p-3.5 ${i === 0 ? "bg-gold-soft" : "bg-bg"}`}>
+                <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${i === 0 ? "bg-gold text-on-gold" : "bg-surface-2 text-fg"}`}>{i + 1}</span>
+                <span className="min-w-0 text-[13px] leading-snug text-muted">
+                  <span className="block font-medium text-fg">{title}</span>
+                  {text}
+                </span>
+              </li>
+            ))}
+          </ol>
+          <a href={DISCORD_INVITE} target="_blank" rel="noreferrer" className={buttonClass("gold", "md", "w-full sm:w-auto")}>
+            Send proof on Discord <ArrowUpRight size={16} />
+          </a>
+        </>
+      ) : (
+        <p className="flex items-center gap-2 rounded-2xl bg-green/10 p-3.5 text-sm text-green">
+          <Check size={16} /> Paid in full — everything is unlocked.
+        </p>
       )}
-    </section>
+
+      <div>
+        <h3 className="mb-1 text-[15px] font-semibold text-fg">Payment history</h3>
+        {inst.payments.length > 0 ? <PaymentHistory payments={inst.payments} /> : <p className="text-[13px] text-dim">No payments confirmed yet.</p>}
+      </div>
+    </div>
   );
 }
 
 function PaymentHistory({ payments }: { payments: InstallmentDto["payments"] }) {
   return (
-    <ul className="mt-3 divide-y divide-line text-[13px]">
+    <ul className="divide-y divide-line text-[13px]">
       {payments.map((p, i) => (
-        <li key={i} className="flex items-baseline justify-between gap-3 py-2">
+        <li key={i} className="flex items-baseline justify-between gap-3 py-2.5">
           <span className="min-w-0 text-muted">
             <span className="block text-fg">{p.note || "Payment"}</span>
             <span className="text-xs text-dim">{fullDate(p.at)}</span>
