@@ -1,5 +1,6 @@
 import type { SectionProps } from "@/components/type/landing";
 import { DISCORD_INVITE } from "@/lib/links";
+import CookieSettingsLink from "@/components/common/CookieSettingsLink";
 import { STUDIO_URL } from "../_data/landing";
 import { Container, Logo, buttonClass } from "./ui";
 
@@ -85,6 +86,7 @@ export default function Footer({ lang, t: { footer: t, nav } }: SectionProps) {
             {Object.values(t.legal).map((l) => (
               <li key={l}><a href="#" className="transition-colors hover:text-fg">{l}</a></li>
             ))}
+            <li><CookieSettingsLink lang={lang} /></li>
           </ul>
         </div>
       </Container>

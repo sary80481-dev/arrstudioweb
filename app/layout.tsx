@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import CookieConsent from "@/components/common/CookieConsent";
 import { themeScript } from "@/components/theme/theme";
 import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
@@ -33,7 +34,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* set tema sebelum paint — cegah flash */}
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <CookieConsent />
+      </body>
     </html>
   );
 }

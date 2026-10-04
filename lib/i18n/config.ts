@@ -44,5 +44,11 @@ export const fmt = (s: string, vars: Record<string, string | number>) =>
 
 /** Simpan pilihan bahasa agar proxy mengarahkan "/" ke bahasa ini */
 export function rememberLocale(locale: Locale) {
+  // cookie preferensi: hanya bila pengunjung menerima (lihat lib/consent.ts)
+  try {
+    if (localStorage.getItem("arr_consent") !== "all") return;
+  } catch {
+    return;
+  }
   document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=31536000; SameSite=Lax`;
 }
