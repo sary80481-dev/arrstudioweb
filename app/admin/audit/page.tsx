@@ -1,4 +1,5 @@
 import { listAudit } from "@/lib/server/audit";
+import { adminPageGuard } from "@/lib/server/session";
 import { Card, PageHeader } from "../_components/fields";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +18,7 @@ const LABEL: Record<string, string> = {
 };
 
 export default async function AdminAuditPage() {
+  await adminPageGuard();
   const entries = await listAudit().catch(() => null);
   return (
     <>

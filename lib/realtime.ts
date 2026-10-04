@@ -23,7 +23,8 @@ import { selectRealtime, useAppDispatch, useAppSelector } from "./store/store";
 const byOrder = (a: Kit, b: Kit) => a.order - b.order || a.name.localeCompare(b.name);
 
 /* ─── LOGIN: sambungkan Firebase di browser dengan custom token dari sesi server ─── */
-export function useRealtimeAuthSync() {
+/** `requireRole`: admin harus punya klaim "admin" (baru ada setelah lulus 2FA) — klaim lama "user" diganti token baru */
+export function useRealtimeAuthSync(requireRole?: string) {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -36,7 +37,8 @@ export function useRealtimeAuthSync() {
 
     return onAuthStateChanged(auth, async (user) => {
       // custom token membawa claim `role` yang dipakai firestore.rules
-      const hasRole = user ? Boolean((await user.getIdTokenResult()).claims.role) : false;
+      const claim = user ? (await user.getIdTokenResult()).claims.role : undefined;
+      const hasRole = requireRole ? claim === requireRole : Boolean(claim);
       if (user && hasRole) return void dispatch(connected(user.uid));
       if (requested) return;
       requested = true;
@@ -50,7 +52,7 @@ export function useRealtimeAuthSync() {
         dispatch(connectionFailed((err as Error).message));
       }
     });
-  }, [dispatch]);
+  }, [dispatch, requireRole]);
 }
 
 /** Lisensi realtime — milik sendiri (`ownerUid`) atau semua (admin) */

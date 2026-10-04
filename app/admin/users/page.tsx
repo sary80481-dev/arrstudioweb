@@ -1,4 +1,4 @@
-import { currentUser } from "@/lib/server/session";
+import { adminPageGuard, currentUser } from "@/lib/server/session";
 import { listUsers } from "@/lib/server/users";
 import UsersManager from "./UsersManager";
 
@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminUsersPage() {
   // layout /admin sudah memastikan hanya admin yang sampai sini
+  await adminPageGuard();
   const [users, me] = await Promise.all([listUsers().catch(() => null), currentUser()]);
   return <UsersManager users={users} selfUid={me?.uid ?? ""} />;
 }

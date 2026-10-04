@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { adminAuth } from "@/lib/firebase/admin";
 import { ApiError } from "./http";
+import { assertMfa, clearMfaCookie, mfaPassed } from "./mfa";
 import { getUser, type UserDto } from "./users";
 
 export const SESSION_COOKIE = "__session";
@@ -81,6 +82,7 @@ export async function destroySession() {
   const cookie = store.get(SESSION_COOKIE)?.value;
   store.delete(SESSION_COOKIE);
   store.delete(AUTH_HINT_COOKIE);
+  await clearMfaCookie();
   if (cookie) {
     // cabut semua refresh token → logout juga di perangkat lain yang memakai sesi ini
     const decoded = await adminAuth().verifySessionCookie(cookie).catch(() => null);
@@ -112,8 +114,19 @@ export async function requireUser(req?: Request): Promise<UserDto> {
   return user;
 }
 
-export async function requireAdmin(req?: Request): Promise<UserDto> {
+/** `mfa: false` hanya untuk endpoint pendaftaran/verifikasi 2FA itu sendiri */
+export async function requireAdmin(req?: Request, opts: { mfa?: boolean } = {}): Promise<UserDto> {
   const user = await requireUser(req);
   if (user.role !== "admin") throw new ApiError(403, "FORBIDDEN", "Admin access required.");
+  if (opts.mfa !== false) await assertMfa(user.uid);
+  return user;
+}
+
+/** Jaga halaman admin yang mengambil data di server (layout saja tidak cukup: tidak dijalankan ulang saat navigasi client) */
+export async function adminPageGuard(): Promise<UserDto> {
+  const user = await currentUser();
+  if (!user) return redirectToLogin();
+  if (user.role !== "admin") redirect("/dashboard");
+  if (!(await mfaPassed(user.uid))) redirect("/admin");
   return user;
 }

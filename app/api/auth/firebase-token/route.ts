@@ -1,5 +1,6 @@
 import { adminAuth } from "@/lib/firebase/admin";
 import { handle, json } from "@/lib/server/http";
+import { mfaPassed } from "@/lib/server/mfa";
 import { requireUser, setAuthHint } from "@/lib/server/session";
 
 /**
@@ -9,7 +10,9 @@ import { requireUser, setAuthHint } from "@/lib/server/session";
  */
 export const GET = handle(async (req: Request) => {
   const user = await requireUser(req);
-  const token = await adminAuth().createCustomToken(user.uid, { role: user.role });
+  // klaim `role: admin` (membuka seluruh data lewat Firestore realtime) hanya diberikan setelah lulus 2FA
+  const role = user.role === "admin" && (await mfaPassed(user.uid)) ? "admin" : "user";
+  const token = await adminAuth().createCustomToken(user.uid, { role });
   // segarkan juga cookie petunjuk navbar (nama / role bisa berubah)
   await setAuthHint(user);
   return json({ token });

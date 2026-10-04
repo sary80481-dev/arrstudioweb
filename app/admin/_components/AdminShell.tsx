@@ -19,7 +19,7 @@ import { selectRealtime, useAppSelector } from "@/lib/store/store";
 
 /** Semua listener realtime admin dipasang sekali di sini → Redux store */
 function AdminSync() {
-  useRealtimeAuthSync();
+  useRealtimeAuthSync("admin");
   useAllKitsSync();
   useStatsSync();
   usePricingSync();
