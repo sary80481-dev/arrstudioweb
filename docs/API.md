@@ -321,6 +321,12 @@ Jumlah lisensi di kit & statistik publik ikut berkurang.
 
 ---
 
+#### Diskon
+
+- `POST /api/checkout/discount` — body `{ item, code }`; pratinjau potongan (`originalAmount`, `discount`, `amount`) tanpa membuat order.
+- `POST /api/checkout` menerima `code` opsional; harga akhir selalu dihitung ulang di server. Pemakaian kode (`usedCount`) bertambah saat order lunas.
+- `GET|POST /api/admin/discounts`, `PATCH|DELETE /api/admin/discounts/:code` — kelola kode (koleksi Firestore `discounts/{KODE}`: `type` percent|fixed, `value`, `appliesTo` all|kit|bundle, `active`, `maxUses`, `expiresAt`).
+
 ## 5. Integrasi Roblox
 
 File siap pakai ada di folder `roblox/`:

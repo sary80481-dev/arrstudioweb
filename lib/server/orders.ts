@@ -2,11 +2,13 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import { FieldValue, type Timestamp } from "firebase-admin/firestore";
 import { db } from "@/lib/firebase/admin";
+import { MIN_CHARGE } from "@/lib/discount";
 import { ApiError } from "./http";
 import { issueLicenses } from "./licenses";
 import { getKit, listKits } from "./kits";
 import { outcomeOf, getTransactionStatus, type MidtransStatus } from "./midtrans";
 import { getPricing } from "./settings";
+import { recordDiscountUse, resolveDiscount } from "./discounts";
 
 /* ============================================================
    Order pembelian. Harga SELALU dihitung ulang di server dari Firestore —
@@ -33,7 +35,12 @@ interface OrderDoc {
   ownerEmail: string;
   item: OrderItem;
   title: string;
+  /** total yang ditagihkan (setelah diskon) */
   amount: number;
+  /** harga sebelum diskon & potongannya; kosong di order lama */
+  originalAmount?: number;
+  discountCode?: string | null;
+  discountAmount?: number;
   lines: Line[];
   status: OrderStatus;
   paymentType: string | null;
@@ -91,9 +98,17 @@ async function price(item: OrderItem): Promise<{ title: string; amount: number; 
   };
 }
 
-export async function createOrder(item: OrderItem, owner: { uid: string; email: string }) {
-  const { title, amount, lines } = await price(item);
-  if (amount < 1000) throw new ApiError(400, "INVALID_AMOUNT", "This item has no price set.");
+/** Harga item + potongan kode (kalau ada) — dipakai checkout & pratinjau kode di UI */
+export async function quote(item: OrderItem, code?: string | null) {
+  const priced = await price(item);
+  if (priced.amount < MIN_CHARGE) throw new ApiError(400, "INVALID_AMOUNT", "This item has no price set.");
+  const d = code?.trim() ? await resolveDiscount(code, item.type, priced.amount) : null;
+  const discount = d?.amount ?? 0;
+  return { ...priced, originalAmount: priced.amount, discountCode: d?.code ?? null, discount, amount: priced.amount - discount };
+}
+
+export async function createOrder(item: OrderItem, owner: { uid: string; email: string }, code?: string | null) {
+  const { title, amount, originalAmount, discountCode, discount, lines } = await quote(item, code);
   const orderId = newOrderId();
   await orders().doc(orderId).set({
     orderId,
@@ -102,6 +117,9 @@ export async function createOrder(item: OrderItem, owner: { uid: string; email: 
     item,
     title,
     amount,
+    originalAmount,
+    discountCode,
+    discountAmount: discount,
     lines,
     status: "pending",
     paymentType: null,
@@ -160,6 +178,7 @@ export async function applyPayment(status: MidtransStatus): Promise<OrderDto | n
       );
     }
     await ref.update({ status: "paid", licenseKeys: keys, paidAt: FieldValue.serverTimestamp() });
+    if (claimed.discountCode) await recordDiscountUse(claimed.discountCode);
   }
 
   const after = await ref.get();

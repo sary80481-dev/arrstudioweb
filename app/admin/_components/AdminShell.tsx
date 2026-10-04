@@ -4,7 +4,8 @@ import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  AlertTriangle, ArrowUpRight, BadgeDollarSign, BookOpen, Globe, KeyRound, LayoutDashboard, LayoutGrid, LogOut, Menu,
+  AlertTriangle, ArrowUpRight, BadgeDollarSign, BookOpen,
+  BadgePercent, Globe, KeyRound, LayoutDashboard, LayoutGrid, LogOut, Menu,
   Package, Users, X,
 } from "lucide-react";
 import ThemeToggle from "@/components/theme/ThemeToggle";
@@ -40,6 +41,7 @@ const nav = [
     items: [
       { href: "/admin/kits", label: "Kits", icon: Package },
       { href: "/admin/pricing", label: "Pricing", icon: BadgeDollarSign },
+      { href: "/admin/discounts", label: "Discounts", icon: BadgePercent },
     ],
   },
 ];

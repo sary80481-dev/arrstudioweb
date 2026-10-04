@@ -8,6 +8,7 @@ import { requireUser } from "@/lib/server/session";
 import { siteUrl } from "@/lib/site-url";
 
 const CheckoutSchema = z.object({
+  code: z.string().trim().max(24).optional(),
   item: z.discriminatedUnion("type", [
     z.object({ type: z.literal("kit"), kitId: z.string().regex(KIT_ID_PATTERN) }),
     z.object({ type: z.literal("bundle") }),
@@ -27,9 +28,9 @@ export const POST = handle(async (req: Request) => {
     });
   }
   rateLimit(`checkout:${user.uid}:${clientIp(req)}`, 10, 60_000);
-  const { item } = await parseBody(req, CheckoutSchema);
+  const { item, code } = await parseBody(req, CheckoutSchema);
 
-  const order = await createOrder(item, { uid: user.uid, email: user.email });
+  const order = await createOrder(item, { uid: user.uid, email: user.email }, code);
   const snap = await createSnapTransaction({
     orderId: order.orderId,
     amount: order.amount,
