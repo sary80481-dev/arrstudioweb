@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Check, Copy, ExternalLink, Loader2, Plus, Search, Trash2, X } from "lucide-react";
-import type { Kit } from "@/lib/kits";
+import { formatIDR, type Kit } from "@/lib/kits";
+import { isLocked } from "@/lib/installment";
 import type { LicenseDto } from "@/lib/server/licenses";
 import type { UserDto } from "@/lib/server/users";
 import { selectKits, selectLicenses, useAppSelector } from "@/lib/store/store";
@@ -71,6 +72,7 @@ const columns = [
   col.accessor((r) => r.note ?? "", { id: "note", header: "Note", enableSorting: false, cell: () => null }),
   col.display({ id: "actions", header: () => <span className="sr-only">Actions</span>, cell: (c) => (
       <div className="flex justify-end gap-1">
+        {c.row.original.installment && <PaymentsButton license={c.row.original} />}
         {c.row.original.status === "revoked" ? (
           <DeleteButton license={c.row.original} />
         ) : (
@@ -88,6 +90,7 @@ const when = (iso: string | null) =>
 
 function state(l: LicenseDto): { label: string; tone: "green" | "amber" | "red" } {
   if (l.status === "revoked") return { label: "Revoked", tone: "red" };
+  if (isLocked(l)) return { label: `Installment ${formatIDR(l.installment!.paid)} / ${formatIDR(l.installment!.total)}`, tone: "amber" };
   return l.places.length ? { label: "Bound", tone: "green" } : { label: "Unused", tone: "amber" };
 }
 
@@ -160,7 +163,7 @@ export default function LicensesManager() {
             place: { className: "hidden sm:table-cell" },
             lastCheck: { className: "hidden xl:table-cell" },
             note: { className: "hidden" },
-            actions: { className: "w-24", align: "right" },
+            actions: { className: "w-40", align: "right" },
           }}
           toolbar={
             <div className="grid grid-cols-2 gap-2 sm:w-80">
@@ -231,6 +234,108 @@ function DeleteButton({ license }: { license: LicenseDto }) {
   );
 }
 
+/** Catatan cicilan: riwayat, tambah pembayaran yang sudah dicek, batalkan yang terakhir */
+function PaymentsButton({ license }: { license: LicenseDto }) {
+  const [open, setOpen] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const inst = license.installment!;
+  // data lisensi datang realtime (onSnapshot) → dialog ikut berubah setelah simpan
+
+  const run = async (method: "POST" | "DELETE", body?: unknown) => {
+    setError("");
+    setBusy(true);
+    try {
+      await api(method, `/api/admin/licenses/${encodeURIComponent(license.key)}/payments`, body);
+      setAmount("");
+      setNote("");
+    } catch (e) {
+      setError((e as Error).message);
+    }
+    setBusy(false);
+  };
+
+  return (
+    <>
+      <Btn size="sm" variant="ghost" onClick={() => setOpen(true)} title="Installment payments">Pay</Btn>
+      {open && (
+        <div role="dialog" aria-modal="true" onClick={() => setOpen(false)} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div onClick={(e) => e.stopPropagation()} className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-line bg-surface text-left shadow-xl">
+            <div className="flex items-center justify-between border-b border-line px-4 py-3">
+              <div>
+                <h2 className="text-sm font-semibold text-fg">Installment</h2>
+                <p className="font-mono text-xs text-dim">{license.key}</p>
+              </div>
+              <button type="button" onClick={() => setOpen(false)} aria-label="Close" className="rounded-md p-1 text-dim hover:bg-surface-2 hover:text-fg"><X size={16} /></button>
+            </div>
+
+            <dl className="grid grid-cols-3 gap-3 px-4 py-3 text-[13px]">
+              <div><dt className="text-dim">Total</dt><dd className="tabular-nums text-fg">{formatIDR(inst.total)}</dd></div>
+              <div><dt className="text-dim">Paid</dt><dd className="tabular-nums text-green">{formatIDR(inst.paid)}</dd></div>
+              <div><dt className="text-dim">Remaining</dt><dd className="tabular-nums text-fg">{formatIDR(inst.remaining)}</dd></div>
+            </dl>
+            <p className="px-4 pb-3 text-xs text-dim">
+              {inst.remaining > 0 ? "Locked for the buyer until fully paid." : "Fully paid — unlocked for the buyer."}
+            </p>
+
+            {inst.payments.length > 0 && (
+              <ul className="divide-y divide-line border-y border-line text-[13px]">
+                {inst.payments.map((p, i) => (
+                  <li key={i} className="flex justify-between gap-3 px-4 py-2">
+                    <span className="text-muted">{when(p.at)}{p.note && ` · ${p.note}`}</span>
+                    <span className="tabular-nums text-fg">{formatIDR(p.amount)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {inst.remaining > 0 && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  run("POST", { amount: Number(amount) || 0, note: note.trim() || undefined });
+                }}
+                className="space-y-3 p-4"
+              >
+                <FieldShell label="Payment received (Rp)" htmlFor="pay-amount" hint={`Up to ${formatIDR(inst.remaining)}`}>
+                  <TextInput
+                    id="pay-amount"
+                    inputMode="numeric"
+                    value={amount ? Number(amount).toLocaleString("id-ID") : ""}
+                    onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))}
+                    className="tabular-nums"
+                  />
+                </FieldShell>
+                <FieldShell label="Note (optional)" htmlFor="pay-note">
+                  <TextInput id="pay-note" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Transfer BCA, 4 Okt" maxLength={200} />
+                </FieldShell>
+                <Btn type="submit" variant="primary" disabled={busy || !Number(amount)} className="w-full">
+                  {busy && <Loader2 size={14} className="animate-spin" />} Record payment
+                </Btn>
+              </form>
+            )}
+            {error && <p role="alert" className="px-4 pb-3 text-[13px] text-red-500">{error}</p>}
+            {inst.payments.length > 0 && (
+              <div className="border-t border-line px-4 py-3">
+                <Btn
+                  size="sm"
+                  variant="danger"
+                  disabled={busy}
+                  onClick={() => confirm("Undo the last payment?") && run("DELETE")}
+                >
+                  Undo last payment
+                </Btn>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 /** Ubah jumlah slot place (mis. pembeli menambah place lewat Discord) */
 function SlotsButton({ license }: { license: LicenseDto }) {
   const [busy, setBusy] = useState(false);
@@ -266,9 +371,15 @@ function IssuePanel({ kits, onClose }: { kits: Kit[]; onClose: () => void }) {
   // null = ikut pengaturan kit (placesPerLicense)
   const [places, setPlaces] = useState<number | null>(null);
   const [note, setNote] = useState("");
+  // cicilan: total per lisensi (default harga kit) + pembayaran pertama
+  const [installment, setInstallment] = useState(false);
+  const [total, setTotal] = useState<number | null>(null);
+  const [firstPaid, setFirstPaid] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [issued, setIssued] = useState<string[]>([]);
+
+  const totalValue = total ?? issuable.find((k) => k.id === kit)?.price ?? 0;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -282,9 +393,11 @@ function IssuePanel({ kits, onClose }: { kits: Kit[]; onClose: () => void }) {
         count,
         maxPlaces: places ?? undefined,
         note: note.trim() || undefined,
+        installment: installment ? { total: totalValue, paid: firstPaid } : undefined,
       });
       setIssued(keys);
       setNote("");
+      setFirstPaid(0);
     } catch (err) {
       setError((err as Error).message);
     }
@@ -340,6 +453,24 @@ function IssuePanel({ kits, onClose }: { kits: Kit[]; onClose: () => void }) {
           Issue
         </Btn>
       </form>
+
+      <div className="border-t border-line px-4 py-3">
+        <label className="flex items-center gap-2 text-[13px] font-medium text-fg">
+          <input type="checkbox" checked={installment} onChange={(e) => setInstallment(e.target.checked)} className="accent-[var(--gold)]" />
+          Pay in installments
+          <span className="font-normal text-dim">— the buyer gets the key, but the file and kit stay locked until fully paid</span>
+        </label>
+        {installment && (
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 sm:max-w-md">
+            <FieldShell label="Total price per license (Rp)" htmlFor="i-total">
+              <TextInput id="i-total" inputMode="numeric" value={totalValue ? totalValue.toLocaleString("id-ID") : ""} onChange={(e) => setTotal(Number(e.target.value.replace(/\D/g, "")) || 0)} className="tabular-nums" />
+            </FieldShell>
+            <FieldShell label="First payment (Rp)" htmlFor="i-first" hint={`Remaining ${formatIDR(Math.max(0, totalValue - firstPaid))}`}>
+              <TextInput id="i-first" inputMode="numeric" value={firstPaid ? firstPaid.toLocaleString("id-ID") : ""} onChange={(e) => setFirstPaid(Number(e.target.value.replace(/\D/g, "")) || 0)} className="tabular-nums" />
+            </FieldShell>
+          </div>
+        )}
+      </div>
 
       {error && <p role="alert" className="px-4 pb-4 text-[13px] text-red-500">{error}</p>}
       {issued.length > 0 && (

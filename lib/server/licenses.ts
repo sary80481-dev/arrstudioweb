@@ -3,6 +3,7 @@ import { randomInt } from "node:crypto";
 import { FieldValue, Timestamp, type Query, type Transaction } from "firebase-admin/firestore";
 import { db } from "@/lib/firebase/admin";
 import { DEFAULT_PLACES_PER_LICENSE, REBIND_COOLDOWN_DAYS } from "@/lib/kits";
+import { isLocked, type InstallmentDto } from "@/lib/installment";
 import { ApiError } from "./http";
 import { kitUnlockKey } from "./kit-seal";
 import { kitsCol, publicStatsRef } from "./kits";
@@ -33,6 +34,8 @@ export interface LicenseDoc {
   lastJobId: string | null;
   lastKitVersion: string | null;
   verifyCount: number;
+  /** cicilan: lisensi terkunci sampai `paid` mencapai `total`. Kosong = bayar lunas. */
+  installment?: { total: number; paid: number; payments: { amount: number; at: Timestamp; note: string | null }[] } | null;
 }
 
 export interface LicenseDto {
@@ -53,7 +56,20 @@ export interface LicenseDto {
   verifyCount: number;
   /** kapan pemilik boleh melepas place lagi (null = sekarang boleh) */
   releaseAvailableAt: string | null;
+  installment: InstallmentDto | null;
 }
+
+export function toInstallmentDto(i: LicenseDoc["installment"]): InstallmentDto | null {
+  if (!i) return null;
+  return {
+    total: i.total,
+    paid: i.paid,
+    remaining: Math.max(0, i.total - i.paid),
+    payments: (i.payments ?? []).map((p) => ({ amount: p.amount, at: iso(p.at), note: p.note ?? null })),
+  };
+}
+
+const unpaid = () => new ApiError(403, "INSTALLMENT_UNPAID", "This license unlocks once the installments are fully paid.");
 
 const licenses = () => db().collection("licenses");
 const iso = (t: Timestamp | null | undefined) => t?.toDate().toISOString() ?? null;
@@ -86,6 +102,7 @@ export function toLicenseDto(d: LicenseDoc): LicenseDto {
     lastKitVersion: d.lastKitVersion ?? null,
     verifyCount: d.verifyCount ?? 0,
     releaseAvailableAt: releaseAvailableAt(d)?.toISOString() ?? null,
+    installment: toInstallmentDto(d.installment),
   };
 }
 
@@ -142,6 +159,8 @@ export async function issueLicenses(input: {
   /** slot place per lisensi; default = pengaturan kit */
   maxPlaces?: number;
   note?: string;
+  /** cicilan: total harga per lisensi & pembayaran pertama (0 = belum ada) */
+  installment?: { total: number; paid: number };
 }) {
   const kitSnap = await kitsCol().doc(input.kit).get();
   if (!kitSnap.exists) throw new ApiError(404, "KIT_NOT_FOUND", "Kit not found.");
@@ -175,6 +194,13 @@ export async function issueLicenses(input: {
       lastJobId: null,
       lastKitVersion: null,
       verifyCount: 0,
+      installment: input.installment
+        ? {
+            total: input.installment.total,
+            paid: input.installment.paid,
+            payments: input.installment.paid > 0 ? [{ amount: input.installment.paid, at: Timestamp.now(), note: "Initial payment" }] : [],
+          }
+        : null,
     });
   }
 
@@ -232,6 +258,7 @@ export async function addPlace(key: string, uid: string, placeId: string) {
     const d = snap.data() as LicenseDoc | undefined;
     if (!d || d.ownerUid !== uid) throw new ApiError(404, "LICENSE_NOT_FOUND", "License not found.");
     if (d.status !== "active") throw new ApiError(403, "LICENSE_REVOKED", "This license has been revoked.");
+    if (isLocked({ installment: toInstallmentDto(d.installment) })) throw unpaid();
     const places = placesOf(d);
     if (places.includes(placeId)) return toLicenseDto(d);
     if (places.length >= maxPlacesOf(d)) {
@@ -295,6 +322,39 @@ export async function setMaxPlaces(key: string, maxPlaces: number) {
   });
 }
 
+/* ─── CICILAN ─── */
+
+/** Admin mencatat pembayaran cicilan (setelah bukti transfer dicek) */
+export async function addInstallmentPayment(key: string, amount: number, note?: string) {
+  const ref = licenses().doc(normalizeKey(key));
+  return db().runTransaction(async (tx) => {
+    const d = (await tx.get(ref)).data() as LicenseDoc | undefined;
+    if (!d) throw new ApiError(404, "LICENSE_NOT_FOUND", "License not found.");
+    const i = d.installment;
+    if (!i) throw new ApiError(409, "NOT_INSTALLMENT", "This license isn't on an installment plan.");
+    const remaining = i.total - i.paid;
+    if (amount > remaining) throw new ApiError(400, "OVERPAYMENT", `Only Rp ${remaining.toLocaleString("id-ID")} is left to pay.`);
+    const next = { ...i, paid: i.paid + amount, payments: [...(i.payments ?? []), { amount, at: Timestamp.now(), note: note ?? null }] };
+    tx.update(ref, { installment: next });
+    return toLicenseDto({ ...d, installment: next });
+  });
+}
+
+/** Batalkan pembayaran terakhir (salah input) — lisensi terkunci lagi kalau jadi belum lunas */
+export async function undoLastInstallmentPayment(key: string) {
+  const ref = licenses().doc(normalizeKey(key));
+  return db().runTransaction(async (tx) => {
+    const d = (await tx.get(ref)).data() as LicenseDoc | undefined;
+    if (!d) throw new ApiError(404, "LICENSE_NOT_FOUND", "License not found.");
+    const i = d.installment;
+    const last = i?.payments?.[i.payments.length - 1];
+    if (!i || !last) throw new ApiError(409, "NO_PAYMENTS", "There's no payment to undo.");
+    const next = { ...i, paid: i.paid - last.amount, payments: i.payments.slice(0, -1) };
+    tx.update(ref, { installment: next });
+    return toLicenseDto({ ...d, installment: next });
+  });
+}
+
 /* ─── VERIFIKASI DARI SERVER ROBLOX ─── */
 
 export interface VerifyInput {
@@ -335,6 +395,7 @@ export async function verifyLicense(input: VerifyInput): Promise<VerifyResult> {
 
     if (!d) throw new ApiError(404, "INVALID_KEY", "License key does not exist.");
     if (d.status !== "active") throw new ApiError(403, "LICENSE_REVOKED", "This license has been revoked.");
+    if (isLocked({ installment: toInstallmentDto(d.installment) })) throw unpaid();
     if (d.kit !== input.kit) {
       throw new ApiError(403, "WRONG_KIT", `This key is for ${d.kit}, not ${input.kit}.`);
     }

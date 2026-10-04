@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { isLocked } from "@/lib/installment";
 import { KIT_ID_PATTERN } from "@/lib/kits";
 import { ApiError, handle } from "@/lib/server/http";
 import { getKit } from "@/lib/server/kits";
@@ -17,8 +18,11 @@ export const GET = handle(async (req: NextRequest, ctx: RouteContext<"/api/kits/
   if (!KIT_ID_PATTERN.test(id)) throw new ApiError(404, "KIT_NOT_FOUND", "Kit not found.");
 
   if (user.role !== "admin") {
-    const owns = (await listLicensesForUser(user.uid)).some((l) => l.kit === id && l.status === "active");
-    if (!owns) throw new ApiError(403, "NO_LICENSE", "You need an active license for this kit to download it.");
+    const mine = (await listLicensesForUser(user.uid)).filter((l) => l.kit === id && l.status === "active");
+    if (mine.length > 0 && mine.every(isLocked)) {
+      throw new ApiError(403, "INSTALLMENT_UNPAID", "The file unlocks once your installments are fully paid.");
+    }
+    if (mine.length === 0) throw new ApiError(403, "NO_LICENSE", "You need an active license for this kit to download it.");
   }
 
   const [kit, pkg] = await Promise.all([getKit(id), getPackage(id)]);

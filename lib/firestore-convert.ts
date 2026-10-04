@@ -53,6 +53,18 @@ export function docToLicense(d: DocumentData): LicenseDto {
     lastKitVersion: d.lastKitVersion ?? null,
     verifyCount: d.verifyCount ?? 0,
     releaseAvailableAt: next && next > Date.now() ? new Date(next).toISOString() : null,
+    installment: d.installment
+      ? {
+          total: d.installment.total,
+          paid: d.installment.paid,
+          remaining: Math.max(0, d.installment.total - d.installment.paid),
+          payments: (d.installment.payments ?? []).map((p: { amount: number; at: Timestamp | null; note?: string | null }) => ({
+            amount: p.amount,
+            at: iso(p.at),
+            note: p.note ?? null,
+          })),
+        }
+      : null,
   };
 }
 

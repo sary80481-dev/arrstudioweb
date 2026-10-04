@@ -8,6 +8,8 @@ import {
   ArrowUpRight, BookOpen, Check, Copy, Download, KeyRound, Loader2, LogOut, MoreHorizontal, Plus, Radio, Sparkles, Users, X,
 } from "lucide-react";
 import { KitIcon } from "@/components/common/KitIcon";
+import { isLocked } from "@/lib/installment";
+import { formatIDR } from "@/lib/kits";
 import { signOut } from "@/lib/auth-client";
 import type { LicenseDto } from "@/lib/server/licenses";
 import { useLicensesSync, useRealtimeAuthSync } from "@/lib/realtime";
@@ -248,6 +250,8 @@ function LicenseCard({
   const used = license.places.length;
   const free = Math.max(0, license.maxPlaces - used);
   const outdated = older(license.lastKitVersion, kit?.version ?? null);
+  const inst = license.installment;
+  const locked = isLocked(license);
 
   return (
     <article className={`overflow-hidden rounded-[28px] bg-surface-2 ${revoked ? "opacity-70" : ""}`}>
@@ -278,10 +282,10 @@ function LicenseCard({
             )}
             <span
               className={`rounded-full px-2.5 py-1 text-xs ${
-                revoked ? "bg-red-500/10 text-red-500" : used ? "bg-green/10 text-green" : "bg-bg text-muted"
+                revoked ? "bg-red-500/10 text-red-500" : locked ? "bg-gold-soft text-gold" : used ? "bg-green/10 text-green" : "bg-bg text-muted"
               }`}
             >
-              {revoked ? "Revoked" : used ? "Active" : "Not used yet"}
+              {revoked ? "Revoked" : locked ? "Awaiting payment" : used ? "Active" : "Not used yet"}
             </span>
           </div>
         </div>
@@ -295,9 +299,43 @@ function LicenseCard({
           </div>
         </div>
 
+        {!revoked && inst && (
+          <div className="mt-4 rounded-[20px] bg-bg p-5">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <p className="text-sm font-medium text-fg">{locked ? "Installment plan" : "Fully paid"}</p>
+              <p className="text-sm text-muted">
+                <span className="tabular-nums text-fg">{formatIDR(inst.paid)}</span> of {formatIDR(inst.total)}
+                {locked && <> · <span className="tabular-nums text-fg">{formatIDR(inst.remaining)}</span> left</>}
+              </p>
+            </div>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-2" role="progressbar" aria-valuenow={inst.paid} aria-valuemin={0} aria-valuemax={inst.total}>
+              <div className="h-full rounded-full bg-gold-grad" style={{ width: `${Math.min(100, (inst.paid / inst.total) * 100)}%` }} />
+            </div>
+            {locked && (
+              <p className="mt-3 text-[13px] leading-relaxed text-dim">
+                The kit file and license check unlock as soon as the last installment is confirmed. Sent a transfer? Share the proof with us on Discord and we&apos;ll update this.
+              </p>
+            )}
+            {inst.payments.length > 0 && (
+              <ul className="mt-3 space-y-1 text-[13px] text-muted">
+                {inst.payments.map((p, i) => (
+                  <li key={i} className="flex justify-between gap-3">
+                    <span>{fullDate(p.at)}{p.note && ` · ${p.note}`}</span>
+                    <span className="tabular-nums text-fg">{formatIDR(p.amount)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
         {!revoked && (
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            {downloadable ? (
+            {locked ? (
+              <span className={buttonClass("outline", "md", "pointer-events-none text-muted!")}>
+                <Download size={16} /> Locked until fully paid
+              </span>
+            ) : downloadable ? (
               <a href={`/api/kits/${encodeURIComponent(license.kit)}/download`} download className={buttonClass("gold", "md")}>
                 <Download size={16} /> Download .rbxm
               </a>
@@ -327,7 +365,7 @@ function LicenseCard({
           {license.places.map((p) => (
             <PlaceCard key={p} license={license} placeId={p} info={places[p]} canRemove={!revoked} />
           ))}
-          {!revoked && Array.from({ length: free }, (_, i) => <AddPlace key={`free-${i}`} license={license} first={i === 0} />)}
+          {!revoked && !locked && Array.from({ length: free }, (_, i) => <AddPlace key={`free-${i}`} license={license} first={i === 0} />)}
         </div>
 
         {!revoked && (

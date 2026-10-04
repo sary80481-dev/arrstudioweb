@@ -309,6 +309,14 @@ Terbitkan lisensi untuk user — dipakai setelah pembayaran diterima.
 ```
 User harus sudah punya akun (pernah login sekali).
 
+**Cicilan:** tambahkan `"installment": { "total": 449000, "paid": 150000 }` (per lisensi, `paid` < `total`). Key langsung terlihat di dashboard pembeli, tapi **unduh file, verifikasi kit (`/api/licenses/verify`) dan penambahan place ditolak dengan `INSTALLMENT_UNPAID`** sampai lunas.
+
+#### `POST /api/admin/licenses/:key/payments`
+Catat pembayaran cicilan yang bukti transfernya sudah dicek: `{ "amount": 150000, "note": "Transfer BCA" }`. Melebihi sisa → `OVERPAYMENT`. Saat `paid` = `total`, lisensi otomatis terbuka.
+
+#### `DELETE /api/admin/licenses/:key/payments`
+Batalkan pembayaran terakhir (salah input); lisensi terkunci lagi bila jadi belum lunas.
+
 #### `PATCH /api/admin/licenses/:key`
 ```json
 { "status": "revoked" }   // atau "active" untuk memulihkan
@@ -463,6 +471,7 @@ ID dokumen = license key.
 | `createdAt`, `boundAt`, `lastRebindAt`, `lastVerifiedAt` | timestamp \| null | |
 | `lastJobId` | string \| null | `game.JobId` terakhir |
 | `verifyCount` | number | |
+| `installment` | `{ total, paid, payments[{amount, at, note}] }` \| null | Cicilan; terkunci selama `paid < total` |
 
 ---
 
