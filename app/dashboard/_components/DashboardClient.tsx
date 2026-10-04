@@ -5,7 +5,8 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  ArrowUpRight, BookOpen, Check, Copy, Download, KeyRound, Loader2, Lock, LogOut, MoreHorizontal, Plus, Radio, Sparkles, Users, X,
+  ArrowUpRight, BookOpen, Check, ChevronDown, Copy, Download, KeyRound, Layers, LayoutGrid, LifeBuoy, Loader2, Lock, LogOut,
+  MoreHorizontal, Plus, Radio, ShieldCheck, Sparkles, Users, Wallet, X,
 } from "lucide-react";
 import { KitIcon } from "@/components/common/KitIcon";
 import { isLocked, type InstallmentDto } from "@/lib/installment";
@@ -15,7 +16,8 @@ import { signOut } from "@/lib/auth-client";
 import type { LicenseDto } from "@/lib/server/licenses";
 import { useLicensesSync, useRealtimeAuthSync } from "@/lib/realtime";
 import { selectLicenses, selectRealtime, useAppSelector } from "@/lib/store/store";
-import { buttonClass } from "@/components/templates/landing/_components/ui";
+import { Logo, buttonClass } from "@/components/templates/landing/_components/ui";
+import ThemeToggle from "@/components/theme/ThemeToggle";
 
 /* ============================================================
    Dashboard pembeli — halaman akun ala produk:
@@ -151,17 +153,37 @@ function usePlaceInfo(placeIds: string[], initial: Record<string, PlaceInfo | nu
 }
 
 /* ============================================================
-   HALAMAN
+   SHELL: sidebar (desktop) / bottom bar (HP) + tiga tampilan
+   Overview → apa yang perlu perhatian · Licenses → detail per lisensi · Payments → cicilan
    ============================================================ */
-export function LiveLicenses({
+type View = "overview" | "licenses" | "payments";
+
+const NAV: { id: View; label: string; icon: typeof KeyRound }[] = [
+  { id: "overview", label: "Overview", icon: LayoutGrid },
+  { id: "licenses", label: "Licenses", icon: KeyRound },
+  { id: "payments", label: "Payments", icon: Wallet },
+];
+
+function licenseState(l: LicenseDto): { label: string; dot: string; cls: string } {
+  if (l.status === "revoked") return { label: "Revoked", dot: "bg-red-500", cls: "bg-red-500/10 text-red-500" };
+  if (isLocked(l)) return { label: "Awaiting payment", dot: "bg-gold", cls: "bg-gold-soft text-gold" };
+  if (l.places.length) return { label: "Active", dot: "bg-green", cls: "bg-green/10 text-green" };
+  return { label: "Not used yet", dot: "bg-dim", cls: "bg-bg text-muted" };
+}
+
+export function Dashboard({
   uid,
   name,
+  email,
+  isAdmin,
   downloads,
   kits,
   places: initialPlaces = {},
 }: {
   uid: string;
   name: string;
+  email: string;
+  isAdmin: boolean;
   downloads: Record<string, boolean>;
   kits: Record<string, KitMeta>;
   /** info game yang sudah diambil server (render pertama langsung lengkap) */
@@ -177,56 +199,461 @@ export function LiveLicenses({
 
   const places = licenses.flatMap((l) => l.places);
   const info = usePlaceInfo(places, initialPlaces);
-  const slots = licenses.filter((l) => l.status === "active").reduce((n, l) => n + l.maxPlaces, 0);
-  const kitCount = new Set(licenses.map((l) => l.kit)).size;
+
+  const [view, setView] = useState<View>("overview");
+  const [selected, setSelected] = useState<{ key: string; tab?: Tab } | null>(null);
+  const current = licenses.find((l) => l.key === selected?.key) ?? licenses[0];
+
+  const lockedList = licenses.filter((l) => l.status === "active" && isLocked(l));
+  const open = (key: string, tab?: Tab) => {
+    setSelected({ key, tab });
+    setView("licenses");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  const badge = (id: View) => (id === "licenses" ? licenses.length : id === "payments" ? lockedList.length : 0);
+  const initial = (name || email || "?").trim()[0]?.toUpperCase() ?? "?";
+
+  return (
+    <div className="min-h-svh bg-bg lg:grid lg:grid-cols-[256px_1fr]">
+      {/* ═══ SIDEBAR (desktop) ═══ */}
+      <aside className="sticky top-0 hidden h-svh flex-col border-r border-line px-4 py-5 lg:flex">
+        <div className="px-2"><Logo /></div>
+
+        <nav aria-label="Dashboard" className="mt-8 space-y-1">
+          {NAV.map((n) => {
+            const on = view === n.id;
+            const count = badge(n.id);
+            return (
+              <button
+                key={n.id}
+                type="button"
+                aria-current={on ? "page" : undefined}
+                onClick={() => setView(n.id)}
+                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] transition-colors ${
+                  on ? "bg-surface-2 font-medium text-fg" : "text-muted hover:bg-surface-2/60 hover:text-fg"
+                }`}
+              >
+                <n.icon size={18} strokeWidth={1.8} className={on ? "text-gold" : ""} />
+                {n.label}
+                {count > 0 && (
+                  <span className={`ml-auto rounded-full px-2 py-0.5 text-xs tabular-nums ${n.id === "payments" ? "bg-gold-soft text-gold" : "bg-bg text-muted"}`}>{count}</span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="mt-8 space-y-1 border-t border-line pt-4 text-[15px]">
+          <Link href="/docs" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-muted transition-colors hover:bg-surface-2/60 hover:text-fg">
+            <BookOpen size={18} strokeWidth={1.8} /> Setup guide
+          </Link>
+          <a href={DISCORD_INVITE} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-muted transition-colors hover:bg-surface-2/60 hover:text-fg">
+            <LifeBuoy size={18} strokeWidth={1.8} /> Support <ArrowUpRight size={13} className="ml-auto" />
+          </a>
+          {isAdmin && (
+            <Link href="/admin" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-gold transition-colors hover:bg-gold-soft">
+              <ShieldCheck size={18} strokeWidth={1.8} /> Admin
+            </Link>
+          )}
+        </div>
+
+        <div className="mt-auto flex items-center gap-2.5 rounded-2xl bg-surface-2 p-2.5">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-semibold text-on-brand">{initial}</span>
+          <span className="min-w-0 flex-1 leading-tight">
+            <span className="block truncate text-sm font-medium text-fg">{name}</span>
+            <span className="block truncate text-xs text-dim">{email}</span>
+          </span>
+          <ThemeToggle />
+          <SignOutButton />
+        </div>
+      </aside>
+
+      <div className="min-w-0">
+        {/* ═══ TOP BAR (HP) ═══ */}
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-line bg-bg/85 px-4 backdrop-blur-xl lg:hidden">
+          <Logo />
+          <div className="flex items-center gap-1">
+            {isAdmin && (
+              <Link href="/admin" aria-label="Admin" className="flex h-9 w-9 items-center justify-center rounded-full text-gold hover:bg-gold-soft">
+                <ShieldCheck size={17} />
+              </Link>
+            )}
+            <ThemeToggle />
+            <SignOutButton />
+          </div>
+        </header>
+
+        <main className="mx-auto w-full max-w-5xl px-4 pb-28 pt-6 sm:px-6 lg:px-10 lg:pb-16 lg:pt-10">
+          {view === "overview" && (
+            <Overview
+              name={name}
+              live={live}
+              licenses={licenses}
+              kits={kits}
+              downloads={downloads}
+              lockedList={lockedList}
+              open={open}
+              goPayments={() => setView("payments")}
+            />
+          )}
+
+          {view === "licenses" && (
+            <>
+              <ViewHeader title="Licenses" desc="Keys, files and the places they run in." live={live} />
+              {licenses.length === 0 ? (
+                <EmptyLicenses />
+              ) : (
+                <>
+                  {licenses.length > 1 && (
+                    <div role="tablist" aria-label="Choose a license" className="-mx-4 mb-5 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+                      {licenses.map((l) => {
+                        const st = licenseState(l);
+                        const on = l.key === current?.key;
+                        return (
+                          <button
+                            key={l.key}
+                            type="button"
+                            role="tab"
+                            aria-selected={on}
+                            onClick={() => setSelected({ key: l.key })}
+                            className={`flex shrink-0 items-center gap-2.5 rounded-2xl border px-3.5 py-2.5 text-left transition-colors ${
+                              on ? "border-gold/60 bg-surface-2" : "border-line bg-bg text-muted hover:bg-surface-2/60"
+                            }`}
+                          >
+                            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-bg text-gold">
+                              <KitIcon icon={kits[l.kit]?.icon ?? "sparkles"} size={16} strokeWidth={1.7} />
+                            </span>
+                            <span className="leading-tight">
+                              <span className="block max-w-[140px] truncate text-sm font-medium text-fg">{l.kitName}</span>
+                              <span className="flex items-center gap-1.5 text-xs text-dim">
+                                <span className={`h-1.5 w-1.5 rounded-full ${st.dot}`} /> {st.label}
+                              </span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {current && (
+                    <LicenseCard
+                      key={`${current.key}:${selected?.tab ?? ""}`}
+                      license={current}
+                      kit={kits[current.kit]}
+                      downloadable={!!downloads[current.kit]}
+                      places={info}
+                      initialTab={selected?.key === current.key ? selected.tab : undefined}
+                    />
+                  )}
+                </>
+              )}
+            </>
+          )}
+
+          {view === "payments" && <Payments licenses={licenses} kits={kits} open={open} />}
+        </main>
+      </div>
+
+      {/* ═══ BOTTOM NAV (HP) ═══ */}
+      <nav aria-label="Dashboard" className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-line bg-bg/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
+        {NAV.map((n) => {
+          const on = view === n.id;
+          const count = n.id === "payments" ? badge(n.id) : 0;
+          return (
+            <button
+              key={n.id}
+              type="button"
+              aria-current={on ? "page" : undefined}
+              onClick={() => setView(n.id)}
+              className={`relative flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors ${on ? "text-fg" : "text-dim"}`}
+            >
+              <span className="relative">
+                <n.icon size={21} strokeWidth={1.8} className={on ? "text-gold" : ""} />
+                {count > 0 && <span className="absolute -right-1.5 -top-1 h-2.5 w-2.5 rounded-full bg-gold ring-2 ring-bg" />}
+              </span>
+              {n.label}
+            </button>
+          );
+        })}
+      </nav>
+    </div>
+  );
+}
+
+function ViewHeader({ title, desc, live }: { title: string; desc: string; live?: boolean }) {
+  return (
+    <div className="mb-6 sm:mb-8">
+      <h1 className="text-display text-3xl text-fg sm:text-4xl">{title}</h1>
+      <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2 text-[15px] text-muted sm:text-base">
+        {desc} {live !== undefined && <LiveBadge live={live} />}
+      </p>
+    </div>
+  );
+}
+
+function EmptyLicenses() {
+  return (
+    <div className="flex flex-col items-center rounded-[28px] bg-surface-2 px-6 py-16 text-center sm:py-20">
+      <span className="flex h-16 w-16 items-center justify-center rounded-[20px] bg-bg text-gold">
+        <KeyRound size={28} strokeWidth={1.6} />
+      </span>
+      <h2 className="text-display mt-6 text-3xl text-fg">No licenses yet</h2>
+      <p className="mt-3 max-w-md text-base leading-relaxed text-muted">
+        Buy a kit and its key appears here instantly — with the kit file to download and room for your places.
+      </p>
+      <Link href="/#kits" className={buttonClass("gold", "lg", "mt-8")}>Browse kits</Link>
+    </div>
+  );
+}
+
+/* ─── OVERVIEW ─── */
+function Overview({
+  name,
+  live,
+  licenses,
+  kits,
+  downloads,
+  lockedList,
+  open,
+  goPayments,
+}: {
+  name: string;
+  live: boolean;
+  licenses: LicenseDto[];
+  kits: Record<string, KitMeta>;
+  downloads: Record<string, boolean>;
+  lockedList: LicenseDto[];
+  open: (key: string, tab?: Tab) => void;
+  goPayments: () => void;
+}) {
   const first = name.split(" ")[0] || "there";
+  const usable = licenses.filter((l) => l.status === "active");
+  const used = licenses.reduce((n, l) => n + l.places.length, 0);
+  const slots = usable.reduce((n, l) => n + l.maxPlaces, 0);
+  const due = lockedList.reduce((n, l) => n + (l.installment?.remaining ?? 0), 0);
+  const kitCount = new Set(licenses.map((l) => l.kit)).size;
+
+  const stats: { label: string; value: string; hint: string; icon: typeof KeyRound; tone?: string; onClick?: () => void }[] = [
+    { label: "Licenses", value: String(licenses.length), hint: `${kitCount} ${kitCount === 1 ? "kit" : "kits"}`, icon: KeyRound },
+    { label: "Places in use", value: `${used}/${slots}`, hint: slots - used > 0 ? `${slots - used} free` : "All slots used", icon: Layers },
+    due > 0
+      ? { label: "Balance due", value: formatIDR(due), hint: `${lockedList.length} unpaid`, icon: Wallet, tone: "text-gold", onClick: goPayments }
+      : { label: "Balance due", value: "Rp 0", hint: "All paid", icon: Wallet, tone: "text-green" },
+  ];
 
   return (
     <>
-      {/* ─── SAPAAN + RINGKASAN ─── */}
-      <div className="flex flex-wrap items-end justify-between gap-6">
-        <div>
-          <h1 className="text-display text-4xl text-fg sm:text-5xl md:text-6xl">
-            Hi, {first}. <span className="text-muted">Your kits.</span>
-          </h1>
-          <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-base text-muted sm:text-[17px]">
-            Keys, files and the places they run in. <LiveBadge live={live} />
-          </p>
-        </div>
-        <Link href="/docs" className={buttonClass("outline", "md")}>
-          <BookOpen size={16} /> Setup guide
-        </Link>
-      </div>
-
-      <dl className="mt-8 grid grid-cols-3 gap-2.5 sm:mt-10 sm:gap-3">
-        {[
-          [licenses.length, licenses.length === 1 ? "License" : "Licenses"],
-          [`${places.length}/${slots}`, "Places in use"],
-          [kitCount, kitCount === 1 ? "Kit" : "Kits"],
-        ].map(([v, l]) => (
-          <div key={String(l)} className="flex flex-col-reverse rounded-2xl bg-surface-2 px-4 py-4 sm:rounded-[22px] sm:px-5 sm:py-5 md:px-7 md:py-6">
-            <dt className="mt-1 text-[13px] text-muted md:text-sm">{l}</dt>
-            <dd className="text-display text-3xl text-fg tabular-nums md:text-4xl">{v}</dd>
-          </div>
-        ))}
-      </dl>
+      <ViewHeader title={`Hi, ${first}`} desc="Here's where your kits stand." live={live} />
 
       {licenses.length === 0 ? (
-        <div className="mt-6 flex flex-col items-center rounded-[28px] bg-surface-2 px-6 py-20 text-center">
-          <span className="flex h-16 w-16 items-center justify-center rounded-[20px] bg-bg text-gold">
-            <KeyRound size={28} strokeWidth={1.6} />
-          </span>
-          <h2 className="text-display mt-6 text-3xl text-fg">No licenses yet</h2>
-          <p className="mt-3 max-w-md text-[17px] leading-relaxed text-muted">
-            Buy a kit and its key appears here instantly — with the kit file to download and room for your places.
-          </p>
-          <Link href="/#kits" className={buttonClass("gold", "lg", "mt-8")}>Browse kits</Link>
+        <EmptyLicenses />
+      ) : (
+        <div className="space-y-8">
+          {/* perlu perhatian */}
+          {lockedList.length > 0 && (
+            <section aria-label="Needs attention" className="space-y-3">
+              {lockedList.map((l) => {
+                const i = l.installment!;
+                const pct = Math.min(100, Math.round((i.paid / i.total) * 100));
+                return (
+                  <div key={l.key} className="relative overflow-hidden rounded-[24px] border border-gold/30 bg-gold-soft p-5 sm:p-6">
+                    <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+                      <div className="min-w-0 flex-1">
+                        <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-gold">
+                          <Lock size={13} /> Action needed
+                        </p>
+                        <h2 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-fg sm:text-2xl">
+                          {formatIDR(i.remaining)} left to unlock {l.kitName}
+                        </h2>
+                        <div className="mt-4 h-2 overflow-hidden rounded-full bg-bg/70" role="progressbar" aria-label="Amount paid" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+                          <div className="h-full rounded-full bg-gold-grad transition-[width] duration-500" style={{ width: `${pct}%` }} />
+                        </div>
+                        <p className="mt-2 text-[13px] text-muted">
+                          <span className="tabular-nums text-fg">{formatIDR(i.paid)}</span> of {formatIDR(i.total)} paid · {pct}%
+                        </p>
+                      </div>
+                      <div className="flex flex-col gap-2 sm:w-52">
+                        <a href={DISCORD_INVITE} target="_blank" rel="noreferrer" className={buttonClass("gold", "md", "w-full")}>
+                          Send proof <ArrowUpRight size={16} />
+                        </a>
+                        <button type="button" onClick={() => open(l.key, "payment")} className={buttonClass("outline", "md", "w-full bg-bg/50")}>
+                          View payment
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </section>
+          )}
+
+          {/* angka ringkas */}
+          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {stats.map((st) => {
+              const Tag = st.onClick ? "button" : "div";
+              return (
+                <Tag
+                  key={st.label}
+                  {...(st.onClick ? { type: "button" as const, onClick: st.onClick } : {})}
+                  className={`flex items-center gap-4 rounded-2xl bg-surface-2 p-4 text-left sm:flex-col sm:items-start sm:gap-3 sm:p-5 ${st.onClick ? "transition-colors hover:bg-surface-2/70" : ""}`}
+                >
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-bg text-gold">
+                    <st.icon size={19} strokeWidth={1.7} />
+                  </span>
+                  <span className="min-w-0">
+                    <dt className="text-[13px] text-muted">{st.label}</dt>
+                    <dd className={`text-display truncate text-2xl tabular-nums sm:mt-0.5 sm:text-3xl ${st.tone ?? "text-fg"}`}>{st.value}</dd>
+                    <span className="text-xs text-dim">{st.hint}</span>
+                  </span>
+                </Tag>
+              );
+            })}
+          </dl>
+
+          {/* lisensi kamu */}
+          <section aria-label="Your licenses">
+            <h2 className="mb-3 text-lg font-semibold tracking-[-0.01em] text-fg">Your licenses</h2>
+            <ul className="grid gap-3 sm:grid-cols-2">
+              {licenses.map((l) => {
+                const st = licenseState(l);
+                const locked = isLocked(l);
+                const kit = kits[l.kit];
+                return (
+                  <li key={l.key}>
+                    <div className="group flex h-full flex-col rounded-2xl bg-surface-2 p-4 transition-shadow hover:shadow-card sm:p-5">
+                      <button type="button" onClick={() => open(l.key)} className="flex items-start gap-3.5 text-left">
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-bg text-gold">
+                          <KitIcon icon={kit?.icon ?? "sparkles"} size={21} strokeWidth={1.7} />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-base font-semibold text-fg group-hover:text-gold">{l.kitName}</span>
+                          <span className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-dim">
+                            <span className={`rounded-full px-2 py-0.5 font-medium ${st.cls}`}>{st.label}</span>
+                            <span className="tabular-nums">{l.places.length}/{l.maxPlaces} places</span>
+                          </span>
+                        </span>
+                        <ArrowUpRight size={16} className="shrink-0 text-dim transition-colors group-hover:text-fg" />
+                      </button>
+
+                      <div className="mt-4 flex items-center gap-2 border-t border-line pt-3.5">
+                        {l.status === "revoked" ? (
+                          <span className="text-[13px] text-dim">This license was revoked.</span>
+                        ) : locked ? (
+                          <>
+                            <Lock size={14} className="text-dim" />
+                            <code className="min-w-0 flex-1 truncate font-mono text-[13px] text-dim">ARR-••••-••••-••••</code>
+                            <button type="button" onClick={() => open(l.key, "payment")} className="shrink-0 text-[13px] font-medium text-gold hover:underline">Pay</button>
+                          </>
+                        ) : (
+                          <>
+                            <code className="min-w-0 flex-1 truncate font-mono text-[13px] text-muted">{l.key}</code>
+                            <CopyButton text={l.key} label="Copy" className="bg-bg! py-1" />
+                            {downloads[l.kit] && (
+                              <a
+                                href={`/api/kits/${encodeURIComponent(l.kit)}/download`}
+                                download
+                                aria-label={`Download ${l.kitName}`}
+                                title="Download .rbxm"
+                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold-soft text-gold transition-colors hover:bg-gold hover:text-on-gold"
+                              >
+                                <Download size={15} />
+                              </a>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        </div>
+      )}
+    </>
+  );
+}
+
+/* ─── PAYMENTS: semua cicilan ─── */
+function Payments({ licenses, kits, open }: { licenses: LicenseDto[]; kits: Record<string, KitMeta>; open: (key: string, tab?: Tab) => void }) {
+  const plans = licenses.filter((l) => l.installment);
+  const paid = plans.reduce((n, l) => n + l.installment!.paid, 0);
+  const total = plans.reduce((n, l) => n + l.installment!.total, 0);
+  const remaining = total - paid;
+
+  return (
+    <>
+      <ViewHeader title="Payments" desc="Installments, what you've paid and what's left." />
+
+      {plans.length === 0 ? (
+        <div className="flex flex-col items-center rounded-[28px] bg-surface-2 px-6 py-16 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-bg text-green"><Check size={26} /></span>
+          <h2 className="text-display mt-5 text-2xl text-fg">Nothing to pay</h2>
+          <p className="mt-2 max-w-sm text-[15px] leading-relaxed text-muted">None of your licenses are on an installment plan. If you split a payment, it shows up here.</p>
         </div>
       ) : (
-        <div className="mt-6 space-y-6">
-          {licenses.map((l) => (
-            <LicenseCard key={l.key} license={l} kit={kits[l.kit]} downloadable={!!downloads[l.kit]} places={info} />
-          ))}
+        <div className="space-y-6">
+          <dl className="grid grid-cols-3 gap-2.5 sm:gap-3">
+            {[
+              ["Total", formatIDR(total), "text-fg"],
+              ["Paid", formatIDR(paid), "text-green"],
+              ["Remaining", formatIDR(remaining), remaining > 0 ? "text-gold" : "text-dim"],
+            ].map(([label, value, tone]) => (
+              <div key={label} className="min-w-0 rounded-2xl bg-surface-2 px-3.5 py-3.5 sm:px-5 sm:py-4">
+                <dt className="text-xs text-dim sm:text-[13px]">{label}</dt>
+                <dd className={`mt-1 truncate text-sm font-semibold tabular-nums sm:text-xl ${tone}`}>{value}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <ul className="space-y-3">
+            {plans.map((l) => {
+              const i = l.installment!;
+              const locked = isLocked(l);
+              const pct = Math.min(100, Math.round((i.paid / i.total) * 100));
+              return (
+                <li key={l.key} className="rounded-2xl bg-surface-2 p-4 sm:p-5">
+                  <div className="flex items-start gap-3.5">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-bg text-gold">
+                      <KitIcon icon={kits[l.kit]?.icon ?? "sparkles"} size={20} strokeWidth={1.7} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                        <h2 className="truncate text-base font-semibold text-fg">{l.kitName}</h2>
+                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${locked ? "bg-gold-soft text-gold" : "bg-green/10 text-green"}`}>
+                          {locked ? `${formatIDR(i.remaining)} left` : "Paid in full"}
+                        </span>
+                      </div>
+                      <div className="mt-3 h-2 overflow-hidden rounded-full bg-bg" role="progressbar" aria-label={`${l.kitName} paid`} aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+                        <div className={`h-full rounded-full transition-[width] duration-500 ${locked ? "bg-gold-grad" : "bg-green"}`} style={{ width: `${pct}%` }} />
+                      </div>
+                      <p className="mt-2 text-[13px] text-muted">
+                        <span className="tabular-nums text-fg">{formatIDR(i.paid)}</span> of {formatIDR(i.total)} · {pct}%
+                      </p>
+                    </div>
+                  </div>
+
+                  <details className="group mt-4 border-t border-line pt-3">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-sm text-muted hover:text-fg [&::-webkit-details-marker]:hidden">
+                      History ({i.payments.length})
+                      <ChevronDown size={15} className="transition-transform group-open:rotate-180" />
+                    </summary>
+                    {i.payments.length > 0 ? <PaymentHistory payments={i.payments} /> : <p className="mt-2 text-[13px] text-dim">No payments confirmed yet.</p>}
+                  </details>
+
+                  <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                    {locked && (
+                      <a href={DISCORD_INVITE} target="_blank" rel="noreferrer" className={buttonClass("gold", "sm", "max-sm:w-full")}>
+                        Send proof on Discord <ArrowUpRight size={15} />
+                      </a>
+                    )}
+                    <button type="button" onClick={() => open(l.key)} className={buttonClass("outline", "sm", "max-sm:w-full")}>
+                      Open license
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       )}
     </>
@@ -243,11 +670,14 @@ function LicenseCard({
   kit,
   downloadable,
   places,
+  initialTab,
 }: {
   license: LicenseDto;
   kit: KitMeta | undefined;
   downloadable: boolean;
   places: Record<string, PlaceInfo | null>;
+  /** tab yang dibuka pertama (mis. dari tombol "View payment") */
+  initialTab?: Tab;
 }) {
   const revoked = license.status === "revoked";
   const used = license.places.length;
@@ -263,7 +693,7 @@ function LicenseCard({
     { id: "activity", label: "Activity" },
   ];
   // belum lunas → buka tab Payment dulu; selebihnya Places
-  const [picked, setPicked] = useState<Tab>(locked ? "payment" : "places");
+  const [picked, setPicked] = useState<Tab>(initialTab ?? (locked ? "payment" : "places"));
   const tab = tabs.some((t) => t.id === picked) ? picked : tabs[0].id;
 
   const onTabKey = (e: React.KeyboardEvent) => {
@@ -285,9 +715,9 @@ function LicenseCard({
         : { label: "Not used yet", cls: "bg-bg text-muted" };
 
   return (
-    <article className={`grid overflow-hidden rounded-[24px] bg-surface-2 sm:rounded-[28px] lg:grid-cols-[minmax(0,340px)_1fr] ${revoked ? "opacity-70" : ""}`}>
+    <article className={`grid overflow-hidden rounded-[24px] bg-surface-2 sm:rounded-[28px] xl:grid-cols-[minmax(0,320px)_1fr] ${revoked ? "opacity-70" : ""}`}>
       {/* ═══ KIRI: identitas, key, unduh ═══ */}
-      <aside className="relative isolate flex flex-col gap-5 overflow-hidden p-5 sm:p-6 lg:border-r lg:border-line">
+      <aside className="relative isolate flex flex-col gap-5 overflow-hidden p-5 sm:p-6 xl:border-r xl:border-line">
         {kit?.poster && (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element -- poster dari Vercel Blob, sudah webp kecil */}
