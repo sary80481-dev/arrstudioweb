@@ -8,7 +8,7 @@ import { issueLicenses } from "./licenses";
 import { getKit, listKits } from "./kits";
 import { outcomeOf, getTransactionStatus, type MidtransStatus } from "./midtrans";
 import { getPricing } from "./settings";
-import { recordDiscountUse, resolveDiscount } from "./discounts";
+import { assertCapacity, recordDiscountUse, resolveDiscount } from "./discounts";
 
 /* ============================================================
    Order pembelian. Harga SELALU dihitung ulang di server dari Firestore —
@@ -110,7 +110,10 @@ export async function quote(item: OrderItem, code?: string | null) {
 export async function createOrder(item: OrderItem, owner: { uid: string; email: string }, code?: string | null) {
   const { title, amount, originalAmount, discountCode, discount, lines } = await quote(item, code);
   const orderId = newOrderId();
-  await orders().doc(orderId).set({
+  // order + pengecekan kuota kode dalam satu transaksi
+  await db().runTransaction(async (tx) => {
+    if (discountCode) await assertCapacity(tx, discountCode);
+    tx.create(orders().doc(orderId), {
     orderId,
     ownerUid: owner.uid,
     ownerEmail: owner.email,
@@ -126,6 +129,7 @@ export async function createOrder(item: OrderItem, owner: { uid: string; email: 
     licenseKeys: [],
     createdAt: FieldValue.serverTimestamp(),
     paidAt: null,
+    });
   });
   return { orderId, title, amount };
 }
@@ -177,8 +181,9 @@ export async function applyPayment(status: MidtransStatus): Promise<OrderDto | n
         }))
       );
     }
-    await ref.update({ status: "paid", licenseKeys: keys, paidAt: FieldValue.serverTimestamp() });
+    // catat pemakaian kode SEBELUM status "paid": selama "fulfilling" order masih dihitung sebagai pending, jadi kuota tidak pernah longgar
     if (claimed.discountCode) await recordDiscountUse(claimed.discountCode);
+    await ref.update({ status: "paid", licenseKeys: keys, paidAt: FieldValue.serverTimestamp() });
   }
 
   const after = await ref.get();

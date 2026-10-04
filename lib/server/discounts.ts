@@ -1,5 +1,5 @@
 import "server-only";
-import { FieldValue, Timestamp } from "firebase-admin/firestore";
+import { FieldValue, Timestamp, type Transaction } from "firebase-admin/firestore";
 import { db } from "@/lib/firebase/admin";
 import { DISCOUNT_CODE_PATTERN, discountAmount, type Discount } from "@/lib/discount";
 import { ApiError } from "./http";
@@ -94,6 +94,26 @@ export async function resolveDiscount(
   const amount = discountAmount(base, d);
   if (amount <= 0) throw new ApiError(400, "CODE_NOT_APPLICABLE", "This code doesn't reduce the price of this item.");
   return { code, amount };
+}
+
+/** order pending selebihnya dianggap gugur (sama dengan kedaluwarsa Snap) */
+const PENDING_TTL_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Dipanggil DI DALAM transaksi pembuatan order: kuota = sudah lunas + order yang masih menunggu bayar.
+ * Dengan begitu beberapa pembeli yang checkout bersamaan tidak bisa melewati `maxUses`.
+ */
+export async function assertCapacity(tx: Transaction, code: string) {
+  const snap = await tx.get(discounts().doc(code));
+  const d = snap.exists ? toDiscount(snap.data() as DiscountDoc) : null;
+  if (!d || !d.active || d.maxUses <= 0) return;
+  const orders = await tx.get(db().collection("orders").where("discountCode", "==", code));
+  const cutoff = Date.now() - PENDING_TTL_MS;
+  const inFlight = orders.docs.filter((o) => {
+    const v = o.data() as { status: string; createdAt?: Timestamp };
+    return (v.status === "pending" || v.status === "fulfilling") && (v.createdAt?.toMillis() ?? Date.now()) > cutoff;
+  }).length;
+  if (d.usedCount + inFlight >= d.maxUses) throw new ApiError(400, "INVALID_CODE", "This code isn't valid or has expired.");
 }
 
 /** Dipanggil sekali per order lunas (lihat applyPayment) */

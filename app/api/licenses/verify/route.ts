@@ -2,6 +2,7 @@ import { z } from "zod";
 import { KIT_ID_PATTERN } from "@/lib/kits";
 import { ApiError, clientIp, handle, json, parseBody, rateLimit } from "@/lib/server/http";
 import { maskKey, normalizeKey, verifyLicense } from "@/lib/server/licenses";
+import { assertNotBlocked, recordFailure } from "@/lib/server/ratelimit";
 
 const Body = z.object({
   key: z.string().min(1).max(32),
@@ -32,7 +33,16 @@ export const POST = handle(async (req: Request) => {
     throw new ApiError(400, "MISSING_PLACE_ID", "Place ID is missing. Call this endpoint from a Roblox game server.");
   }
 
-  const result = await verifyLicense({ key, kit: body.kit, placeId, jobId: body.jobId, version: body.version });
+  // tebakan key: hanya percobaan GAGAL yang dihitung (bersama lintas instance) — IP server Roblox dipakai banyak pembeli,
+  // jadi lalu lintas normal tidak boleh ikut terhitung
+  const ip = clientIp(req);
+  await assertNotBlocked(`verify-fail:${ip}`, 30, 10 * 60_000);
+  const result = await verifyLicense({ key, kit: body.kit, placeId, jobId: body.jobId, version: body.version }).catch(async (err) => {
+    if (err instanceof ApiError && (err.code === "INVALID_KEY" || err.code === "INVALID_KEY_FORMAT")) {
+      await recordFailure(`verify-fail:${ip}`, 10 * 60_000);
+    }
+    throw err;
+  });
   if (result.newlyBound) console.info(`[license] ${maskKey(key)} bound to place ${placeId}`);
 
   return json(result);

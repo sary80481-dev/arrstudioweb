@@ -3,6 +3,7 @@ import { z } from "zod";
 import { KIT_ID_PATTERN } from "@/lib/kits";
 import { ApiError, handle, json, parseBody } from "@/lib/server/http";
 import { issueLicenses, listAllLicenses } from "@/lib/server/licenses";
+import { audit } from "@/lib/server/audit";
 import { requireAdmin } from "@/lib/server/session";
 import { findUserByEmail, getUser } from "@/lib/server/users";
 
@@ -36,7 +37,7 @@ const Issue = z
 
 /** POST /api/admin/licenses — terbitkan lisensi untuk user (setelah pembayaran diterima) */
 export const POST = handle(async (req: NextRequest) => {
-  await requireAdmin(req);
+  const admin = await requireAdmin(req);
   const body = await parseBody(req, Issue);
 
   const owner = body.ownerUid ? await getUser(body.ownerUid) : await findUserByEmail(body.ownerEmail!);
@@ -50,6 +51,12 @@ export const POST = handle(async (req: NextRequest) => {
     maxPlaces: body.maxPlaces,
     note: body.note,
     installment: body.installment,
+  });
+  await audit(admin, "license.issue", keys.join(","), {
+    kit: body.kit,
+    owner: owner.uid,
+    count: body.count,
+    installment: body.installment ?? null,
   });
   return json({ keys }, { status: 201 });
 });

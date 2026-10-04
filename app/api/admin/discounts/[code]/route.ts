@@ -3,6 +3,7 @@ import { DISCOUNT_CODE_PATTERN } from "@/lib/discount";
 import { DiscountPatchSchema } from "@/lib/discount-schema";
 import { ApiError, handle, json, parseBody } from "@/lib/server/http";
 import { deleteDiscount, normalizeCode, updateDiscount } from "@/lib/server/discounts";
+import { audit } from "@/lib/server/audit";
 import { requireAdmin } from "@/lib/server/session";
 
 const codeOf = async (ctx: RouteContext<"/api/admin/discounts/[code]">) => {
@@ -13,14 +14,19 @@ const codeOf = async (ctx: RouteContext<"/api/admin/discounts/[code]">) => {
 
 /** PATCH /api/admin/discounts/:code — aktif/nonaktif, batas pemakaian, kedaluwarsa */
 export const PATCH = handle(async (req: NextRequest, ctx: RouteContext<"/api/admin/discounts/[code]">) => {
-  await requireAdmin(req);
+  const admin = await requireAdmin(req);
   const code = await codeOf(ctx);
-  return json({ discount: await updateDiscount(code, await parseBody(req, DiscountPatchSchema)) });
+  const patch = await parseBody(req, DiscountPatchSchema);
+  const discount = await updateDiscount(code, patch);
+  await audit(admin, "discount.update", code, patch);
+  return json({ discount });
 });
 
 /** DELETE /api/admin/discounts/:code */
 export const DELETE = handle(async (req: NextRequest, ctx: RouteContext<"/api/admin/discounts/[code]">) => {
-  await requireAdmin(req);
-  await deleteDiscount(await codeOf(ctx));
+  const admin = await requireAdmin(req);
+  const code = await codeOf(ctx);
+  await deleteDiscount(code);
+  await audit(admin, "discount.delete", code);
   return json({ ok: true });
 });

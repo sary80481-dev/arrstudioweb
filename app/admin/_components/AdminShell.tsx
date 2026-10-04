@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   AlertTriangle, ArrowUpRight, BadgeDollarSign, BookOpen,
   BadgePercent, Globe, KeyRound, LayoutDashboard, LayoutGrid, LogOut, Menu,
-  Package, Users, X,
+  Package, ScrollText, Users, X,
 } from "lucide-react";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import { LogoImage } from "@/components/templates/landing/_components/ui";
@@ -43,6 +43,10 @@ const nav = [
       { href: "/admin/pricing", label: "Pricing", icon: BadgeDollarSign },
       { href: "/admin/discounts", label: "Discounts", icon: BadgePercent },
     ],
+  },
+  {
+    group: "Security",
+    items: [{ href: "/admin/audit", label: "Audit log", icon: ScrollText }],
   },
 ];
 const allNav = nav.flatMap((g) => g.items);

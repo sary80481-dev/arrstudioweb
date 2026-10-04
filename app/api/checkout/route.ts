@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { KIT_ID_PATTERN } from "@/lib/kits";
 import { DISCORD_INVITE } from "@/lib/links";
-import { ApiError, clientIp, handle, json, parseBody, rateLimit } from "@/lib/server/http";
+import { ApiError, clientIp, handle, json, parseBody } from "@/lib/server/http";
+import { rateLimitShared } from "@/lib/server/ratelimit";
 import { createSnapTransaction, paymentsEnabled, snapClientKey } from "@/lib/server/midtrans";
 import { createOrder } from "@/lib/server/orders";
 import { requireUser } from "@/lib/server/session";
@@ -27,7 +28,7 @@ export const POST = handle(async (req: Request) => {
       url: DISCORD_INVITE,
     });
   }
-  rateLimit(`checkout:${user.uid}:${clientIp(req)}`, 10, 60_000);
+  await rateLimitShared(`checkout:${user.uid}:${clientIp(req)}`, 10, 60_000);
   const { item, code } = await parseBody(req, CheckoutSchema);
 
   const order = await createOrder(item, { uid: user.uid, email: user.email }, code);

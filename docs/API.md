@@ -335,6 +335,13 @@ Jumlah lisensi di kit & statistik publik ikut berkurang.
 - `POST /api/checkout` menerima `code` opsional; harga akhir selalu dihitung ulang di server. Pemakaian kode (`usedCount`) bertambah saat order lunas.
 - `GET|POST /api/admin/discounts`, `PATCH|DELETE /api/admin/discounts/:code` — kelola kode (koleksi Firestore `discounts/{KODE}`: `type` percent|fixed, `value`, `appliesTo` all|kit|bundle, `active`, `maxUses`, `expiresAt`).
 
+#### Keamanan & audit
+- `PATCH /api/admin/users` — `{ "uid", "role": "user" | "admin" }`; jadikan/cabut admin. Tidak bisa mengubah peran sendiri; saat dicabut, semua sesi user itu dicabut.
+- Semua aksi admin atas uang, lisensi, diskon, harga, dan peran dicatat di koleksi `auditLogs` (siapa, apa, kapan) dan tampil di **Admin → Audit log**.
+- Batas request login, checkout, kode promo, dan tambah place memakai penghitung bersama di koleksi `rateLimits` (berlaku lintas instance). Aktifkan TTL agar terhapus otomatis: `gcloud firestore fields ttls update expiresAt --collection-group=rateLimits --enable-ttl`. Tebakan key verifikasi yang gagal dihitung per IP (30 / 10 menit).
+- Kuota `maxUses` kode diskon dicek atomik saat order dibuat (lunas + order yang masih menunggu bayar).
+- CSP: direktif aman diberlakukan; kebijakan penuh berjalan Report-Only dan pelanggarannya dicatat di log server (`/api/csp-report`).
+
 ## 5. Integrasi Roblox
 
 File siap pakai ada di folder `roblox/`:

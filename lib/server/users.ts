@@ -1,6 +1,7 @@
 import "server-only";
 import { FieldValue, type Timestamp } from "firebase-admin/firestore";
-import { db } from "@/lib/firebase/admin";
+import { adminAuth, db } from "@/lib/firebase/admin";
+import { ApiError } from "./http";
 
 export type Role = "user" | "admin";
 
@@ -104,6 +105,15 @@ export async function getUser(uid: string): Promise<UserDto | null> {
 export async function updateUser(uid: string, patch: Partial<Pick<UserDoc, "displayName" | "robloxUsername">>) {
   await users().doc(uid).update({ ...patch, updatedAt: FieldValue.serverTimestamp() });
   return getUser(uid);
+}
+
+/** Ubah peran akun. Saat dicabut dari admin, semua sesi/token user itu ikut dicabut agar klaim admin lamanya mati. */
+export async function setUserRole(uid: string, role: Role): Promise<UserDto> {
+  const ref = users().doc(uid);
+  if (!(await ref.get()).exists) throw new ApiError(404, "USER_NOT_FOUND", "User not found.");
+  await ref.update({ role, updatedAt: FieldValue.serverTimestamp() });
+  if (role !== "admin") await adminAuth().revokeRefreshTokens(uid);
+  return (await getUser(uid))!;
 }
 
 export async function findUserByEmail(email: string): Promise<{ uid: string; email: string } | null> {

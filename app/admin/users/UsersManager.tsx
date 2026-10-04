@@ -1,16 +1,47 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Globe, Link2, ShieldCheck } from "lucide-react";
 import type { SignupMethod, UserDto } from "@/lib/server/users";
 import { selectLicenses, useAppSelector } from "@/lib/store/store";
-import { Card, PageHeader, Segmented, StatusPill } from "../_components/fields";
+import { Btn, Card, PageHeader, Segmented, StatusPill, api } from "../_components/fields";
 import { DataTable, columnHelper } from "../_components/DataTable";
 
 type Row = UserDto & { licenses: number };
 type Filter = "all" | SignupMethod | "linked";
 
 const col = columnHelper<Row>();
+
+/** uid admin yang sedang login — tidak boleh mengubah perannya sendiri */
+const SelfUid = createContext("");
+
+function RoleButton({ user }: { user: Row }) {
+  const router = useRouter();
+  const self = useContext(SelfUid);
+  const [busy, setBusy] = useState(false);
+  if (user.uid === self) return <span className="text-xs text-dim">You</span>;
+  const admin = user.role === "admin";
+
+  const toggle = async () => {
+    const msg = admin ? `Remove admin access from ${user.email || user.displayName}? They are signed out everywhere.` : `Make ${user.email || user.displayName} an admin? They get full access to payments, licenses and users.`;
+    if (!confirm(msg)) return;
+    setBusy(true);
+    try {
+      await api("PATCH", "/api/admin/users", { uid: user.uid, role: admin ? "user" : "admin" });
+      router.refresh();
+    } catch (e) {
+      alert((e as Error).message);
+    }
+    setBusy(false);
+  };
+
+  return (
+    <Btn size="sm" variant={admin ? "danger" : "ghost"} onClick={toggle} disabled={busy}>
+      {admin ? "Remove admin" : "Make admin"}
+    </Btn>
+  );
+}
 
 const joined = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "—";
@@ -88,10 +119,11 @@ const columns = [
     cell: (c) =>
       c.getValue() > 0 ? <StatusPill tone="green">{c.getValue()}</StatusPill> : <span className="text-dim">0</span>,
   }),
+  col.display({ id: "role", header: () => <span className="sr-only">Role</span>, cell: (c) => <div className="flex justify-end"><RoleButton user={c.row.original} /></div> }),
   col.accessor((r) => r.createdAt ?? "", { id: "joined", header: "Joined", cell: (c) => <span className="text-muted">{joined(c.row.original.createdAt)}</span> }),
 ];
 
-export default function UsersManager({ users }: { users: UserDto[] | null }) {
+export default function UsersManager({ users, selfUid }: { users: UserDto[] | null; selfUid: string }) {
   const { items: licenses } = useAppSelector(selectLicenses);
   const [filter, setFilter] = useState<Filter>("all");
   // waktu acuan "minggu ini" diambil sekali saat mount
@@ -159,6 +191,7 @@ export default function UsersManager({ users }: { users: UserDto[] | null }) {
             </p>
           </Card>
 
+          <SelfUid.Provider value={selfUid}>
           <DataTable
             data={filtered}
             columns={columns}
@@ -169,6 +202,7 @@ export default function UsersManager({ users }: { users: UserDto[] | null }) {
               signupMethod: { className: "hidden sm:table-cell" },
               roblox: { className: "hidden lg:table-cell" },
               licenses: { align: "right" },
+              role: { className: "w-36", align: "right" },
               joined: { className: "hidden md:table-cell", align: "right" },
             }}
             toolbar={
@@ -180,6 +214,7 @@ export default function UsersManager({ users }: { users: UserDto[] | null }) {
               />
             }
           />
+          </SelfUid.Provider>
         </>
       )}
     </>

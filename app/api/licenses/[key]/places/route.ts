@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { z } from "zod";
-import { ApiError, clientIp, handle, json, parseBody, rateLimit } from "@/lib/server/http";
+import { ApiError, clientIp, handle, json, parseBody } from "@/lib/server/http";
+import { rateLimitShared } from "@/lib/server/ratelimit";
 import { addPlace } from "@/lib/server/licenses";
 import { placeExists } from "@/lib/server/roblox";
 import { requireUser } from "@/lib/server/session";
@@ -12,7 +13,7 @@ const Body = z.object({
 /** POST /api/licenses/:key/places — isi slot kosong dengan place (dicek ke Roblox dulu) */
 export const POST = handle(async (req: NextRequest, ctx: RouteContext<"/api/licenses/[key]/places">) => {
   const { uid } = await requireUser(req);
-  rateLimit(`add-place:${uid}:${clientIp(req)}`, 20, 60_000);
+  await rateLimitShared(`add-place:${uid}:${clientIp(req)}`, 20, 60_000);
   const { key } = await ctx.params;
   const { placeId } = await parseBody(req, Body);
 

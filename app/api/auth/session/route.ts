@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { handle, json, parseBody, rateLimit, clientIp } from "@/lib/server/http";
+import { handle, json, parseBody, clientIp } from "@/lib/server/http";
+import { rateLimitShared } from "@/lib/server/ratelimit";
 import { createSession, destroySession, setAuthHint } from "@/lib/server/session";
 import { ensureUser } from "@/lib/server/users";
 
@@ -11,7 +12,7 @@ const Body = z.object({
 
 /** POST /api/auth/session — tukar Firebase ID token → session cookie, buat profil jika belum ada */
 export const POST = handle(async (req: Request) => {
-  rateLimit(`session:${clientIp(req)}`, 20, 60_000);
+  await rateLimitShared(`session:${clientIp(req)}`, 20, 60_000);
   const { idToken, displayName } = await parseBody(req, Body);
 
   const decoded = await createSession(idToken);
