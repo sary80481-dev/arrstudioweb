@@ -35,6 +35,20 @@ const mac = (data: string) => createHmac("sha256", masterKey()).update(data).dig
 
 export const mfaDisabled = () => process.env.ADMIN_MFA_DISABLED === "true";
 
+/**
+ * Akun yang dikecualikan dari 2FA — pilihan pemilik untuk akunnya sendiri.
+ * Tambahan lewat env ADMIN_MFA_EXEMPT_EMAILS (pisahkan dengan koma). Akun ini TIDAK punya lapisan 2FA:
+ * keamanannya bergantung penuh pada password / login Discord-nya.
+ */
+const EXEMPT_DEFAULT = ["siharprogramming07@gmail.com"];
+export function mfaExempt(email?: string | null): boolean {
+  if (!email) return false;
+  const list = [...EXEMPT_DEFAULT, ...(process.env.ADMIN_MFA_EXEMPT_EMAILS ?? "").split(",")]
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  return list.includes(email.trim().toLowerCase());
+}
+
 /* ─── enkripsi rahasia ─── */
 function encrypt(plain: string): string {
   const iv = randomBytes(12);
@@ -192,8 +206,8 @@ export async function clearMfaCookie() {
 }
 
 /** true bila cookie 2FA valid untuk uid ini (atau 2FA dimatikan darurat lewat env) */
-export async function mfaPassed(uid: string): Promise<boolean> {
-  if (mfaDisabled()) return true;
+export async function mfaPassed(uid: string, email?: string | null): Promise<boolean> {
+  if (mfaDisabled() || mfaExempt(email)) return true;
   const v = (await cookies()).get(COOKIE)?.value;
   const [u, exp, sig] = v?.split(".") ?? [];
   if (!u || !exp || !sig || u !== uid || Number(exp) < Date.now()) return false;
@@ -205,7 +219,7 @@ export async function mfaPassed(uid: string): Promise<boolean> {
 }
 
 /** Untuk API admin: lempar 403 bila belum lulus 2FA (flag `setup` = belum pernah mendaftar) */
-export async function assertMfa(uid: string) {
-  if (await mfaPassed(uid)) return;
+export async function assertMfa(uid: string, email?: string | null) {
+  if (await mfaPassed(uid, email)) return;
   throw new ApiError(403, "MFA_REQUIRED", "Two-factor verification required.", { setup: !(await isEnrolled(uid)) });
 }

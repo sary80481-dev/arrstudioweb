@@ -118,7 +118,7 @@ export async function requireUser(req?: Request): Promise<UserDto> {
 export async function requireAdmin(req?: Request, opts: { mfa?: boolean } = {}): Promise<UserDto> {
   const user = await requireUser(req);
   if (user.role !== "admin") throw new ApiError(403, "FORBIDDEN", "Admin access required.");
-  if (opts.mfa !== false) await assertMfa(user.uid);
+  if (opts.mfa !== false) await assertMfa(user.uid, user.email);
   return user;
 }
 
@@ -127,6 +127,6 @@ export async function adminPageGuard(): Promise<UserDto> {
   const user = await currentUser();
   if (!user) return redirectToLogin();
   if (user.role !== "admin") redirect("/dashboard");
-  if (!(await mfaPassed(user.uid))) redirect("/admin");
+  if (!(await mfaPassed(user.uid, user.email))) redirect("/admin");
   return user;
 }

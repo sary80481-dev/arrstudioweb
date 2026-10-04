@@ -18,7 +18,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   if (user.role !== "admin") redirect("/dashboard");
 
   // 2FA: tanpa kode yang benar, tidak ada satu pun halaman admin (dan datanya) yang dirender
-  if (!(await mfaPassed(user.uid))) return <MfaGate enrolled={await isEnrolled(user.uid)} email={user.email} />;
+  if (!(await mfaPassed(user.uid, user.email))) return <MfaGate enrolled={await isEnrolled(user.uid)} email={user.email} />;
 
   // data awal untuk Redux; setelah itu AdminShell menyambung realtime
   const [kits, stats, pricing] = await Promise.all([

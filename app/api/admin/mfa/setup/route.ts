@@ -12,7 +12,7 @@ import { requireAdmin } from "@/lib/server/session";
 export const POST = handle(async (req: Request) => {
   const admin = await requireAdmin(req, { mfa: false });
   await rateLimitShared(`mfa-setup:${admin.uid}`, 10, 10 * 60_000);
-  if ((await isEnrolled(admin.uid)) && !(await mfaPassed(admin.uid))) {
+  if ((await isEnrolled(admin.uid)) && !(await mfaPassed(admin.uid, admin.email))) {
     throw new ApiError(403, "MFA_REQUIRED", "Verify with your current authenticator first.", { setup: false });
   }
   const { secret, uri } = await beginEnrollment(admin.uid, admin.email);
