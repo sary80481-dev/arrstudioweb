@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, Mail, MessageCircle } from "lucide-react";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import { LogoImage } from "@/components/templates/landing/_components/ui";
-import { CONTACT, LEGAL, policies, policyLang, type Block, type PolicyLang } from "./content";
+import { CONTACT, LEGAL, policies, policyLang, policyLangNames, type Block, type PolicyLang } from "./content";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — ArrStudio",
@@ -11,8 +11,9 @@ export const metadata: Metadata = {
   alternates: { canonical: "/privacy" },
 };
 
+const DATE_LOCALE: Record<PolicyLang, string> = { en: "en-US", id: "id-ID", ms: "ms-MY", fil: "fil-PH", vi: "vi-VN", th: "th-TH" };
 const dateFmt = (iso: string, lang: PolicyLang) =>
-  new Date(iso).toLocaleDateString(lang === "id" ? "id-ID" : "en-US", { day: "numeric", month: "long", year: "numeric" });
+  new Date(iso).toLocaleDateString(DATE_LOCALE[lang], { day: "numeric", month: "long", year: "numeric" });
 
 function Table({ head, rows }: { head: string[]; rows: string[][] }) {
   return (
@@ -83,7 +84,7 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
   const p = policies[lang];
 
   return (
-    <div className="min-h-svh bg-bg">
+    <div lang={lang} className="min-h-svh bg-bg">
       <header className="sticky top-0 z-30 border-b border-line bg-bg/90 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2">
@@ -94,16 +95,16 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
             <Link href="/" className="hidden items-center gap-1 text-sm text-muted hover:text-fg sm:flex">
               <ArrowLeft size={14} /> {p.backLabel}
             </Link>
-            <nav aria-label="Language" className="flex rounded-full bg-surface-2 p-0.5 text-xs font-medium">
-              {(["en", "id"] as const).map((l) => (
+            <nav aria-label="Language" className="flex max-w-[56vw] overflow-x-auto rounded-full bg-surface-2 p-0.5 text-xs font-medium">
+              {(Object.keys(policyLangNames) as PolicyLang[]).map((l) => (
                 <Link
                   key={l}
                   href={`/privacy?lang=${l}`}
                   hrefLang={l}
                   aria-current={l === lang ? "true" : undefined}
-                  className={`rounded-full px-3 py-1 transition-colors ${l === lang ? "bg-bg text-fg shadow-sm" : "text-muted hover:text-fg"}`}
+                  className={`rounded-full px-2.5 py-1 transition-colors ${l === lang ? "bg-bg text-fg shadow-sm" : "text-muted hover:text-fg"}`}
                 >
-                  {l.toUpperCase()}
+                  {policyLangNames[l]}
                 </Link>
               ))}
             </nav>

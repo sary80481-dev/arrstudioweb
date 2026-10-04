@@ -85,7 +85,7 @@ export default function Footer({ lang, t: { footer: t, nav } }: SectionProps) {
           <ul className="flex gap-6">
             {Object.entries(t.legal).map(([key, l]) => (
               <li key={key}>
-                <a href={key === "privacy" ? `/privacy?lang=${lang === "id" ? "id" : "en"}` : "#"} className="transition-colors hover:text-fg">{l}</a>
+                <a href={key === "privacy" ? `/privacy?lang=${lang}` : "#"} className="transition-colors hover:text-fg">{l}</a>
               </li>
             ))}
             <li><CookieSettingsLink lang={lang} /></li>

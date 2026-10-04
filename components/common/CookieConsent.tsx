@@ -50,7 +50,7 @@ export default function CookieConsent() {
           <p className="text-sm font-semibold text-fg">{t.title}</p>
           <p className="mt-1 text-[13px] leading-relaxed text-muted">
             {t.text}{" "}
-            <Link href={`/privacy?lang=${lang === "id" ? "id" : "en"}`} className="whitespace-nowrap text-fg underline underline-offset-2 hover:text-gold">
+            <Link href={`/privacy?lang=${lang}`} className="whitespace-nowrap text-fg underline underline-offset-2 hover:text-gold">
               {t.policy}
             </Link>
           </p>

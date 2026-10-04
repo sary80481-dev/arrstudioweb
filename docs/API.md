@@ -165,6 +165,12 @@ Dipanggil oleh Discord. Jika gagal, redirect ke `/login?error=discord_cancelled 
 ```
 Semua field opsional (minimal satu). `robloxUsername`: 3–20 karakter, huruf/angka/underscore, atau `null`.
 
+#### `GET /api/account/export` 🔒
+Unduh semua data pribadi (profil, lisensi, pesanan) sebagai berkas JSON — hak portabilitas, juga lewat **Dashboard → Account**.
+
+#### `DELETE /api/account` 🔒
+Hapus akun sendiri secara permanen. Body: `{ "confirm": "<email akun>" }` (atau `"DELETE"` bila akun tanpa email). Efek: akun login, profil, dan rahasia 2FA dihapus; lisensi dicabut dan dilepas dari identitas pemilik; pesanan/pembayaran dipertahankan tanpa identitas (kewajiban pajak). Ditolak bila ada pembayaran yang sedang berjalan (`PAYMENT_IN_PROGRESS`) atau akunnya admin (`ADMIN_CANNOT_DELETE`).
+
 ### Lisensi
 
 #### `GET /api/licenses` 🔒

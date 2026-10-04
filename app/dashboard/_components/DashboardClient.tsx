@@ -598,7 +598,7 @@ function AccountView({ name, email, isAdmin, licenseCount }: { name: string; ema
       const data = await res.json().catch(() => null);
       if (!res.ok) throw new Error(data?.error?.message ?? "Couldn't delete the account.");
       await signOut().catch(() => {});
-      window.location.href = "/";
+      window.location.assign("/");
     } catch (e) {
       setError((e as Error).message);
       setBusy(false);
