@@ -8,8 +8,8 @@ import { ApiError, rateLimit } from "./http";
    Batas request yang dipakai BERSAMA oleh semua instance (Vercel menjalankan
    banyak instance serverless; `rateLimit` di memori hanya berlaku per instance).
    Penghitung: koleksi `rateLimits`, jendela tetap, satu dokumen per (kunci, jendela).
-   Dokumen punya `expiresAt` → aktifkan TTL policy Firestore di field itu supaya terhapus otomatis:
-     gcloud firestore fields ttls update expiresAt --collection-group=rateLimits --enable-ttl
+   Dokumen punya `expiresAt`. Pembersihan dilakukan aplikasi sendiri (`sweep`), tanpa TTL policy Firestore
+   (TTL butuh paket Blaze/berbayar).
    Bila Firestore error, request tetap dilewatkan (fail-open) — jangan sampai pembeli terkunci.
    ============================================================ */
 
@@ -18,6 +18,20 @@ const ref = (key: string, windowMs: number) => {
   const id = createHash("sha256").update(`${key}:${windowStart}`).digest("hex").slice(0, 40);
   return { doc: db().collection("rateLimits").doc(id), expiresAt: Timestamp.fromMillis((windowStart + 2) * windowMs) };
 };
+
+/** Hapus penghitung yang sudah kedaluwarsa — dipicu acak (~2% request) agar koleksi tidak menumpuk; satu query rentang, tanpa indeks khusus */
+async function sweep() {
+  if (Math.random() > 0.02) return;
+  try {
+    const old = await db().collection("rateLimits").where("expiresAt", "<", Timestamp.now()).limit(100).get();
+    if (old.empty) return;
+    const batch = db().batch();
+    old.docs.forEach((d) => batch.delete(d.ref));
+    await batch.commit();
+  } catch (err) {
+    console.error("[ratelimit] sweep failed", err);
+  }
+}
 
 const tooMany = (windowMs: number) =>
   new ApiError(429, "RATE_LIMITED", "Too many requests.", { retryAfter: Math.ceil(windowMs / 1000) });
@@ -32,6 +46,7 @@ export async function rateLimitShared(key: string, limit: number, windowMs: numb
       tx.set(doc, { count: c, expiresAt });
       return c;
     });
+    void sweep();
     if (count > limit) throw tooMany(windowMs);
   } catch (err) {
     if (err instanceof ApiError) throw err;
