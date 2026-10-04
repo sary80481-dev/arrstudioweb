@@ -457,16 +457,16 @@ function IssuePanel({ kits, onClose }: { kits: Kit[]; onClose: () => void }) {
       <div className="border-t border-line px-4 py-3">
         <label className="flex items-center gap-2 text-[13px] font-medium text-fg">
           <input type="checkbox" checked={installment} onChange={(e) => setInstallment(e.target.checked)} className="accent-[var(--gold)]" />
-          Pay in installments
-          <span className="font-normal text-dim">— the buyer gets the key, but the file and kit stay locked until fully paid</span>
+          Track payments (installments)
+          <span className="font-normal text-dim">— locked until fully paid; enter the full total as first payment to unlock right away</span>
         </label>
         {installment && (
           <div className="mt-3 grid gap-3 sm:grid-cols-2 sm:max-w-md">
             <FieldShell label="Total price per license (Rp)" htmlFor="i-total">
               <TextInput id="i-total" inputMode="numeric" value={totalValue ? totalValue.toLocaleString("id-ID") : ""} onChange={(e) => setTotal(Number(e.target.value.replace(/\D/g, "")) || 0)} className="tabular-nums" />
             </FieldShell>
-            <FieldShell label="First payment (Rp)" htmlFor="i-first" hint={`Remaining ${formatIDR(Math.max(0, totalValue - firstPaid))}`}>
-              <TextInput id="i-first" inputMode="numeric" value={firstPaid ? firstPaid.toLocaleString("id-ID") : ""} onChange={(e) => setFirstPaid(Number(e.target.value.replace(/\D/g, "")) || 0)} className="tabular-nums" />
+            <FieldShell label="First payment (Rp)" htmlFor="i-first" hint={firstPaid >= totalValue && totalValue > 0 ? "Paid in full — unlocked right away" : `Remaining ${formatIDR(Math.max(0, totalValue - firstPaid))}`}>
+              <TextInput id="i-first" inputMode="numeric" value={firstPaid ? firstPaid.toLocaleString("id-ID") : ""} onChange={(e) => setFirstPaid(Math.min(Number(e.target.value.replace(/\D/g, "")) || 0, totalValue))} className="tabular-nums" />
             </FieldShell>
           </div>
         )}

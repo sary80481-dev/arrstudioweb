@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { Check } from "lucide-react";
 import { BuyButton } from "@/components/checkout/BuyButton";
+import { PromoCode, type AppliedPromo } from "@/components/checkout/PromoCode";
 import { fmt, type Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries/en";
 import { formatIDRShort, type Kit } from "@/lib/kits";
@@ -26,6 +28,7 @@ export default function Pricing({ t, lang }: { t: Dictionary["pricing"]; lang: L
   // harga & isi bundle diatur di /admin/pricing, kit dari /admin/kits — keduanya realtime
   const kits = useAppSelector(selectKits);
   const pricing = useAppSelector(selectPricing);
+  const [bundlePromo, setBundlePromo] = useState<AppliedPromo | null>(null);
   const active = kits.filter((k) => k.status === "active");
   const activeNames = active.map((k) => k.name);
   // "hingga {p} place" untuk lisensi single — pakai angka terkecil supaya janjinya berlaku di semua kit
@@ -47,9 +50,12 @@ export default function Pricing({ t, lang }: { t: Dictionary["pricing"]; lang: L
     const cls = buttonClass(highlighted ? "gold" : "outline", "lg", "mt-8 w-full");
     if (p.price === "bundle") {
       return (
-        <BuyButton item={{ type: "bundle" }} returnTo={`/${lang}#pricing`} className={cls} block>
-          {cta}
-        </BuyButton>
+        <>
+          <BuyButton item={{ type: "bundle" }} code={bundlePromo?.code} returnTo={`/${lang}#pricing`} className={cls} block>
+            {cta}
+          </BuyButton>
+          <PromoCode item={{ type: "bundle" }} applied={bundlePromo} onChange={setBundlePromo} className="mt-3 text-center" />
+        </>
       );
     }
     // paket custom → ngobrol langsung
@@ -85,7 +91,14 @@ export default function Pricing({ t, lang }: { t: Dictionary["pricing"]; lang: L
                 <p className="mt-2 text-[15px] text-muted">{text.desc}</p>
 
                 <p className="mt-10 flex flex-wrap items-baseline gap-x-2">
-                  <span className="text-hero text-[3.25rem] text-fg tabular-nums">{priceOf(p, text.price)}</span>
+                  {p.price === "bundle" && bundlePromo && (
+                    <s className="text-2xl text-dim tabular-nums" aria-label={`Was Rp ${formatIDRShort(bundlePromo.originalAmount)}`}>
+                      Rp {formatIDRShort(bundlePromo.originalAmount)}
+                    </s>
+                  )}
+                  <span className="text-hero text-[3.25rem] text-fg tabular-nums">
+                    {p.price === "bundle" && bundlePromo ? `Rp ${formatIDRShort(bundlePromo.amount)}` : priceOf(p, text.price)}
+                  </span>
                   {text.period && <span className="text-[15px] text-dim">{text.period}</span>}
                 </p>
 

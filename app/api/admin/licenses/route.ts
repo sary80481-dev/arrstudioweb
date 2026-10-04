@@ -25,13 +25,13 @@ const Issue = z
     /** slot place per lisensi; kosong = pengaturan kit */
     maxPlaces: z.number().int().min(1).max(100).optional(),
     note: z.string().max(200).optional(),
-    /** cicilan: total harga per lisensi & pembayaran pertama (harus < total) */
+    /** pembayaran dengan catatan: total harga per lisensi & pembayaran pertama (≤ total; = total berarti langsung lunas) */
     installment: z.object({ total: z.number().int().min(1000).max(100_000_000), paid: z.number().int().min(0) }).optional(),
   })
   .refine((v) => v.ownerUid || v.ownerEmail, "ownerUid or ownerEmail is required")
-  .refine((v) => !v.installment || v.installment.paid < v.installment.total, {
+  .refine((v) => !v.installment || v.installment.paid <= v.installment.total, {
     path: ["installment", "paid"],
-    message: "First payment must be less than the total (otherwise issue it as paid in full)",
+    message: "First payment can't be more than the total",
   });
 
 /** POST /api/admin/licenses — terbitkan lisensi untuk user (setelah pembayaran diterima) */

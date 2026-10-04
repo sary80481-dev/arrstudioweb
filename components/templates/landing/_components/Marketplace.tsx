@@ -4,11 +4,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Check, ChevronDown, PackageOpen, Search, Star, X } from "lucide-react";
 import { BuyButton } from "@/components/checkout/BuyButton";
+import { PromoCode, Price, type AppliedPromo } from "@/components/checkout/PromoCode";
 import { KitIcon } from "@/components/common/KitIcon";
 import { KitVideoPlayer } from "@/components/video/KitVideoPlayer";
 import { fmt, type Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries/en";
-import { formatIDR, type Kit } from "@/lib/kits";
+import type { Kit } from "@/lib/kits";
 import { selectKits, useAppSelector } from "@/lib/store/store";
 import { Reveal } from "./Motion";
 import { Muted, Section, SectionHeading, buttonClass } from "./ui";
@@ -140,6 +141,7 @@ export default function Marketplace({ t, lang }: { t: T; lang: Locale }) {
 /* ─── KARTU RINGKAS ─── */
 function KitCard({ kit, t, lang, onOpen }: { kit: Kit; t: T; lang: Locale; onOpen: () => void }) {
   const soon = kit.status === "coming_soon";
+  const [promo, setPromo] = useState<AppliedPromo | null>(null);
 
   return (
     <article
@@ -175,20 +177,29 @@ function KitCard({ kit, t, lang, onOpen }: { kit: Kit; t: T; lang: Locale; onOpe
         <p className="mt-1 line-clamp-2 min-h-10 text-sm leading-5 text-muted max-sm:hidden">{kit.tagline || kit.description}</p>
         <p className="mt-2 text-xs text-dim max-sm:hidden">{fmt(t.placesPerKey, { n: kit.placesPerLicense })}</p>
 
-        <div className="mt-auto flex flex-col gap-2.5 pt-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:pt-4">
+        <div className="mt-auto pt-3 sm:pt-4">
           {soon ? (
             <span className="text-[13px] text-muted sm:text-sm">{t.comingSoon}</span>
           ) : (
             <>
-              <span className="text-sm font-semibold tracking-[-0.01em] text-fg tabular-nums sm:text-[15px]">{formatIDR(kit.price)}</span>
-              <BuyButton
-                item={{ type: "kit", kitId: kit.id }}
-                returnTo={`/${lang}#kit-${kit.id}`}
-                className={buttonClass("gold", "sm", "h-8 px-4 text-[13px] max-sm:w-full")}
-                wrapperClassName="flex flex-col gap-1.5 sm:items-end"
-              >
-                {t.buy}
-              </BuyButton>
+              <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                <Price
+                  price={kit.price}
+                  applied={promo}
+                  className="text-sm font-semibold tracking-[-0.01em] text-fg tabular-nums sm:text-[15px]"
+                  oldClassName="text-xs font-normal text-dim"
+                />
+                <BuyButton
+                  item={{ type: "kit", kitId: kit.id }}
+                  code={promo?.code}
+                  returnTo={`/${lang}#kit-${kit.id}`}
+                  className={buttonClass("gold", "sm", "h-8 px-4 text-[13px] max-sm:w-full")}
+                  wrapperClassName="flex flex-col gap-1.5 sm:items-end"
+                >
+                  {t.buy}
+                </BuyButton>
+              </div>
+              <PromoCode item={{ type: "kit", kitId: kit.id }} applied={promo} onChange={setPromo} className="mt-2.5" />
             </>
           )}
         </div>
@@ -237,6 +248,7 @@ function KitArt({ kit, className = "", children }: { kit: Kit; className?: strin
 
 /* ─── DIALOG DETAIL ─── */
 function KitDialog({ kit, t, lang, onClose }: { kit: Kit; t: T; lang: Locale; onClose: () => void }) {
+  const [promo, setPromo] = useState<AppliedPromo | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const soon = kit.status === "coming_soon";
 
@@ -309,20 +321,26 @@ function KitDialog({ kit, t, lang, onClose }: { kit: Kit; t: T; lang: Locale; on
               {soon ? (
                 <p className="text-display text-2xl text-fg">{t.comingSoon}</p>
               ) : (
-                <p className="text-display text-3xl text-fg tabular-nums">{formatIDR(kit.price)}</p>
+                <p className="text-display text-3xl text-fg tabular-nums">
+                  <Price price={kit.price} applied={promo} oldClassName="text-lg font-normal text-dim" />
+                </p>
               )}
               <p className="mt-1 text-sm text-dim">
                 {soon ? fmt(t.placesPerKey, { n: kit.placesPerLicense }) : `${t.oneTime} · ${fmt(t.placesPerKey, { n: kit.placesPerLicense })}`}
               </p>
               {soon ? null : (
-                <BuyButton
-                  item={{ type: "kit", kitId: kit.id }}
-                  returnTo={`/${lang}#kit-${kit.id}`}
-                  className={buttonClass("gold", "md", "mt-5 w-full")}
-                  block
-                >
-                  {t.buy}
-                </BuyButton>
+                <>
+                  <BuyButton
+                    item={{ type: "kit", kitId: kit.id }}
+                    code={promo?.code}
+                    returnTo={`/${lang}#kit-${kit.id}`}
+                    className={buttonClass("gold", "md", "mt-5 w-full")}
+                    block
+                  >
+                    {t.buy}
+                  </BuyButton>
+                  <PromoCode item={{ type: "kit", kitId: kit.id }} applied={promo} onChange={setPromo} className="mt-3 text-center" />
+                </>
               )}
               <dl className="mt-5 space-y-3 text-sm">
                 {kit.rating != null && (

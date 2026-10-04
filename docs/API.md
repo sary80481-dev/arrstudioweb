@@ -309,7 +309,7 @@ Terbitkan lisensi untuk user — dipakai setelah pembayaran diterima.
 ```
 User harus sudah punya akun (pernah login sekali).
 
-**Cicilan:** tambahkan `"installment": { "total": 449000, "paid": 150000 }` (per lisensi, `paid` < `total`). Key langsung terlihat di dashboard pembeli, tapi **unduh file, verifikasi kit (`/api/licenses/verify`) dan penambahan place ditolak dengan `INSTALLMENT_UNPAID`** sampai lunas.
+**Cicilan:** tambahkan `"installment": { "total": 449000, "paid": 150000 }` (per lisensi, `paid` ≤ `total`; `paid` = `total` berarti langsung lunas dan terbuka). Key langsung terlihat di dashboard pembeli, tapi **unduh file, verifikasi kit (`/api/licenses/verify`) dan penambahan place ditolak dengan `INSTALLMENT_UNPAID`** sampai lunas.
 
 #### `POST /api/admin/licenses/:key/payments`
 Catat pembayaran cicilan yang bukti transfernya sudah dicek: `{ "amount": 150000, "note": "Transfer BCA" }`. Melebihi sisa → `OVERPAYMENT`. Saat `paid` = `total`, lisensi otomatis terbuka.

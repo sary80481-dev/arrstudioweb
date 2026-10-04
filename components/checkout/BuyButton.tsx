@@ -3,8 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { ArrowUpRight, Loader2, Tag, X } from "lucide-react";
-import { formatIDR } from "@/lib/kits";
+import { ArrowUpRight, Loader2, X } from "lucide-react";
 
 /* ============================================================
    Tombol beli → Midtrans Snap (popup di halaman yang sama).
@@ -53,6 +52,7 @@ function loadSnap(clientKey: string): Promise<void> {
 
 export function BuyButton({
   item,
+  code,
   returnTo,
   className,
   block = false,
@@ -60,6 +60,8 @@ export function BuyButton({
   children,
 }: {
   item: Item;
+  /** kode promo yang sudah divalidasi <PromoCode> (server tetap memeriksa ulang) */
+  code?: string;
   /** tempat kembali setelah login, mis. "/en#kit-clubkit" */
   returnTo: string;
   className: string;
@@ -74,33 +76,6 @@ export function BuyButton({
   const [error, setError] = useState("");
   // pembayaran otomatis belum aktif → URL Discord untuk order manual
   const [discordUrl, setDiscordUrl] = useState<string | null>(null);
-  // kode diskon: input terbuka → "Apply" memeriksa ke server → kode yang valid ikut dikirim saat checkout
-  const [promoOpen, setPromoOpen] = useState(false);
-  const [promo, setPromo] = useState("");
-  const [promoBusy, setPromoBusy] = useState(false);
-  const [promoError, setPromoError] = useState("");
-  const [applied, setApplied] = useState<{ code: string; discount: number; amount: number } | null>(null);
-
-  const applyPromo = async () => {
-    if (!promo.trim()) return;
-    setPromoBusy(true);
-    setPromoError("");
-    setApplied(null);
-    try {
-      const res = await fetch("/api/checkout/discount", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ item, code: promo }),
-      });
-      const data = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(data?.error?.message ?? "Couldn't check the code.");
-      setApplied({ code: data.code, discount: data.discount, amount: data.amount });
-    } catch (err) {
-      setPromoError((err as Error).message);
-    }
-    setPromoBusy(false);
-  };
-
   const buy = async () => {
     setBusy(true);
     setError("");
@@ -109,7 +84,7 @@ export function BuyButton({
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ item, code: applied?.code }),
+        body: JSON.stringify({ item, code }),
       });
       const data = await res.json().catch(() => null);
       if (data?.error?.code === "PAYMENTS_OFFLINE") {
@@ -150,52 +125,6 @@ export function BuyButton({
         {busy && <Loader2 size={15} className="animate-spin" />}
         {children}
       </button>
-      {promoOpen ? (
-        <span className={`flex flex-col gap-1 ${block ? "" : "w-56"}`}>
-          <span className="flex gap-1.5">
-            <input
-              value={promo}
-              onChange={(e) => {
-                setPromo(e.target.value.toUpperCase());
-                setApplied(null);
-                setPromoError("");
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  applyPromo();
-                }
-              }}
-              placeholder="Promo code"
-              aria-label="Promo code"
-              maxLength={24}
-              className="h-9 min-w-0 flex-1 rounded-full border border-line-strong bg-bg px-3.5 text-sm uppercase text-fg placeholder:normal-case placeholder:text-dim focus:border-gold focus:outline-none"
-            />
-            <button
-              type="button"
-              onClick={applyPromo}
-              disabled={promoBusy || !promo.trim()}
-              className="h-9 shrink-0 rounded-full border border-line-strong px-3.5 text-sm text-fg transition-colors hover:bg-surface-2 disabled:opacity-50"
-            >
-              {promoBusy ? <Loader2 size={14} className="animate-spin" /> : "Apply"}
-            </button>
-          </span>
-          {applied && (
-            <span className="text-xs text-green">
-              {applied.code}: −{formatIDR(applied.discount)} → pay {formatIDR(applied.amount)}
-            </span>
-          )}
-          {promoError && <span role="alert" className="text-xs text-red-500">{promoError}</span>}
-        </span>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setPromoOpen(true)}
-          className="inline-flex items-center justify-center gap-1 text-xs text-muted transition-colors hover:text-fg"
-        >
-          <Tag size={12} /> Have a promo code?
-        </button>
-      )}
       {error && (
         <span role="alert" className={`text-xs text-red-500 ${block ? "text-center" : "max-w-[16rem] text-right"}`}>
           {error}
