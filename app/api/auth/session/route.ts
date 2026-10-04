@@ -15,7 +15,7 @@ export const POST = handle(async (req: Request) => {
   const { idToken, displayName } = await parseBody(req, Body);
 
   const decoded = await createSession(idToken);
-  const user = await ensureUser(decoded.uid, decoded.email ?? "", displayName ?? decoded.name);
+  const user = await ensureUser(decoded.uid, decoded.email ?? "", displayName ?? decoded.name, undefined, decoded.email_verified === true);
   await setAuthHint(user);
 
   return json({ user });

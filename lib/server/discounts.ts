@@ -79,18 +79,15 @@ export async function resolveDiscount(
   base: number
 ): Promise<{ code: string; amount: number }> {
   const code = normalizeCode(rawCode);
-  const invalid = () => new ApiError(400, "INVALID_CODE", "This code isn't valid.");
+  const invalid = () => new ApiError(400, "INVALID_CODE", "This code isn't valid or has expired.");
   if (!DISCOUNT_CODE_PATTERN.test(code)) throw invalid();
   const snap = await discounts().doc(code).get();
   if (!snap.exists) throw invalid();
   const d = toDiscount(snap.data() as DiscountDoc);
   if (!d.active) throw invalid();
-  if (d.expiresAt && new Date(d.expiresAt).getTime() < Date.now()) {
-    throw new ApiError(400, "CODE_EXPIRED", "This code has expired.");
-  }
-  if (d.maxUses > 0 && d.usedCount >= d.maxUses) {
-    throw new ApiError(400, "CODE_EXHAUSTED", "This code has reached its usage limit.");
-  }
+  // kedaluwarsa / habis dijawab sama dengan "tidak ada" supaya kode tidak bisa ditebak-tebak
+  if (d.expiresAt && new Date(d.expiresAt).getTime() < Date.now()) throw invalid();
+  if (d.maxUses > 0 && d.usedCount >= d.maxUses) throw invalid();
   if (d.appliesTo !== "all" && d.appliesTo !== kind) {
     throw new ApiError(400, "CODE_NOT_APPLICABLE", `This code only works for the ${d.appliesTo === "kit" ? "single kits" : "Studio bundle"}.`);
   }

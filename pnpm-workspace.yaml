@@ -8,3 +8,6 @@ overrides:
   # jwks-rsa@4 me-require() jose@6 (ESM-only) → gagal di runtime Vercel (ERR_REQUIRE_ESM).
   # v3 memakai jose@4 (CommonJS) dengan API yang sama untuk firebase-admin.
   jwks-rsa: 3.2.2
+  # perbaikan kerentanan transitif (pnpm audit)
+  "@grpc/grpc-js@<1.13.6": ">=1.13.6"
+  "uuid@<11.1.1": ">=11.1.1"

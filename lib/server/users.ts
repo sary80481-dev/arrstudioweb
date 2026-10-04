@@ -68,7 +68,9 @@ export async function ensureUser(
   uid: string,
   email: string,
   displayName?: string,
-  discord?: DiscordProfile
+  discord?: DiscordProfile,
+  /** email sudah dibuktikan milik user (Firebase email_verified / Discord verified) */
+  emailVerified = false
 ): Promise<UserDto> {
   const ref = users().doc(uid);
   const snap = await ref.get();
@@ -82,7 +84,8 @@ export async function ensureUser(
     email: email.toLowerCase(),
     displayName: displayName?.trim() || email.split("@")[0] || "Creator",
     robloxUsername: null,
-    role: email && isBootstrapAdmin(email) ? "admin" : "user",
+    // admin otomatis HANYA untuk email terverifikasi — tanpa itu, siapa pun bisa mendaftar dengan email admin
+    role: email && emailVerified && isBootstrapAdmin(email) ? "admin" : "user",
     discordId: discord?.discordId ?? null,
     discordUsername: discord?.discordUsername ?? null,
     avatarUrl: discord?.avatarUrl ?? null,

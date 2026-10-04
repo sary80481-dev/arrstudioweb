@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
 import { adminAuth, db } from "@/lib/firebase/admin";
@@ -20,7 +21,15 @@ async function resolveUid(u: DiscordUser): Promise<string> {
   const email = u.verified && u.email ? u.email : undefined;
   if (email) {
     const existing = await adminAuth().getUserByEmail(email).catch(() => null);
-    if (existing) return existing.uid;
+    if (existing) {
+      // akun email/password yang belum terverifikasi bisa dibuat orang lain dengan email ini (pre-hijack):
+      // email kini terbukti milik user Discord, jadi password lama dicabut sebelum akun digabung
+      if (!existing.emailVerified) {
+        await adminAuth().updateUser(existing.uid, { emailVerified: true, password: randomBytes(32).toString("hex") });
+        await adminAuth().revokeRefreshTokens(existing.uid);
+      }
+      return existing.uid;
+    }
   }
 
   const created = await adminAuth().createUser({
@@ -61,7 +70,7 @@ export async function GET(req: NextRequest) {
       discordId: discordUser.id,
       discordUsername: discordUser.username,
       avatarUrl: discordAvatarUrl(discordUser),
-    });
+    }, discordUser.verified);
 
     await setAuthHint(user);
 
