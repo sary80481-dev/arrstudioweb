@@ -4,91 +4,99 @@
    0. VARIANT — `dark:` mengikuti <html data-theme="dark">
    ============================================================ */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
-/* tema halaman yang sebenarnya (abaikan elemen yang memaksa gelap, mis. panel video) */
+/* tema halaman yang sebenarnya (abaikan elemen yang memaksa tema, mis. panel video) */
 @custom-variant site-dark (&:where(html[data-theme="dark"] *));
 
 /* ============================================================
-   1. TOKENS — DARK (default)
-   Hitam pekat ala halaman produk: pemisah = blok warna & ruang, bukan garis.
-   Emas hanya satu aksen.
+   1. TOKENS — LIGHT (default)
+   Gaya cartoony modern, tepat 2 warna:
+   - DASAR  : krem hangat → shade tergelapnya ("ink") untuk teks, outline & bayangan stiker
+   - AKSEN  : kuning cerah → tombol utama, stiker, sorotan
+   Pemisah = outline 2px ink + bayangan offset keras, bukan blur.
    ============================================================ */
 :root,
-[data-theme="dark"] {
-  color-scheme: dark;
-
-  --bg: #000000;
-  --surface: #0d0d0e;
-  --surface-2: #161617;
-
-  --fg: #f5f5f7;
-  --muted: #a1a1a6;
-  --dim: #6e6e73;
-
-  --line: rgb(255 255 255 / 0.08);
-  --line-strong: rgb(255 255 255 / 0.14);
-
-  /* aksen emas untuk teks / ikon (kontras AA di atas --bg) */
-  --gold: #e8bf62;
-  --gold-hover: #f2cf7c;
-  --gold-soft: rgb(232 191 98 / 0.1);
-  --on-gold: #1a1204;
-
-  /* isian tombol utama — emas merek yang sama di kedua tema */
-  --brand: #e8bf62;
-  --brand-hover: #f2cd78;
-  --on-brand: #16110a;
-
-  /* dipertahankan untuk admin & dashboard; sekarang nyaris datar, bukan metalik */
-  --gold-grad: linear-gradient(180deg, #eec86f 0%, #e0b24f 100%);
-  --gold-text: linear-gradient(180deg, var(--gold), var(--gold));
-
-  --green: #4ade80;
-  --silver: #c9c7c2;
-
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 16px 40px -20px rgb(0 0 0 / 0.7);
-  --shadow-lg: 0 2px 4px rgb(0 0 0 / 0.3), 0 40px 80px -32px rgb(0 0 0 / 0.8);
-  --glow: rgb(232 191 98 / 0.12);
-}
-
-/* ============================================================
-   2. TOKENS — LIGHT
-   Krem-pasir redup (bukan putih): latar #dcd8ce, kartu sedikit lebih terang, tile sedikit lebih gelap.
-   Teks cokelat-grafit; kontras tetap ≥ AA (teks biasa 4.5:1) di atas --bg.
-   ============================================================ */
 [data-theme="light"] {
   color-scheme: light;
 
-  /* redup & hangat: luminansi latar ±70% (bukan 95%+) supaya tidak menyilaukan di mata */
-  --bg: #dcd8ce;
-  --surface: #e5e1d8;
-  --surface-2: #cdc9be;
+  --bg: #fff6e3;
+  --surface: #fffdf7;
+  --surface-2: #fbedcd;
 
-  --fg: #1f1c17;
-  --muted: #47433a;
-  --dim: #544f45;
+  /* ink = shade krem paling gelap: teks utama, garis luar, bayangan stiker */
+  --ink: #241a0b;
+  --fg: #241a0b;
+  --muted: #5b4b31;
+  --dim: #7a6748;
 
-  --line: rgb(40 32 16 / 0.14);
-  --line-strong: rgb(40 32 16 / 0.24);
+  --line: rgb(36 26 11 / 0.12);
+  --line-strong: rgb(36 26 11 / 0.28);
 
-  /* emas lebih tua agar terbaca di atas krem gelap */
-  --gold: #6b4a07;
-  --gold-hover: #573b04;
-  --gold-soft: rgb(150 100 15 / 0.16);
-  --on-gold: #1a1204;
+  /* aksen kuning — versi tua dipakai untuk teks/ikon agar terbaca di atas krem */
+  --gold: #8a5d00;
+  --gold-hover: #6e4a00;
+  --gold-soft: rgb(255 196 46 / 0.28);
+  --on-gold: #241a0b;
 
-  --brand: #e2b955;
-  --brand-hover: #d6a93f;
-  --on-brand: #16110a;
+  --brand: #ffc42e;
+  --brand-hover: #ffb703;
+  --on-brand: #241a0b;
 
-  --gold-grad: linear-gradient(180deg, #e8c066 0%, #d6a945 100%);
-  --gold-text: linear-gradient(180deg, var(--gold), var(--gold));
+  --gold-grad: linear-gradient(var(--brand), var(--brand));
+  --gold-text: linear-gradient(var(--gold), var(--gold));
 
-  --green: #0f5f2f;
-  --silver: #544f45;
+  /* fungsional saja (status sukses) */
+  --green: #17803d;
+  --silver: #7a6748;
 
-  --shadow: 0 1px 2px rgb(40 32 16 / 0.08), 0 12px 32px -16px rgb(40 32 16 / 0.28);
-  --shadow-lg: 0 2px 4px rgb(40 32 16 / 0.08), 0 40px 80px -32px rgb(40 32 16 / 0.34);
-  --glow: rgb(210 160 70 / 0.14);
+  /* bayangan stiker: offset keras berwarna ink */
+  --shadow: 4px 4px 0 0 var(--ink);
+  --shadow-lg: 7px 7px 0 0 var(--ink);
+  --glow: rgb(255 196 46 / 0.3);
+
+  --dot: rgb(36 26 11 / 0.11);
+}
+
+/* ============================================================
+   2. TOKENS — DARK
+   Krem yang sama dibalik: latar cokelat-arang, teks krem, aksen kuning tetap.
+   Outline hitam pekat + permukaan sedikit lebih terang agar stiker tetap "timbul".
+   ============================================================ */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #120e08;
+  --surface: #1f1810;
+  --surface-2: #2a2116;
+
+  /* outline & bayangan stiker: tint krem redup — tetap terlihat di atas latar gelap */
+  --ink: #5a4830;
+  --fg: #fff4dc;
+  --muted: #d6c4a2;
+  --dim: #a8967a;
+
+  --line: rgb(255 244 220 / 0.1);
+  --line-strong: rgb(255 244 220 / 0.22);
+
+  --gold: #ffc42e;
+  --gold-hover: #ffd35f;
+  --gold-soft: rgb(255 196 46 / 0.14);
+  --on-gold: #241a0b;
+
+  --brand: #ffc42e;
+  --brand-hover: #ffd35f;
+  --on-brand: #241a0b;
+
+  --gold-grad: linear-gradient(var(--brand), var(--brand));
+  --gold-text: linear-gradient(var(--gold), var(--gold));
+
+  --green: #4ade80;
+  --silver: #d6c4a2;
+
+  --shadow: 4px 4px 0 0 var(--ink);
+  --shadow-lg: 7px 7px 0 0 var(--ink);
+  --glow: rgb(255 196 46 / 0.16);
+
+  --dot: rgb(255 244 220 / 0.07);
 }
 
 /* ============================================================
@@ -98,6 +106,7 @@
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
   --color-fg: var(--fg);
   --color-muted: var(--muted);
   --color-dim: var(--dim);
@@ -113,11 +122,17 @@
   --color-green: var(--green);
   --color-silver: var(--silver);
 
+  /* radius: hanya 3 ukuran (+ pill). Konsentris: card 24 berpadding 8 → media 16 */
+  --radius-media: 16px;
+  --radius-card: 24px;
+  --radius-panel: 32px;
+
   --shadow-card: var(--shadow);
   --shadow-float: var(--shadow-lg);
 
-  --font-display: var(--font-geist), ui-sans-serif, system-ui;
-  --font-sans: var(--font-geist), ui-sans-serif, system-ui;
+  /* Fredoka tidak punya glyph Vietnam → jatuh ke Nunito per karakter */
+  --font-display: var(--font-fredoka), var(--font-nunito), ui-rounded, ui-sans-serif, system-ui;
+  --font-sans: var(--font-nunito), ui-rounded, ui-sans-serif, system-ui;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
@@ -133,6 +148,7 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-sans);
+  font-weight: 500;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -150,7 +166,7 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 3px solid var(--brand);
   outline-offset: 2px;
 }
 
@@ -158,40 +174,129 @@ body {
    5. UTILITIES
    ============================================================ */
 
-/* judul: rapat, sentence case — dipakai semua heading besar */
+/* judul: font bulat, rapat tapi tetap ramah */
 @utility text-display {
   font-family: var(--font-display);
   font-weight: 600;
-  letter-spacing: -0.04em;
-  line-height: 1.04;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
   text-wrap: balance;
 }
 
-/* judul hero raksasa ala halaman mobil sport */
+/* judul hero besar */
 @utility text-hero {
   font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: -0.055em;
-  line-height: 0.92;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.98;
   text-wrap: balance;
 }
 
-/* label kecil ala spesifikasi: mono, huruf kapital, redup */
+/* ─── SKALA TIPOGRAFI (fluid: ukuran mengalir antar layar, tanpa breakpoint) ─── */
+@utility t-hero {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2.6rem, 1.5rem + 4.4vw, 4.5rem);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  text-wrap: balance;
+}
+@utility t-section {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2.15rem, 1.5rem + 2.6vw, 3.5rem);
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+@utility t-sub {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.7rem, 1.3rem + 1.5vw, 2.5rem);
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+@utility t-card {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.1rem, 1rem + 0.5vw, 1.4rem);
+  line-height: 1.25;
+}
+@utility t-stat {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2.4rem, 1.8rem + 2.4vw, 3.75rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* label kecil: bulat, tebal, huruf kapital */
 @utility text-label {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
   line-height: 1rem;
-  letter-spacing: 0.06em;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--dim);
 }
 
-/* sudut terpotong ala UI game (dashboard) */
+/* ─── STIKER: outline ink + bayangan offset keras ─── */
+@utility pop {
+  border: 2px solid var(--ink);
+  box-shadow: var(--shadow);
+}
+@utility pop-sm {
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 0 var(--ink);
+}
+@utility pop-lg {
+  border: 2px solid var(--ink);
+  box-shadow: var(--shadow-lg);
+}
+/* hover: terangkat · tekan: "ketekan" ke bayangannya */
+@utility pop-hover {
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  &:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 0 var(--ink);
+  }
+  &:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 0 var(--ink);
+    transition-duration: 0.06s;
+  }
+}
+
+/* tombol stiker: bayangan lebih tipis, tekan = turun penuh ke bayangan */
+@utility btn-pop {
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 0 var(--ink);
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
+  &:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 0 var(--ink);
+  }
+  &:active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 0 var(--ink);
+    transition-duration: 0.05s;
+  }
+}
+
+/* pola titik halus — latar "kertas" kartun */
+@utility bg-dots {
+  background-image: radial-gradient(var(--dot) 1.4px, transparent 1.6px);
+  background-size: 22px 22px;
+}
+
+/* dipertahankan (dipakai versi lama) — kini sudut bulat, bukan terpotong */
 @utility chamfer {
-  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  border-radius: 18px;
 }
 @utility chamfer-sm {
-  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  border-radius: 12px;
 }
 
 @utility bg-gold-grad {
@@ -206,11 +311,19 @@ body {
 }
 
 @utility hairline-gold {
-  background-image: linear-gradient(90deg, transparent, var(--gold), transparent);
+  background-image: linear-gradient(90deg, transparent, var(--brand), transparent);
 }
 
 @utility grain {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+}
+
+/* garis stabilo kuning tebal di bawah kata — teks tetap terbaca di kedua tema */
+@utility marker {
+  background-image: linear-gradient(transparent 80%, var(--brand) 80%, var(--brand) 96%, transparent 96%);
+  padding-inline: 0.08em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 /* ============================================================
@@ -224,6 +337,24 @@ body {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-12px); }
 }
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50%      { transform: translateY(-10px) rotate(3deg); }
+}
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25%      { transform: rotate(-8deg); }
+  75%      { transform: rotate(8deg); }
+}
+@keyframes pop-in {
+  0%   { opacity: 0; transform: scale(0.6) rotate(-6deg); }
+  70%  { opacity: 1; transform: scale(1.06) rotate(1deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+@keyframes twinkle {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  50%      { transform: scale(0.7) rotate(45deg); opacity: 0.6; }
+}
 @keyframes shine {
   from { transform: translateX(-120%) skewX(-20deg); }
   to   { transform: translateX(220%) skewX(-20deg); }
@@ -232,10 +363,12 @@ body {
   50% { opacity: 0; }
 }
 @keyframes pagein {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(8px); }
 }
 @keyframes rise-in {
-  from { opacity: 0; transform: translateY(24px) scale(0.985); }
+  0%   { opacity: 0; transform: translateY(24px) scale(0.96); }
+  70%  { opacity: 1; transform: translateY(-3px) scale(1.01); }
+  100% { opacity: 1; transform: none; }
 }
 @keyframes grow {
   from { transform: scaleX(0); }
@@ -252,11 +385,47 @@ body {
   100% { box-shadow: 0 0 0 6px transparent; }
 }
 
-/* muncul saat masuk viewport — kelas `is-in` dipasang oleh <Reveal> */
+/* pita & rel berjalan tanpa ujung — konten digandakan 2×, geser -50% */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@utility marquee {
+  animation: marquee var(--marquee-duration, 30s) linear infinite;
+  &:where(:hover, :focus-within) {
+    animation-play-state: var(--marquee-hover, running);
+  }
+}
+/* jarum speedometer: diam di kiri, berayun ke --to saat induk .reveal masuk viewport */
+.needle {
+  transform: rotate(-90deg);
+  transform-origin: 50% 100%;
+  transform-box: fill-box;
+  transition: transform 1.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s;
+}
+.is-in .needle {
+  transform: rotate(var(--to, 0deg));
+}
+/* busur gauge terisi mengikuti jarum */
+.gauge-fill {
+  stroke-dashoffset: var(--len);
+  transition: stroke-dashoffset 1.6s cubic-bezier(0.2, 0.7, 0.2, 1) 0.3s;
+}
+.is-in .gauge-fill {
+  stroke-dashoffset: var(--off);
+}
+
+/* progres langkah aktif di stepper */
+@keyframes step-progress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* muncul saat masuk viewport (sedikit memantul) — kelas `is-in` dipasang oleh <Reveal> */
 .reveal {
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transform: translateY(26px) scale(0.97);
+  transition: opacity 0.6s ease-out, transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
   transition-delay: var(--reveal-delay, 0ms);
 }
 .reveal.is-in {
@@ -265,14 +434,19 @@ body {
 }
 
 @utility card-lift {
-  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.35s ease;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow);
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 0 var(--ink);
   }
 }
 @utility spotlight {
   background-image: radial-gradient(420px circle at var(--mx, 50%) var(--my, -20%), var(--gold-soft), transparent 60%);
+}
+@utility hover-wiggle {
+  &:hover {
+    animation: wiggle 0.45s ease-in-out;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -289,6 +463,7 @@ body {
    ============================================================ */
 html:lang(th) [class*="tracking-"],
 html:lang(th) .text-display,
+html:lang(th) .text-hero,
 html:lang(th) .text-label {
   letter-spacing: 0 !important;
 }
@@ -317,4 +492,84 @@ html:lang(th) .text-label {
 @keyframes slide-progress {
   from { transform: scaleX(0); }
   to { transform: scaleX(1); }
+}
+
+/* ============================================================
+   8. CURSOR KARTUN (hanya perangkat mouse) — SVG native, tanpa JS → tanpa lag
+   Lapisan tanpa @layer sengaja: harus menang atas utility cursor-pointer.
+   ============================================================ */
+@media (pointer: fine) {
+  html {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M6 4 L6 24 L11.2 19.4 L14.6 27 L18.4 25.3 L15 17.8 L22 17.6 Z' fill='%23241a0b' transform='translate(2 2)'/%3E%3Cpath d='M6 4 L6 24 L11.2 19.4 L14.6 27 L18.4 25.3 L15 17.8 L22 17.6 Z' fill='%23ffc42e' stroke='%23241a0b' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") 6 4, auto;
+  }
+  a[href],
+  button:not(:disabled),
+  [role="button"],
+  [role="tab"],
+  [role="option"],
+  [role="menuitem"],
+  summary,
+  label[for],
+  select,
+  input[type="checkbox"],
+  input[type="radio"],
+  .cursor-pointer {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg transform='translate(1.6 1.6)'%3E%3Crect x='13.6' y='10.4' width='4.8' height='8' rx='2.4' fill='%23241a0b' /%3E%3Crect x='17.9' y='11.4' width='4.6' height='7.5' rx='2.3' fill='%23241a0b' /%3E%3Crect x='21.9' y='12.8' width='4.2' height='6.5' rx='2.1' fill='%23241a0b' /%3E%3Crect x='8' y='2.5' width='6' height='16' rx='3' fill='%23241a0b' /%3E%3Crect x='3.2' y='16.6' width='7.4' height='4.8' rx='2.4' fill='%23241a0b'  transform='rotate(-18 6.9 19)'/%3E%3Crect x='7.5' y='14.2' width='18.6' height='12.3' rx='5' fill='%23241a0b' /%3E%3Crect x='9' y='25' width='15.6' height='5' rx='2' fill='%23241a0b' /%3E%3C/g%3E%3Crect x='13.6' y='10.4' width='4.8' height='8' rx='2.4' fill='%23fffdf7' stroke='%23241a0b' stroke-width='1.8' stroke-linejoin='round'/%3E%3Crect x='17.9' y='11.4' width='4.6' height='7.5' rx='2.3' fill='%23fffdf7' stroke='%23241a0b' stroke-width='1.8' stroke-linejoin='round'/%3E%3Crect x='21.9' y='12.8' width='4.2' height='6.5' rx='2.1' fill='%23fffdf7' stroke='%23241a0b' stroke-width='1.8' stroke-linejoin='round'/%3E%3Crect x='8' y='2.5' width='6' height='16' rx='3' fill='%23fffdf7' stroke='%23241a0b' stroke-width='1.8' stroke-linejoin='round'/%3E%3Crect x='3.2' y='16.6' width='7.4' height='4.8' rx='2.4' fill='%23fffdf7' stroke='%23241a0b' stroke-width='1.8' stroke-linejoin='round' transform='rotate(-18 6.9 19)'/%3E%3Crect x='7.5' y='14.2' width='18.6' height='12.3' rx='5' fill='%23fffdf7' stroke='%23241a0b' stroke-width='1.8' stroke-linejoin='round'/%3E%3Crect x='9' y='25' width='15.6' height='5' rx='2' fill='%23ffc42e' stroke='%23241a0b' stroke-width='1.8' stroke-linejoin='round'/%3E%3C/svg%3E") 11 3, pointer;
+  }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  [contenteditable="true"] {
+    cursor: text;
+  }
+  :disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
+
+/* efek "pop" saat klik — elemen dibuat oleh <ClickBurst> */
+@keyframes click-burst {
+  0%   { transform: translate(-50%, -50%) scale(0.2); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
+.click-burst {
+  position: fixed;
+  z-index: 9999;
+  width: 44px;
+  height: 44px;
+  border: 2.5px solid var(--ink);
+  border-radius: 9999px;
+  background: radial-gradient(circle, var(--brand) 0 22%, transparent 24%);
+  pointer-events: none;
+  animation: click-burst 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+/* ============================================================
+   9. SCROLLBAR KARTUN — thumb kuning ber-outline di atas trek krem
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface-2);
+  border-left: 2px solid var(--ink);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--brand);
+  border: 3px solid var(--surface-2);
+  border-radius: 9999px;
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-hover);
+}
+::-webkit-scrollbar-corner {
+  background: var(--surface-2);
+}
+/* Firefox (tidak mendukung pseudo-element di atas) */
+@supports (-moz-appearance: none) {
+  html {
+    scrollbar-color: var(--brand) var(--surface-2);
+  }
 }

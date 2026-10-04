@@ -1,64 +1,69 @@
-"use client";
-
-import { useRef } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { CSSProperties } from "react";
+import { Quote } from "lucide-react";
 import type { Dictionary } from "@/lib/i18n/dictionaries/en";
 import { testimonialNames } from "../_data/landing";
 import { Muted, Section, SectionHeading } from "./ui";
 
 const initials = (name: string) => name.split(" ").map((p) => p[0]).join("").slice(0, 2);
 
-/** Kutipan dalam rel geser (snap), kartu besar — dibaca satu per satu */
+type Item = Dictionary["testimonials"]["items"][number];
+
+function Card({ item, name, i }: { item: Item; name: string; i: number }) {
+  const accent = i % 3 === 1;
+  return (
+    <figure
+      data-theme={accent ? "light" : undefined}
+      className={`pop flex h-full w-[300px] shrink-0 flex-col rounded-card p-6 text-fg transition-transform duration-300 hover:-translate-y-1.5 hover:rotate-0 sm:w-[380px] sm:p-8 ${
+        accent ? "bg-dots bg-brand" : "bg-surface"
+      } ${i % 2 === 0 ? "-rotate-1" : "rotate-1"}`}
+    >
+      <span className="pop-sm flex h-11 w-11 items-center justify-center rounded-2xl bg-surface text-fg">
+        <Quote size={20} strokeWidth={2.25} className="fill-current" />
+      </span>
+      <blockquote className="mt-5 flex-1 font-display text-lg font-medium leading-snug text-pretty sm:text-xl">
+        &ldquo;{item.quote}&rdquo;
+      </blockquote>
+      <figcaption className="mt-6 flex items-center gap-3 border-t-2 border-ink/15 pt-5">
+        <span className="pop-sm flex h-11 w-11 items-center justify-center rounded-full bg-surface font-display text-sm font-semibold text-fg">
+          {initials(name)}
+        </span>
+        <span>
+          <span className="block font-display text-base font-semibold">{name}</span>
+          <span className="block text-sm font-semibold text-muted">{item.role}</span>
+        </span>
+      </figcaption>
+    </figure>
+  );
+}
+
+/** Kutipan dalam rel berjalan tanpa ujung — berhenti saat di-hover/fokus agar bisa dibaca */
 export default function Testimonials({ t }: { t: Dictionary["testimonials"] }) {
-  const rail = useRef<HTMLUListElement>(null);
-  const scroll = (dir: 1 | -1) => {
-    const el = rail.current;
-    if (el) el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: "smooth" });
-  };
+  const items = t.items.map((item, i) => ({ item, name: testimonialNames[i] ?? "", i }));
+  // isi cukup panjang untuk layar lebar, lalu digandakan untuk sambungan mulus
+  const loop = items.length < 4 ? [...items, ...items] : items;
 
   return (
-    <Section className="overflow-hidden">
-      <SectionHeading label={t.eyebrow} title={<>{t.titleA} <Muted>{t.titleGold}</Muted></>} />
+    <Section className="overflow-x-clip">
+      <SectionHeading index={6} label={t.eyebrow} title={<>{t.titleA} <Muted>{t.titleGold}</Muted></>} />
 
-      <ul
-        ref={rail}
-        className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-5 pb-2 [scrollbar-width:none] sm:-mx-8 sm:px-8 [&::-webkit-scrollbar]:hidden"
-      >
-        {t.items.map((item, i) => {
-          const name = testimonialNames[i];
-          return (
-            <li key={name} className="w-[85%] shrink-0 snap-start sm:w-[60%] lg:w-[calc((100%-1.5rem)/2.4)]">
-              <figure className="flex h-full min-h-[340px] flex-col rounded-[28px] bg-surface-2 p-8 md:p-10">
-                <blockquote className="flex-1 text-2xl font-medium leading-snug tracking-[-0.02em] text-fg text-pretty">
-                  &ldquo;{item.quote}&rdquo;
-                </blockquote>
-                <figcaption className="mt-10 flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-bg text-sm font-semibold text-fg">
-                    {initials(name)}
-                  </span>
-                  <span>
-                    <span className="block text-[15px] font-semibold text-fg">{name}</span>
-                    <span className="block text-sm text-muted">{item.role}</span>
-                  </span>
-                </figcaption>
-              </figure>
-            </li>
-          );
-        })}
-      </ul>
-
-      <div className="mt-6 hidden justify-end gap-2 md:flex">
-        {([-1, 1] as const).map((d) => (
-          <button
-            key={d}
-            type="button"
-            onClick={() => scroll(d)}
-            aria-label={d < 0 ? "Previous" : "Next"}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-2 text-fg transition-colors hover:bg-fg/[0.1]"
-          >
-            {d < 0 ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
-          </button>
-        ))}
+      <div className="relative -mx-4 sm:-mx-8">
+        {/* pudar di tepi — overlay gradasi, bukan mask (mask memaksa repaint tiap frame) */}
+        <span aria-hidden className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-bg to-transparent sm:w-20" />
+        <span aria-hidden className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-bg to-transparent sm:w-20" />
+        <div
+          className="marquee flex w-max py-4 will-change-transform"
+          style={{ "--marquee-duration": `${loop.length * 9}s`, "--marquee-hover": "paused" } as CSSProperties}
+        >
+          {[false, true].map((dup) => (
+            <ul key={String(dup)} aria-hidden={dup || undefined} className="flex shrink-0 items-stretch gap-6 pr-6">
+              {loop.map(({ item, name }, k) => (
+                <li key={`${name}-${k}`} className="flex">
+                  <Card item={item} name={name} i={k} />
+                </li>
+              ))}
+            </ul>
+          ))}
+        </div>
       </div>
     </Section>
   );

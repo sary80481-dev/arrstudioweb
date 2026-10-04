@@ -47,7 +47,8 @@ export default function Pricing({ t, lang }: { t: Dictionary["pricing"]; lang: L
       .filter((f) => f.trim() !== "");
 
   const action = (p: (typeof plans)[number], cta: string, highlighted?: boolean) => {
-    const cls = buttonClass(highlighted ? "gold" : "outline", "lg", "mt-8 w-full");
+    // kartu unggulan berlatar kuning → tombolnya krem agar tetap menonjol
+    const cls = buttonClass(highlighted ? "outline" : "gold", "lg", "mt-8 w-full");
     if (p.price === "bundle") {
       return (
         <>
@@ -69,45 +70,42 @@ export default function Pricing({ t, lang }: { t: Dictionary["pricing"]; lang: L
 
   return (
     <Section id="pricing" tone="tile">
-      <SectionHeading label={t.eyebrow} title={<>{t.titleA} <Muted>{t.titleGold}</Muted></>} desc={t.desc} />
+      <SectionHeading index={7} label={t.eyebrow} title={<>{t.titleA} <Muted>{t.titleGold}</Muted></>} desc={t.desc} />
 
-      <div className={`grid items-stretch gap-3 ${visible.length === 3 ? "lg:grid-cols-3" : "mx-auto max-w-4xl md:grid-cols-2"}`}>
+      <div className={`grid items-stretch gap-6 ${visible.length === 3 ? "lg:grid-cols-3" : "mx-auto max-w-4xl md:grid-cols-2"}`}>
         {visible.map(({ plan: p, text }, idx) => (
           <Reveal key={text.name} delay={idx * 90} className="h-full">
             <div
-              data-theme={p.highlighted ? "dark" : undefined}
-              className={`relative flex h-full flex-col overflow-hidden rounded-[28px] p-8 md:p-10 ${p.highlighted ? "bg-[#0b0b0c] text-fg" : "bg-bg"}`}
+              data-theme={p.highlighted ? "light" : undefined}
+              className={`pop-lg relative flex h-full flex-col rounded-panel p-7 md:p-9 ${p.highlighted ? "bg-dots bg-brand text-fg lg:-translate-y-3" : "bg-surface"}`}
             >
-              {p.highlighted && (
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute inset-x-0 top-0 h-2/3"
-                  style={{ background: "radial-gradient(80% 60% at 50% 0%, rgb(232 191 98 / 0.22), transparent 70%)" }}
-                />
-              )}
               <div className="relative flex flex-1 flex-col">
-                {p.highlighted && <p className="text-[15px] font-semibold text-gold">{t.bestValue}</p>}
-                <h3 className="mt-1 text-2xl font-semibold tracking-[-0.025em] text-fg">{text.name}</h3>
+                {p.highlighted && (
+                  <span className="pop-sm absolute -top-11 right-0 rotate-3 rounded-full bg-surface px-3.5 py-1 font-display text-sm font-semibold text-fg md:-top-13">
+                    {t.bestValue}
+                  </span>
+                )}
+                <h3 className="t-card text-fg">{text.name}</h3>
                 <p className="mt-2 text-[15px] text-muted">{text.desc}</p>
 
-                <p className="mt-10 flex flex-wrap items-baseline gap-x-2">
+                <p className="mt-8 flex flex-wrap items-baseline gap-x-2">
                   {p.price === "bundle" && bundlePromo && (
                     <s className="text-2xl text-dim tabular-nums" aria-label={`Was Rp ${formatIDRShort(bundlePromo.originalAmount)}`}>
                       Rp {formatIDRShort(bundlePromo.originalAmount)}
                     </s>
                   )}
-                  <span className="text-hero text-[3.25rem] text-fg tabular-nums">
+                  <span className="font-display text-[length:clamp(1.9rem,1.3rem+1.4vw,2.6rem)] font-bold leading-none text-fg tabular-nums">
                     {p.price === "bundle" && bundlePromo ? `Rp ${formatIDRShort(bundlePromo.amount)}` : priceOf(p, text.price)}
                   </span>
-                  {text.period && <span className="text-[15px] text-dim">{text.period}</span>}
+                  {text.period && <span className="text-[15px] font-semibold text-muted">{text.period}</span>}
                 </p>
 
                 {action(p, text.cta, p.highlighted)}
 
-                <ul className="mt-10 flex-1 space-y-3.5">
+                <ul className="mt-8 flex-1 space-y-3 border-t-2 border-ink/15 pt-7">
                   {features(text.features).map((f) => (
-                    <li key={f} className="flex items-start gap-3 text-[15px] text-fg">
-                      <Check size={17} className="mt-0.5 shrink-0 text-gold" strokeWidth={2.5} />
+                    <li key={f} className="flex items-start gap-3 text-[15px] font-semibold text-fg">
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-surface text-fg"><Check size={12} strokeWidth={3.5} /></span>
                       {f}
                     </li>
                   ))}

@@ -67,19 +67,19 @@ export default function Marketplace({ t, lang }: { t: T; lang: Locale }) {
 
   return (
     <Section id="kits">
-      <SectionHeading label={t.eyebrow} title={<>{t.titleA} <Muted>{t.titleB} {t.titleGold}</Muted></>} desc={t.desc} />
+      <SectionHeading index={1} label={t.eyebrow} title={<>{t.titleA} <Muted>{t.titleB} {t.titleGold}</Muted></>} desc={t.desc} />
 
       {kits.length === 0 ? (
-        <div className="flex flex-col items-center rounded-[28px] bg-surface-2 px-6 py-24 text-center">
-          <PackageOpen size={30} strokeWidth={1.5} className="text-dim" />
-          <p className="mt-4 text-lg text-muted">{t.empty}</p>
+        <div className="pop flex flex-col items-center rounded-card bg-surface px-6 py-20 text-center">
+          <span className="pop-sm flex h-16 w-16 animate-[bob_4s_ease-in-out_infinite] items-center justify-center rounded-2xl bg-brand text-on-brand"><PackageOpen size={30} strokeWidth={2} /></span>
+          <p className="mt-5 font-display text-xl font-medium text-muted">{t.empty}</p>
         </div>
       ) : (
         <>
           {kits.length >= FILTER_FROM && (
             <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div
-                className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden"
+                className="-mx-4 flex gap-2.5 overflow-x-auto px-4 pb-1.5 pr-2 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden"
                 role="group"
                 aria-label={t.eyebrow}
               >
@@ -89,8 +89,8 @@ export default function Marketplace({ t, lang }: { t: T; lang: Locale }) {
                     type="button"
                     aria-pressed={tag === g}
                     onClick={() => setTag(g)}
-                    className={`shrink-0 rounded-full px-4 py-2 text-sm transition-colors ${
-                      tag === g ? "bg-fg text-bg" : "bg-surface-2 text-muted hover:text-fg"
+                    className={`btn-pop my-1 shrink-0 rounded-full px-4 py-1.5 font-display text-sm font-semibold ${
+                      tag === g ? "bg-brand text-on-brand" : "bg-surface text-fg"
                     }`}
                   >
                     {g ?? t.all}
@@ -98,23 +98,23 @@ export default function Marketplace({ t, lang }: { t: T; lang: Locale }) {
                 ))}
               </div>
               <label className="relative block md:w-72">
-                <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-dim" />
+                <Search size={17} strokeWidth={2.25} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-fg" />
                 <input
                   type="search"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={t.search}
                   aria-label={t.search}
-                  className="h-11 w-full rounded-full bg-surface-2 pl-11 pr-4 text-[15px] text-fg placeholder:text-dim transition-shadow focus:shadow-[0_0_0_2px_var(--gold)] focus:outline-none"
+                  className="pop-sm h-11 w-full rounded-full bg-surface pl-11 pr-4 text-[15px] font-semibold text-fg placeholder:text-dim transition-shadow focus:shadow-[3px_3px_0_0_var(--brand)] focus:outline-none"
                 />
               </label>
             </div>
           )}
 
           {visible.length === 0 ? (
-            <p className="rounded-[24px] bg-surface-2 px-6 py-16 text-center text-muted">{t.noResults}</p>
+            <p className="pop rounded-card bg-surface px-6 py-16 text-center font-display text-lg text-muted">{t.noResults}</p>
           ) : (
-            <ul className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-3 xl:grid-cols-4">
+            <ul className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
               {visible.map((kit, i) => (
                 <Reveal as="li" key={kit.id} delay={Math.min(i, 7) * 60} className="h-full">
                   <KitCard kit={kit} t={t} lang={lang} onOpen={() => setOpenId(kit.id)} />
@@ -147,58 +147,65 @@ function KitCard({ kit, t, lang, onOpen }: { kit: Kit; t: T; lang: Locale; onOpe
   return (
     <article
       id={`kit-${kit.id}`}
-      className="group/card flex h-full scroll-mt-24 flex-col rounded-[20px] bg-surface-2 p-1.5 transition-shadow hover:shadow-card sm:rounded-[24px] sm:p-2"
+      className="group/card pop pop-hover relative flex h-full scroll-mt-28 flex-col rounded-card bg-surface p-1.5 sm:rounded-card sm:p-2"
     >
       {/* tombol pembuka detail ada DI DALAM media, supaya hover tetap sampai ke pemutar video */}
       {kit.video ? (
-        <KitVideoPlayer video={kit.video} title={kit.name} mode="hover" controls={false} expandable={false} className="aspect-[16/10] rounded-[15px] sm:rounded-[18px]">
+        <KitVideoPlayer video={kit.video} title={kit.name} mode="hover" controls={false} expandable={false} className="aspect-[16/10] rounded-media border-2 border-ink sm:rounded-media [&_img]:transition-transform [&_img]:duration-500 group-hover/card:[&_img]:scale-105 [&_video]:transition-transform [&_video]:duration-500 group-hover/card:[&_video]:scale-105">
           <MediaOverlay label={`${t.learnMore}: ${kit.name}`} badge={soon ? t.comingSoon : null} onOpen={onOpen} />
         </KitVideoPlayer>
       ) : kit.gallery.length > 0 ? (
-        <KitSlideshow photos={kit.gallery} title={kit.name} mode="hover" controls={false} className="aspect-[16/10] rounded-[15px] sm:rounded-[18px]">
+        <KitSlideshow photos={kit.gallery} title={kit.name} mode="hover" controls={false} className="aspect-[16/10] rounded-media border-2 border-ink sm:rounded-media [&_img]:transition-transform [&_img]:duration-500 group-hover/card:[&_img]:scale-105 [&_video]:transition-transform [&_video]:duration-500 group-hover/card:[&_video]:scale-105">
           <MediaOverlay label={`${t.learnMore}: ${kit.name}`} badge={soon ? t.comingSoon : null} onOpen={onOpen} />
         </KitSlideshow>
       ) : (
-        <KitArt kit={kit} className="aspect-[16/10] rounded-[15px] sm:rounded-[18px]">
+        <KitArt kit={kit} className="aspect-[16/10] rounded-media border-2 border-ink sm:rounded-media [&_img]:transition-transform [&_img]:duration-500 group-hover/card:[&_img]:scale-105 [&_video]:transition-transform [&_video]:duration-500 group-hover/card:[&_video]:scale-105">
           <MediaOverlay label={`${t.learnMore}: ${kit.name}`} badge={soon ? t.comingSoon : null} onOpen={onOpen} />
         </KitArt>
       )}
 
       <div className="flex flex-1 flex-col px-2 pb-1 pt-3 sm:px-2.5 sm:pb-1.5 sm:pt-4">
         <div className="flex items-center justify-between gap-2 text-xs sm:text-[13px]">
-          <span className="truncate font-medium text-gold">{kit.tag}</span>
+          <span className="truncate rounded-full bg-gold-soft px-2 py-0.5 font-bold text-fg">{kit.tag}</span>
           {kit.rating != null && (
-            <span className="flex shrink-0 items-center gap-1 text-muted">
-              <Star size={12} className="fill-gold text-gold" /> {kit.rating.toFixed(1)}
+            <span className="flex shrink-0 items-center gap-1 font-bold text-fg">
+              <Star size={13} strokeWidth={2.25} className="fill-brand text-ink" /> {kit.rating.toFixed(1)}
             </span>
           )}
         </div>
-        <h3 className="mt-1 truncate text-[15px] font-semibold tracking-[-0.02em] text-fg sm:text-lg">
-          <button type="button" onClick={onOpen} className="max-w-full truncate text-left hover:text-gold">
+        <h3 className="mt-2 truncate t-card text-fg">
+          <button type="button" onClick={onOpen} className="max-w-full truncate text-left decoration-brand decoration-[3px] underline-offset-4 hover:underline">
             {kit.name}
           </button>
         </h3>
         {/* HP: kartu diringkas (2 kolom) — tagline & slot ada di dialog detail */}
         <p className="mt-1 line-clamp-2 min-h-10 text-sm leading-5 text-muted max-sm:hidden">{kit.tagline || kit.description}</p>
-        <p className="mt-2 text-xs text-dim max-sm:hidden">{fmt(t.placesPerKey, { n: kit.placesPerLicense })}</p>
+        <p className="mt-2 text-xs font-semibold text-dim max-sm:hidden">{fmt(t.placesPerKey, { n: kit.placesPerLicense })}</p>
 
-        <div className="mt-auto pt-3 sm:pt-4">
+        {/* garis sobekan tiket + lekukan di kedua sisi */}
+        <div aria-hidden className="relative -mx-3.5 mt-auto pt-3 sm:-mx-4.5 sm:pt-4">
+          <span className="absolute -left-[11px] top-[calc(50%+6px)] h-5 w-5 -translate-y-1/2 rounded-full border-2 border-ink bg-bg [clip-path:inset(0_0_0_50%)] sm:top-[calc(50%+8px)]" />
+          <span className="absolute -right-[11px] top-[calc(50%+6px)] h-5 w-5 -translate-y-1/2 rounded-full border-2 border-ink bg-bg [clip-path:inset(0_50%_0_0)] sm:top-[calc(50%+8px)]" />
+          <span className="mx-4 block border-t-2 border-dashed border-line-strong sm:mx-5" />
+        </div>
+
+        <div className="pt-3 sm:pt-4">
           {soon ? (
-            <span className="text-[13px] text-muted sm:text-sm">{t.comingSoon}</span>
+            <span className="inline-flex rounded-full bg-surface-2 px-3 py-1 text-[13px] font-bold text-muted sm:text-sm">{t.comingSoon}</span>
           ) : (
             <>
               <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <Price
                   price={kit.price}
                   applied={promo}
-                  className="text-sm font-semibold tracking-[-0.01em] text-fg tabular-nums sm:text-[15px]"
+                  className="font-display text-base font-semibold text-fg tabular-nums sm:text-lg"
                   oldClassName="text-xs font-normal text-dim"
                 />
                 <BuyButton
                   item={{ type: "kit", kitId: kit.id }}
                   code={promo?.code}
                   returnTo={`/${lang}#kit-${kit.id}`}
-                  className={buttonClass("gold", "sm", "h-8 px-4 text-[13px] max-sm:w-full")}
+                  className={buttonClass("gold", "sm", "max-sm:w-full")}
                   wrapperClassName="flex flex-col gap-1.5 sm:items-end"
                 >
                   {t.buy}
@@ -218,7 +225,7 @@ function MediaOverlay({ label, badge, onOpen }: { label: string; badge: string |
     <>
       <button type="button" onClick={onOpen} aria-label={label} className="absolute inset-0 z-[5]" />
       {badge && (
-        <span className="pointer-events-none absolute left-2.5 top-2.5 z-10 rounded-full bg-black/55 px-2.5 py-1 text-xs text-white ring-1 ring-white/15 backdrop-blur-md max-sm:hidden">
+        <span className="pop-sm pointer-events-none absolute left-2.5 top-2.5 z-10 -rotate-3 rounded-full bg-brand px-2.5 py-0.5 font-display text-xs font-semibold text-on-brand max-sm:hidden">
           {badge}
         </span>
       )}
@@ -226,26 +233,13 @@ function MediaOverlay({ label, badge, onOpen }: { label: string; badge: string |
   );
 }
 
-/** Kit tanpa video: ikon kit "dipanggungkan" — sorot dari atas, pantulan di lantai */
+/** Kit tanpa video: ikon kit sebagai stiker di atas blok kuning bertitik */
 function KitArt({ kit, className = "", children }: { kit: Kit; className?: string; children?: React.ReactNode }) {
   return (
-    <div data-theme="dark" className={`relative isolate flex items-center justify-center overflow-hidden bg-black ${className}`}>
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-10"
-        style={{ background: "radial-gradient(45% 80% at 50% 0%, rgb(255 236 190 / 0.18), transparent 70%)" }}
-      />
-      <div
-        aria-hidden
-        className="absolute bottom-[16%] left-1/2 -z-10 h-6 w-2/5 -translate-x-1/2 rounded-[100%] blur-xl"
-        style={{ background: "rgb(232 191 98 / 0.3)" }}
-      />
-      <KitIcon
-        icon={kit.icon}
-        size={48}
-        strokeWidth={1.2}
-        className="text-[#e8bf62] drop-shadow-[0_12px_24px_rgba(232,191,98,0.35)] transition-transform duration-500 group-hover/card:scale-110"
-      />
+    <div className={`bg-dots relative isolate flex items-center justify-center overflow-hidden bg-brand ${className}`}>
+      <span className="pop relative flex h-16 w-16 items-center justify-center rounded-2xl bg-surface text-fg transition-transform duration-300 group-hover/card:-rotate-6 group-hover/card:scale-110 sm:h-20 sm:w-20">
+        <KitIcon icon={kit.icon} size={36} strokeWidth={1.9} />
+      </span>
       {children}
     </div>
   );
@@ -277,45 +271,45 @@ function KitDialog({ kit, t, lang, onClose }: { kit: Kit; t: T; lang: Locale; on
       aria-modal="true"
       aria-labelledby="kit-dialog-title"
       onClick={onClose}
-      className="fixed inset-0 z-[80] flex items-end justify-center bg-black/60 backdrop-blur-sm animate-[pagein_0.2s_ease-out] sm:items-center sm:p-6"
+      className="fixed inset-0 z-[80] flex items-end justify-center bg-[#241a0b]/55 backdrop-blur-[3px] animate-[pagein_0.2s_ease-out] sm:items-center sm:p-6"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative flex max-h-[92svh] w-full max-w-3xl flex-col overflow-hidden rounded-t-[28px] bg-surface text-fg shadow-float animate-[sheet-up_0.3s_cubic-bezier(0.2,0.7,0.2,1)] sm:animate-[rise-in_0.3s_cubic-bezier(0.2,0.7,0.2,1)] sm:rounded-[28px]"
+        className="pop-lg relative flex max-h-[92svh] w-full max-w-3xl flex-col overflow-hidden rounded-t-panel bg-surface text-fg animate-[sheet-up_0.3s_cubic-bezier(0.2,0.7,0.2,1)] max-sm:border-b-0 sm:animate-[rise-in_0.45s_cubic-bezier(0.34,1.56,0.64,1)] sm:rounded-panel"
       >
         <button
           ref={closeRef}
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-black/55 text-white ring-1 ring-white/15 backdrop-blur-md transition-colors hover:bg-black/75"
+          className="btn-pop absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-[#fffdf7] text-[#241a0b] hover:rotate-90"
         >
-          <X size={17} />
+          <X size={18} strokeWidth={2.5} />
         </button>
 
         <div className="overflow-y-auto">
           {kit.video ? (
-            <KitVideoPlayer video={kit.video} title={kit.name} mode="view" className="aspect-video" />
+            <KitVideoPlayer video={kit.video} title={kit.name} mode="view" className="aspect-video border-b-2 border-ink" />
           ) : kit.gallery.length > 0 ? (
-            <KitSlideshow photos={kit.gallery} title={kit.name} mode="view" className="aspect-video" />
+            <KitSlideshow photos={kit.gallery} title={kit.name} mode="view" className="aspect-video border-b-2 border-ink" />
           ) : (
-            <KitArt kit={kit} className="aspect-[21/9]" />
+            <KitArt kit={kit} className="aspect-[21/9] border-b-2 border-ink" />
           )}
 
           <div className="grid gap-8 p-6 sm:p-8 md:grid-cols-[1fr_15rem]">
             <div>
-              <p className="text-[15px] font-semibold text-gold">{soon ? t.comingSoon : kit.tag}</p>
-              <h3 id="kit-dialog-title" className="text-display mt-1 text-4xl text-fg">{kit.name}</h3>
+              <p className="pop-sm inline-flex -rotate-2 rounded-full bg-brand px-3 py-0.5 font-display text-sm font-semibold text-on-brand">{soon ? t.comingSoon : kit.tag}</p>
+              <h3 id="kit-dialog-title" className="t-sub mt-3 text-fg">{kit.name}</h3>
               {kit.tagline && <p className="mt-2 text-lg text-muted">{kit.tagline}</p>}
               <p className="mt-5 text-[15px] leading-relaxed text-muted">{kit.description}</p>
 
               {kit.features.length > 0 && (
                 <>
-                  <p className="mt-7 text-sm font-semibold text-fg">{t.features}</p>
+                  <p className="mt-7 font-display text-lg font-semibold text-fg">{t.features}</p>
                   <ul className="mt-3 grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
                     {kit.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2.5 text-[15px] text-fg">
-                        <Check size={16} strokeWidth={2.5} className="mt-0.5 shrink-0 text-gold" /> {f}
+                      <li key={f} className="flex items-start gap-2.5 text-[15px] font-semibold text-fg">
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-brand text-on-brand"><Check size={12} strokeWidth={3.5} /></span> {f}
                       </li>
                     ))}
                   </ul>
@@ -324,7 +318,7 @@ function KitDialog({ kit, t, lang, onClose }: { kit: Kit; t: T; lang: Locale; on
             </div>
 
             {/* ─── kotak beli ─── */}
-            <aside className="h-fit rounded-[22px] bg-surface-2 p-5">
+            <aside className="pop h-fit rounded-card bg-surface-2 p-5">
               {soon ? (
                 <p className="text-display text-2xl text-fg">{t.comingSoon}</p>
               ) : (
@@ -352,26 +346,26 @@ function KitDialog({ kit, t, lang, onClose }: { kit: Kit; t: T; lang: Locale; on
               <dl className="mt-5 space-y-3 text-sm">
                 {kit.rating != null && (
                   <div className="flex items-center gap-1.5 text-fg">
-                    <Star size={13} className="fill-gold text-gold" /> {kit.rating.toFixed(1)}
+                    <Star size={14} strokeWidth={2.25} className="fill-brand text-ink" /> <b>{kit.rating.toFixed(1)}</b>
                     {kit.stats.activePlaces > 0 && <span className="text-dim">· {fmt(t.liveIn, { n: kit.stats.activePlaces })}</span>}
                   </div>
                 )}
                 {kit.integrations.length > 0 && (
                   <div>
-                    <dt className="text-dim">{t.plugsInto}</dt>
+                    <dt className="text-label">{t.plugsInto}</dt>
                     <dd className="mt-1.5 flex flex-wrap gap-1.5">
                       {kit.integrations.map((i) => (
-                        <span key={i} className="rounded-full bg-bg px-2.5 py-1 text-xs text-muted">{i}</span>
+                        <span key={i} className="rounded-full border-2 border-ink bg-surface px-2.5 py-0.5 text-xs font-bold text-fg">{i}</span>
                       ))}
                     </dd>
                   </div>
                 )}
                 <div>
-                  <dt className="text-dim">{t.licenseGoesIn}</dt>
+                  <dt className="text-label">{t.licenseGoesIn}</dt>
                   <dd className="mt-1 font-mono text-[13px] text-fg">{kit.configPath}</dd>
                 </div>
                 <div>
-                  <dt className="text-dim">Version</dt>
+                  <dt className="text-label">Version</dt>
                   <dd className="mt-1 font-mono text-[13px] text-fg">v{kit.version}</dd>
                 </div>
               </dl>

@@ -40,14 +40,14 @@ export default function CookieConsent() {
       role="dialog"
       aria-live="polite"
       aria-label={t.title}
-      className="fixed inset-x-3 bottom-3 z-[70] mx-auto max-w-xl animate-[pagein_0.25s_ease-out] rounded-[22px] border border-line-strong bg-surface p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-float sm:inset-x-auto sm:bottom-5 sm:left-5 sm:mx-0 sm:p-5"
+      className="fixed inset-x-3 bottom-3 z-[70] mx-auto max-w-xl pop-lg animate-[rise-in_0.45s_cubic-bezier(0.34,1.56,0.64,1)] rounded-[24px] bg-surface p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:inset-x-auto sm:bottom-5 sm:left-5 sm:mx-0 sm:p-5"
     >
       <div className="flex items-start gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold-soft text-gold">
-          <Cookie size={18} strokeWidth={1.7} />
+        <span className="pop-sm flex h-10 w-10 shrink-0 -rotate-6 items-center justify-center rounded-xl bg-brand text-on-brand">
+          <Cookie size={19} strokeWidth={2} />
         </span>
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-fg">{t.title}</p>
+          <p className="font-display text-base font-semibold text-fg">{t.title}</p>
           <p className="mt-1 text-[13px] leading-relaxed text-muted">
             {t.text}{" "}
             <Link href={`/privacy?lang=${lang}`} className="whitespace-nowrap text-fg underline underline-offset-2 hover:text-gold">
@@ -60,7 +60,7 @@ export default function CookieConsent() {
         <button
           type="button"
           onClick={() => choose("necessary")}
-          className="h-10 rounded-full border border-line-strong text-sm font-medium text-fg transition-colors hover:bg-surface-2"
+          className="btn-pop h-10 rounded-full bg-surface font-display text-sm font-semibold text-fg"
         >
           {t.necessary}
         </button>
@@ -68,7 +68,7 @@ export default function CookieConsent() {
           type="button"
           autoFocus
           onClick={() => choose("all")}
-          className="h-10 rounded-full bg-brand text-sm font-semibold text-on-brand transition-[background-color,transform] hover:bg-brand-hover active:scale-[0.97]"
+          className="btn-pop h-10 rounded-full bg-brand font-display text-sm font-semibold text-on-brand hover:bg-brand-hover"
         >
           {t.all}
         </button>

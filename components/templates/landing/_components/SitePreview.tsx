@@ -58,7 +58,7 @@ export function SitePreview({
       {live ? (
         <>
           {!loaded && (
-            <span className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 animate-spin rounded-full border-2 border-white/30 border-t-gold" />
+            <span className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 animate-spin rounded-full border-[3px] border-white/40 border-t-brand" />
           )}
           <iframe
             key={reloadKey}
@@ -73,10 +73,10 @@ export function SitePreview({
         <button
           type="button"
           onClick={() => setLive(true)}
-          className="group/ov absolute inset-0 flex items-end justify-center bg-gradient-to-t from-black/50 via-transparent to-transparent pb-5"
+          className="group/ov absolute inset-0 flex items-end justify-center bg-gradient-to-t from-[#241a0b]/45 via-transparent to-transparent pb-5"
         >
-          <span className="inline-flex items-center gap-2 rounded-full bg-bg/90 px-4 py-2 text-sm font-medium text-fg shadow-card ring-1 ring-line backdrop-blur transition-transform group-hover/ov:-translate-y-0.5">
-            <Play size={14} className="fill-gold text-gold" /> {hint ?? "Try it live"}
+          <span className="btn-pop inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2 font-display text-sm font-semibold text-on-brand group-hover/ov:-translate-y-0.5">
+            <Play size={13} className="fill-current" /> {hint ?? "Try it live"}
           </span>
         </button>
       )}
@@ -86,9 +86,9 @@ export function SitePreview({
   if (device === "phone") {
     // bingkai ponsel: bezel gelap + notch, tanpa address bar
     return (
-      <div className={`rounded-[2.4rem] bg-[#111] p-2.5 shadow-float ${className}`}>
+      <div className={`pop-lg rounded-[2.4rem] bg-[#241a0b] p-2.5 ${className}`}>
         <div className="relative overflow-hidden rounded-[1.9rem]">
-          <span aria-hidden className="absolute left-1/2 top-2 z-10 h-5 w-20 -translate-x-1/2 rounded-full bg-[#15120c]" />
+          <span aria-hidden className="absolute left-1/2 top-2 z-10 h-5 w-20 -translate-x-1/2 rounded-full bg-[#241a0b]" />
           {frame}
         </div>
       </div>
@@ -96,15 +96,15 @@ export function SitePreview({
   }
 
   return (
-    <div className={`overflow-hidden rounded-2xl bg-surface shadow-float ${className}`}>
+    <div className={`pop-lg overflow-hidden rounded-card bg-surface ${className}`}>
       {/* chrome browser */}
-      <div className="flex items-center gap-3 bg-surface px-3 py-2.5">
+      <div className="flex items-center gap-3 border-b-2 border-ink bg-surface-2 px-3 py-2.5">
         <span aria-hidden className="flex gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
-          <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
-          <span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
+          <span className="h-3 w-3 rounded-full border-2 border-ink bg-brand" />
+          <span className="h-3 w-3 rounded-full border-2 border-ink bg-surface" />
+          <span className="h-3 w-3 rounded-full border-2 border-ink bg-surface" />
         </span>
-        <span className="flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full bg-surface-2 px-3 py-1 font-mono text-[11px] text-muted">
+        <span className="flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full border-2 border-ink bg-surface px-3 py-0.5 text-xs font-bold text-muted">
           <Lock size={10} className="shrink-0 text-dim" />
           <span className="truncate">{host}</span>
         </span>
@@ -126,7 +126,7 @@ export function SitePreview({
           target="_blank"
           rel="noreferrer"
           aria-label={`Open ${host} in a new tab`}
-          className="rounded p-1 text-dim transition-colors hover:text-gold"
+          className="rounded p-1 text-dim transition-colors hover:text-fg"
         >
           <ExternalLink size={13} />
         </a>

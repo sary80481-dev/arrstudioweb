@@ -66,12 +66,13 @@ export default function RegisterPage() {
           if (problem) return setError(problem);
           run(async () => (await authClient()).signUp(name.trim(), email, password));
         }}
-        className="space-y-5"
+        className="space-y-4"
         noValidate
       >
         {error && <Alert>{error}</Alert>}
 
-        <Field
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
           id="name"
           label="Display name"
           autoComplete="nickname"
@@ -81,7 +82,7 @@ export default function RegisterPage() {
           maxLength={40}
           required
         />
-        <Field
+          <Field
           id="email"
           label="Email"
           type="email"
@@ -91,8 +92,9 @@ export default function RegisterPage() {
           onChange={(e) => setEmail(e.target.value)}
           required
         />
+        </div>
 
-        <div className="grid gap-5">
+        <div className="grid gap-4 sm:grid-cols-2">
           <PasswordField
             id="password"
             label="Password"
@@ -118,7 +120,7 @@ export default function RegisterPage() {
 
         <label className="flex cursor-pointer select-none items-start gap-3 text-sm text-muted">
           <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="peer sr-only" />
-          <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-surface-2 text-transparent transition-colors peer-checked:bg-brand peer-checked:text-on-brand peer-focus-visible:ring-2 peer-focus-visible:ring-gold">
+          <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 border-ink bg-bg text-transparent transition-colors peer-checked:bg-brand peer-checked:text-on-brand peer-focus-visible:ring-2 peer-focus-visible:ring-gold">
             <Check size={13} strokeWidth={3} />
           </span>
           <span>
@@ -133,7 +135,7 @@ export default function RegisterPage() {
         </div>
       </form>
 
-      <p className="mt-9 text-center text-[15px] text-muted">
+      <p className="mt-6 text-center text-[15px] text-muted">
         Already have an account?{" "}
         <Link href="/login" className="font-medium text-gold hover:underline hover:underline-offset-4">
           Sign in

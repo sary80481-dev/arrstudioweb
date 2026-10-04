@@ -37,25 +37,25 @@ export default function Footer({ lang, t: { footer: t, nav } }: SectionProps) {
   ];
 
   return (
-    <footer className="bg-surface-2">
+    <footer className="bg-dots border-t-2 border-ink bg-surface-2">
       <Container className="py-16">
         <div className="grid gap-12 lg:grid-cols-[1.2fr_2fr]">
           <div className="max-w-sm">
             <Logo href={`/${lang}`} />
-            <p className="mt-4 text-sm leading-relaxed text-muted">{t.tagline}</p>
+            <p className="mt-4 text-[15px] leading-relaxed text-muted">{t.tagline}</p>
             <form className="mt-8">
-              <label htmlFor="newsletter-email" className="text-sm font-medium text-fg">
+              <label htmlFor="newsletter-email" className="font-display text-base font-semibold text-fg">
                 {t.newsletter}
               </label>
-              <div className="mt-3 flex gap-2 rounded-full bg-bg p-1 transition-shadow focus-within:shadow-[0_0_0_3px_var(--gold)]">
+              <div className="pop-sm mt-3 flex gap-2 rounded-full bg-surface p-1 transition-shadow focus-within:shadow-[3px_3px_0_0_var(--brand)]">
                 <input
                   id="newsletter-email"
                   type="email"
                   required
                   placeholder="you@studio.com"
-                  className="h-9 min-w-0 flex-1 bg-transparent pl-3.5 text-sm text-fg placeholder:text-dim focus:outline-none"
+                  className="h-9 min-w-0 flex-1 bg-transparent pl-3.5 text-sm font-semibold text-fg placeholder:font-medium placeholder:text-dim focus:outline-none"
                 />
-                <button type="submit" className={buttonClass("gold", "sm")}>
+                <button type="submit" className={buttonClass("gold", "sm", "shadow-none! hover:shadow-none!")}>
                   {t.join}
                 </button>
               </div>
@@ -65,11 +65,11 @@ export default function Footer({ lang, t: { footer: t, nav } }: SectionProps) {
           <nav aria-label="Footer" className="grid grid-cols-2 gap-8 sm:grid-cols-3">
             {cols.map((c) => (
               <div key={c.title}>
-                <h3 className="text-[13px] font-semibold text-fg">{c.title}</h3>
+                <h3 className="font-display text-base font-semibold text-fg">{c.title}</h3>
                 <ul className="mt-4 space-y-2.5">
                   {c.links.map((l) => (
                     <li key={l.label}>
-                      <a href={l.href} className="text-[13px] text-muted transition-colors hover:text-fg hover:underline">
+                      <a href={l.href} className="text-sm font-semibold text-muted transition-colors hover:text-fg hover:underline hover:decoration-brand hover:decoration-2 hover:underline-offset-4">
                         {l.label}
                       </a>
                     </li>
@@ -80,9 +80,9 @@ export default function Footer({ lang, t: { footer: t, nav } }: SectionProps) {
           </nav>
         </div>
 
-        <div className="mt-16 flex flex-col gap-4 text-xs text-dim sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-14 flex flex-col gap-4 border-t-2 border-line pt-6 text-xs font-semibold text-dim sm:flex-row sm:items-center sm:justify-between">
           <p>{t.rights}</p>
-          <ul className="flex gap-6">
+          <ul className="flex flex-wrap gap-x-6 gap-y-2">
             {Object.entries(t.legal).map(([key, l]) => (
               <li key={key}>
                 <a href={key === "privacy" ? `/privacy?lang=${lang}` : "#"} className="transition-colors hover:text-fg">{l}</a>
@@ -92,6 +92,13 @@ export default function Footer({ lang, t: { footer: t, nav } }: SectionProps) {
           </ul>
         </div>
       </Container>
+
+      {/* wordmark raksasa — terpotong di bawah, timbul saat di-hover */}
+      <div aria-hidden className="group overflow-hidden">
+        <p className="text-hero translate-y-[18%] select-none text-center text-[22vw] leading-none text-transparent transition-[color,transform] duration-500 [-webkit-text-stroke:2px_var(--ink)] group-hover:translate-y-[8%] group-hover:text-brand lg:text-[17rem]">
+          ArrStudio
+        </p>
+      </div>
     </footer>
   );
 }

@@ -35,9 +35,9 @@ export default function LanguageSwitcher({ lang, label }: { lang: Locale; label:
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={label}
-        className="flex h-9 items-center gap-1 rounded-full px-2.5 text-sm uppercase text-muted transition-colors hover:bg-surface-2 hover:text-fg"
+        className="flex h-10 items-center gap-1 rounded-full px-2.5 font-display text-sm font-semibold uppercase text-muted transition-colors hover:bg-surface-2 hover:text-fg"
       >
-        <Globe size={16} strokeWidth={1.75} />
+        <Globe size={17} strokeWidth={2} />
         {lang}
         <ChevronDown size={14} className={`transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
@@ -46,7 +46,7 @@ export default function LanguageSwitcher({ lang, label }: { lang: Locale; label:
         <ul
           role="listbox"
           aria-label={label}
-          className="absolute right-0 top-full mt-2 w-52 overflow-hidden rounded-xl border border-line-strong bg-surface py-1.5 shadow-card"
+          className="pop absolute right-0 top-full mt-3 w-56 origin-top-right animate-[pop-in_0.25s_ease-out] overflow-hidden rounded-2xl bg-surface p-1.5"
         >
           {locales.map((l) => (
             <li key={l} role="option" aria-selected={l === lang}>
@@ -54,13 +54,13 @@ export default function LanguageSwitcher({ lang, label }: { lang: Locale; label:
                 href={`/${l}`}
                 hrefLang={l}
                 onClick={() => remember(l)}
-                className={`flex items-center justify-between px-4 py-2 text-sm transition-colors hover:bg-surface-2 ${
-                  l === lang ? "text-gold" : "text-fg"
+                className={`flex items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold transition-colors hover:bg-surface-2 ${
+                  l === lang ? "bg-brand text-on-brand hover:bg-brand" : "text-fg"
                 }`}
               >
                 <span>
                   {localeNames[l]}
-                  <span className="ml-2 font-mono text-[11px] uppercase text-dim">{l}</span>
+                  <span className="ml-2 text-[11px] font-bold uppercase opacity-60">{l}</span>
                 </span>
                 {l === lang && <Check size={14} />}
               </Link>

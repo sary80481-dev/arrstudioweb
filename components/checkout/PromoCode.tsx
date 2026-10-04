@@ -78,7 +78,7 @@ export function PromoCode({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={`inline-flex items-center gap-1 text-xs text-muted transition-colors hover:text-fg ${className}`}
+        className={`inline-flex items-center gap-1 text-xs font-semibold text-muted transition-colors hover:text-fg ${className}`}
       >
         <Tag size={12} /> Have a promo code?
       </button>
@@ -104,13 +104,13 @@ export function PromoCode({
           placeholder="Promo code"
           aria-label="Promo code"
           maxLength={24}
-          className="h-9 min-w-0 flex-1 rounded-full border border-line-strong bg-bg px-3.5 text-sm uppercase text-fg placeholder:normal-case placeholder:text-dim focus:border-gold focus:outline-none"
+          className="h-9 min-w-0 flex-1 rounded-full border-2 border-ink bg-bg px-3.5 text-sm font-semibold uppercase text-fg placeholder:normal-case placeholder:font-medium placeholder:text-dim focus:shadow-[2px_2px_0_0_var(--brand)] focus:outline-none"
         />
         <button
           type="button"
           onClick={apply}
           disabled={busy || !value.trim()}
-          className="flex h-9 shrink-0 items-center justify-center rounded-full border border-line-strong px-4 text-sm text-fg transition-colors hover:bg-surface-2 disabled:opacity-50"
+          className="btn-pop flex h-9 shrink-0 items-center justify-center rounded-full bg-surface px-4 font-display text-sm font-semibold text-fg disabled:opacity-50"
         >
           {busy ? <Loader2 size={14} className="animate-spin" /> : "Apply"}
         </button>

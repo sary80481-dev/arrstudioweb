@@ -117,7 +117,7 @@ export default function LoginPage() {
         </div>
       </form>
 
-      <p className="mt-9 text-center text-[15px] text-muted">
+      <p className="mt-6 text-center text-[15px] text-muted">
         New to ArrStudio?{" "}
         <Link href="/register" className="font-medium text-gold hover:underline hover:underline-offset-4">
           Create an account

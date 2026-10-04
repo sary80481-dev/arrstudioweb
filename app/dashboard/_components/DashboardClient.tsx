@@ -218,7 +218,7 @@ export function Dashboard({
   return (
     <div className="min-h-svh bg-bg lg:grid lg:grid-cols-[256px_1fr]">
       {/* ═══ SIDEBAR (desktop) ═══ */}
-      <aside className="sticky top-0 hidden h-svh flex-col border-r border-line px-4 py-5 lg:flex">
+      <aside className="sticky top-0 hidden h-svh flex-col border-r-2 border-ink bg-surface px-4 py-5 lg:flex">
         <div className="px-2"><Logo /></div>
 
         <nav aria-label="Dashboard" className="mt-8 space-y-1">
@@ -231,14 +231,14 @@ export function Dashboard({
                 type="button"
                 aria-current={on ? "page" : undefined}
                 onClick={() => setView(n.id)}
-                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] transition-colors ${
-                  on ? "bg-surface-2 font-medium text-fg" : "text-muted hover:bg-surface-2/60 hover:text-fg"
+                className={`flex w-full items-center gap-3 rounded-xl border-2 px-3 py-2 text-[15px] font-semibold transition-colors ${
+                  on ? "border-ink bg-brand text-on-brand shadow-[2px_2px_0_0_var(--ink)]" : "border-transparent text-muted hover:bg-surface-2 hover:text-fg"
                 }`}
               >
-                <n.icon size={18} strokeWidth={1.8} className={on ? "text-gold" : ""} />
+                <n.icon size={18} strokeWidth={2} />
                 {n.label}
                 {count > 0 && (
-                  <span className={`ml-auto rounded-full px-2 py-0.5 text-xs tabular-nums ${n.id === "payments" ? "bg-gold-soft text-gold" : "bg-bg text-muted"}`}>{count}</span>
+                  <span className={`ml-auto rounded-full px-2 py-0.5 text-xs tabular-nums ${n.id === "payments" ? "border-2 border-ink bg-surface font-bold text-fg" : "bg-bg font-bold text-muted"}`}>{count}</span>
                 )}
               </button>
             );
@@ -259,8 +259,8 @@ export function Dashboard({
           )}
         </div>
 
-        <div className="mt-auto flex items-center gap-2.5 rounded-2xl bg-surface-2 p-2.5">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-semibold text-on-brand">{initial}</span>
+        <div className="pop-sm mt-auto flex items-center gap-2.5 rounded-2xl bg-bg p-2.5">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-brand font-display text-sm font-semibold text-on-brand">{initial}</span>
           <span className="min-w-0 flex-1 leading-tight">
             <span className="block truncate text-sm font-medium text-fg">{name}</span>
             <span className="block truncate text-xs text-dim">{email}</span>
@@ -272,7 +272,7 @@ export function Dashboard({
 
       <div className="min-w-0">
         {/* ═══ TOP BAR (HP) ═══ */}
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-line bg-bg/85 px-4 backdrop-blur-xl lg:hidden">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b-2 border-ink bg-bg/90 px-4 backdrop-blur-md lg:hidden">
           <Logo />
           <div className="flex items-center gap-1">
             {isAdmin && (
@@ -358,7 +358,7 @@ export function Dashboard({
       </div>
 
       {/* ═══ BOTTOM NAV (HP) ═══ */}
-      <nav aria-label="Dashboard" className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-line bg-bg/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
+      <nav aria-label="Dashboard" className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t-2 border-ink bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden">
         {NAV.map((n) => {
           const on = view === n.id;
           const count = n.id === "payments" ? badge(n.id) : 0;
@@ -396,8 +396,8 @@ function ViewHeader({ title, desc, live }: { title: string; desc: string; live?:
 
 function EmptyLicenses() {
   return (
-    <div className="flex flex-col items-center rounded-[28px] bg-surface-2 px-6 py-16 text-center sm:py-20">
-      <span className="flex h-16 w-16 items-center justify-center rounded-[20px] bg-bg text-gold">
+    <div className="pop flex flex-col items-center rounded-[28px] bg-surface px-6 py-16 text-center sm:py-20">
+      <span className="pop-sm flex h-16 w-16 animate-[bob_4s_ease-in-out_infinite] items-center justify-center rounded-[20px] bg-brand text-on-brand">
         <KeyRound size={28} strokeWidth={1.6} />
       </span>
       <h2 className="text-display mt-6 text-3xl text-fg">No licenses yet</h2>
@@ -459,7 +459,7 @@ function Overview({
                 const i = l.installment!;
                 const pct = Math.min(100, Math.round((i.paid / i.total) * 100));
                 return (
-                  <div key={l.key} className="relative overflow-hidden rounded-[24px] border border-gold/30 bg-gold-soft p-5 sm:p-6">
+                  <div key={l.key} className="pop relative overflow-hidden rounded-[24px] bg-gold-soft p-5 sm:p-6">
                     <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
                       <div className="min-w-0 flex-1">
                         <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-gold">
@@ -610,7 +610,7 @@ function AccountView({ name, email, isAdmin, licenseCount }: { name: string; ema
       <ViewHeader title="Account" desc="Your details and your data." />
 
       <div className="space-y-4">
-        <section className="rounded-2xl bg-surface-2 p-5">
+        <section className="pop rounded-[22px] bg-surface p-5">
           <h2 className="text-base font-semibold text-fg">Profile</h2>
           <dl className="mt-4 grid gap-4 sm:grid-cols-2">
             <div className="min-w-0">
@@ -624,7 +624,7 @@ function AccountView({ name, email, isAdmin, licenseCount }: { name: string; ema
           </dl>
         </section>
 
-        <section className="rounded-2xl bg-surface-2 p-5">
+        <section className="pop rounded-[22px] bg-surface p-5">
           <h2 className="text-base font-semibold text-fg">Your data</h2>
           <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
             Download a copy of everything we hold about you — profile, licenses and orders — as a JSON file. See how we handle it in the{" "}
@@ -710,7 +710,7 @@ function Payments({ licenses, kits, open }: { licenses: LicenseDto[]; kits: Reco
       <ViewHeader title="Payments" desc="Installments, what you've paid and what's left." />
 
       {plans.length === 0 ? (
-        <div className="flex flex-col items-center rounded-[28px] bg-surface-2 px-6 py-16 text-center">
+        <div className="pop flex flex-col items-center rounded-[28px] bg-surface px-6 py-16 text-center">
           <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-bg text-green"><Check size={26} /></span>
           <h2 className="text-display mt-5 text-2xl text-fg">Nothing to pay</h2>
           <p className="mt-2 max-w-sm text-[15px] leading-relaxed text-muted">None of your licenses are on an installment plan. If you split a payment, it shows up here.</p>
@@ -1146,7 +1146,7 @@ function PlaceCard({
   const url = `https://www.roblox.com/games/${placeId}`;
 
   return (
-    <div className="relative flex min-h-[92px] items-center gap-3.5 rounded-[20px] bg-bg p-3.5 pr-12 transition-shadow hover:shadow-card">
+    <div className="relative flex min-h-[92px] items-center gap-3.5 rounded-[20px] border-2 border-ink bg-bg p-3.5 pr-12 transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-card">
       {info?.iconUrl ? (
         // eslint-disable-next-line @next/next/no-img-element -- ikon dari CDN Roblox
         <img src={info.iconUrl} alt="" className="h-16 w-16 shrink-0 rounded-[14px] bg-surface-2 object-cover" />
@@ -1416,7 +1416,7 @@ function AddPlace({ license, first }: { license: LicenseDto; first: boolean }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group flex min-h-[92px] items-center gap-3.5 rounded-[20px] bg-bg/50 p-3.5 text-left transition-colors hover:bg-bg"
+        className="group flex min-h-[92px] items-center gap-3.5 rounded-[20px] border-2 border-dashed border-line-strong bg-bg/50 p-3.5 text-left transition-colors hover:border-ink hover:bg-bg"
       >
         <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[14px] bg-surface text-muted transition-colors group-hover:bg-brand group-hover:text-on-brand">
           <Plus size={22} />
@@ -1430,7 +1430,7 @@ function AddPlace({ license, first }: { license: LicenseDto; first: boolean }) {
   }
 
   return (
-    <form onSubmit={submit} className="flex min-h-[92px] flex-col justify-center rounded-[20px] bg-bg p-3 ring-2 ring-gold/60">
+    <form onSubmit={submit} className="flex min-h-[92px] flex-col justify-center rounded-[20px] border-2 border-ink bg-bg p-3 shadow-[3px_3px_0_0_var(--brand)]">
       <div className="flex items-center gap-2">
         <input
           ref={inputRef}

@@ -77,7 +77,7 @@ function LiveDot() {
   const live = !!uid;
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-full border border-line px-2.5 py-1 text-xs text-muted"
+      className="inline-flex items-center gap-1.5 rounded-full border-2 border-ink bg-surface px-2.5 py-1 text-xs font-bold text-fg"
       title={live ? "Realtime connected" : "Connecting"}
     >
       <span className="relative flex h-1.5 w-1.5">
@@ -114,19 +114,19 @@ function Shell({ email, children }: { email: string; children: ReactNode }) {
   const sidebar = (
     <div className="flex h-full flex-col">
       <Link href="/admin" className="flex items-center gap-2.5 rounded-lg px-2 py-1.5">
-        <LogoImage size={32} className="h-8 w-8 object-contain" />
+        <span className="pop-sm flex h-10 w-10 items-center justify-center rounded-xl bg-[#241a0b]"><LogoImage size={28} className="h-7 w-7 object-contain" /></span>
         <span className="leading-tight">
-          <span className="block font-display text-base font-bold uppercase tracking-[0.14em] text-fg">
-            Arr<span className="text-gold">Studio</span>
+          <span className="block font-display text-lg font-semibold text-fg">
+            ArrStudio
           </span>
-          <span className="block text-[11px] text-dim">Control room</span>
+          <span className="block text-xs font-bold text-dim">Control room</span>
         </span>
       </Link>
 
       <nav aria-label="Admin" className="mt-7 flex-1 space-y-6 overflow-y-auto">
         {nav.map((g) => (
           <div key={g.group}>
-            <p className="mb-1.5 px-2.5 text-[11px] font-medium uppercase tracking-wider text-dim">{g.group}</p>
+            <p className="mb-1.5 px-2.5 text-[11px] font-extrabold uppercase tracking-wider text-dim">{g.group}</p>
             <ul className="space-y-0.5">
               {g.items.map((n) => {
                 const active = isActive(n.href);
@@ -135,18 +135,14 @@ function Shell({ email, children }: { email: string; children: ReactNode }) {
                     <Link
                       href={n.href}
                       aria-current={active ? "page" : undefined}
-                      className={`group relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors ${
-                        active ? "bg-gold-soft font-medium text-fg" : "text-muted hover:bg-surface-2 hover:text-fg"
+                      className={`group relative flex items-center gap-2.5 rounded-xl border-2 px-2.5 py-1.5 text-sm font-semibold transition-colors ${
+                        active ? "border-ink bg-brand text-on-brand shadow-[2px_2px_0_0_var(--ink)]" : "border-transparent text-muted hover:bg-surface-2 hover:text-fg"
                       }`}
                     >
-                      <span
-                        aria-hidden
-                        className={`absolute inset-y-2 -left-3 w-[3px] rounded-r-full bg-gold transition-opacity ${active ? "opacity-100" : "opacity-0"}`}
-                      />
                       <n.icon
                         size={16}
                         strokeWidth={1.75}
-                        className={active ? "text-gold" : "text-dim transition-colors group-hover:text-fg"}
+                        className={active ? "" : "text-dim transition-colors group-hover:text-fg"}
                       />
                       {n.label}
                     </Link>
@@ -158,13 +154,13 @@ function Shell({ email, children }: { email: string; children: ReactNode }) {
         ))}
 
         <div>
-          <p className="mb-1.5 px-2.5 text-[11px] font-medium uppercase tracking-wider text-dim">Shortcuts</p>
+          <p className="mb-1.5 px-2.5 text-[11px] font-extrabold uppercase tracking-wider text-dim">Shortcuts</p>
           <ul className="space-y-0.5">
             {shortcuts.map((l) => (
               <li key={l.href}>
                 <Link
                   href={l.href}
-                  className="group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-muted transition-colors hover:bg-surface-2 hover:text-fg"
+                  className="group flex items-center gap-2.5 rounded-xl border-2 border-transparent px-2.5 py-1.5 text-sm font-semibold text-muted transition-colors hover:bg-surface-2 hover:text-fg"
                 >
                   <l.icon size={16} strokeWidth={1.75} className="text-dim" />
                   <span className="flex-1">{l.label}</span>
@@ -176,8 +172,8 @@ function Shell({ email, children }: { email: string; children: ReactNode }) {
         </div>
       </nav>
 
-      <div className="mt-4 flex items-center gap-2.5 rounded-xl border border-line bg-bg/60 p-2">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold-grad text-xs font-bold text-on-gold">
+      <div className="pop-sm mt-4 flex items-center gap-2.5 rounded-2xl bg-bg p-2">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-brand font-display text-sm font-semibold text-on-brand">
           {email.charAt(0).toUpperCase()}
         </span>
         <span className="min-w-0 flex-1">
@@ -200,7 +196,7 @@ function Shell({ email, children }: { email: string; children: ReactNode }) {
   return (
     <div className="min-h-svh bg-bg lg:grid lg:grid-cols-[248px_1fr]">
       {/* sidebar desktop */}
-      <aside className="sticky top-0 hidden h-svh border-r border-line bg-surface/60 px-3 py-4 lg:block">{sidebar}</aside>
+      <aside className="sticky top-0 hidden h-svh border-r-2 border-ink bg-surface px-3 py-4 lg:block">{sidebar}</aside>
 
       {/* sidebar mobile (sheet) — selalu di DOM supaya bisa beranimasi */}
       <div
@@ -214,12 +210,12 @@ function Shell({ email, children }: { email: string; children: ReactNode }) {
           aria-label="Close menu"
           tabIndex={menuOpen ? 0 : -1}
           onClick={() => setMenuOpen(false)}
-          className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${menuOpen ? "opacity-100" : "opacity-0"}`}
+          className={`absolute inset-0 bg-[#241a0b]/50 backdrop-blur-[3px] transition-opacity duration-300 ${menuOpen ? "opacity-100" : "opacity-0"}`}
         />
         <aside
           // klik link apa pun di dalam sheet → tutup
           onClickCapture={(e) => (e.target as HTMLElement).closest("a") && setMenuOpen(false)}
-          className={`relative h-full w-72 max-w-[85vw] border-r border-line bg-surface px-3 py-4 shadow-2xl transition-transform duration-300 ease-out ${
+          className={`relative h-full w-72 max-w-[85vw] border-r-2 border-ink bg-surface px-3 py-4 shadow-[6px_0_0_0_var(--ink)] transition-transform duration-300 ease-out ${
             menuOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
@@ -229,7 +225,7 @@ function Shell({ email, children }: { email: string; children: ReactNode }) {
 
       <div className="min-w-0">
         {/* top bar */}
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-line bg-bg/80 px-4 backdrop-blur-xl sm:px-6">
+        <header className="sticky top-0 z-30 flex h-15 items-center gap-3 border-b-2 border-ink bg-bg/90 px-4 backdrop-blur-md sm:px-6">
           <button
             type="button"
             onClick={() => setMenuOpen((o) => !o)}
@@ -242,7 +238,7 @@ function Shell({ email, children }: { email: string; children: ReactNode }) {
           <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 text-sm">
             <Link href="/admin" className="text-dim transition-colors hover:text-fg">Admin</Link>
             <span className="text-line-strong">/</span>
-            <span className="truncate font-medium text-fg">{current?.label ?? "Overview"}</span>
+            <span className="truncate font-display text-base font-semibold text-fg">{current?.label ?? "Overview"}</span>
           </nav>
           <div className="ml-auto flex items-center gap-2">
             <LiveDot />

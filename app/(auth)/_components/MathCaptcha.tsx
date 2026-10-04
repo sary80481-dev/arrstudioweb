@@ -118,9 +118,9 @@ const MathCaptcha = forwardRef<MathCaptchaHandle, Props>(function MathCaptcha({ 
   const tone = status === "ok" ? "text-green" : status === "err" ? "text-red-500" : "text-dim";
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-surface-2">
+    <div className="overflow-hidden rounded-2xl border-2 border-ink bg-surface-2">
       <div className="flex items-center justify-between px-4 pb-1 pt-3">
-        <span className="text-sm font-medium text-fg">Quick check</span>
+        <span className="font-display text-sm font-semibold text-fg">Quick check</span>
         <span className={`flex items-center gap-1.5 text-xs font-medium ${tone}`}>
           <span className="h-1.5 w-1.5 rounded-full bg-current" />
           {status === "ok" ? "Verified" : status === "err" ? "Wrong" : "Pending"}
@@ -128,7 +128,7 @@ const MathCaptcha = forwardRef<MathCaptchaHandle, Props>(function MathCaptcha({ 
       </div>
 
       <div className="flex items-stretch">
-        <div className="relative m-2 h-14 w-[170px] shrink-0 overflow-hidden rounded-xl sm:w-[190px]">
+        <div className="relative m-2 h-14 w-[170px] shrink-0 overflow-hidden rounded-xl border-2 border-ink sm:w-[190px]">
           <canvas ref={canvasRef} className="block h-full w-full" aria-hidden />
           <button
             type="button"

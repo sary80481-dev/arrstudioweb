@@ -164,22 +164,22 @@ function DiscordOrderDialog({ url, onClose }: { url: string; onClose: () => void
       aria-modal="true"
       aria-labelledby="discord-order-title"
       onClick={onClose}
-      className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm animate-[pagein_0.2s_ease-out] sm:items-center"
+      className="fixed inset-0 z-[100] flex items-end justify-center bg-[#241a0b]/55 p-4 backdrop-blur-[3px] animate-[pagein_0.2s_ease-out] sm:items-center"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-md rounded-[28px] bg-bg p-8 text-center text-fg shadow-float sm:p-10"
+        className="pop-lg relative w-full max-w-md animate-[rise-in_0.45s_cubic-bezier(0.34,1.56,0.64,1)] rounded-[30px] bg-surface p-8 text-center text-fg sm:p-10"
       >
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-surface-2 text-muted transition-colors hover:text-fg"
+          className="btn-pop absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-surface text-fg hover:rotate-90"
         >
           <X size={16} />
         </button>
 
-        <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-[20px] bg-[#5865F2] text-white">
+        <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-[20px] border-2 border-ink bg-[#5865F2] text-white shadow-[3px_3px_0_0_var(--ink)]">
           <svg width="30" height="30" viewBox="0 0 24 24" aria-hidden fill="currentColor">
             <path d="M20.32 4.37a19.8 19.8 0 0 0-4.89-1.52.07.07 0 0 0-.08.04c-.21.38-.44.87-.61 1.25a18.27 18.27 0 0 0-5.49 0 12.64 12.64 0 0 0-.62-1.25.08.08 0 0 0-.08-.04 19.74 19.74 0 0 0-4.88 1.52.07.07 0 0 0-.03.03C.53 9.05-.32 13.58.1 18.06a.08.08 0 0 0 .03.06 19.9 19.9 0 0 0 5.99 3.03.08.08 0 0 0 .08-.03c.46-.63.87-1.3 1.23-1.99a.08.08 0 0 0-.04-.11 13.1 13.1 0 0 1-1.87-.89.08.08 0 0 1-.01-.13l.37-.29a.07.07 0 0 1 .08-.01c3.93 1.79 8.18 1.79 12.06 0a.07.07 0 0 1 .08.01l.37.29a.08.08 0 0 1-.01.13c-.6.35-1.22.65-1.87.89a.08.08 0 0 0-.04.11c.36.7.78 1.36 1.22 1.99a.08.08 0 0 0 .09.03 19.84 19.84 0 0 0 6-3.03.08.08 0 0 0 .03-.05c.5-5.18-.84-9.67-3.55-13.66a.06.06 0 0 0-.03-.03zM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42zm7.97 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.95 2.42-2.16 2.42z" />
           </svg>
@@ -191,7 +191,7 @@ function DiscordOrderDialog({ url, onClose }: { url: string; onClose: () => void
           key and kit file right after payment.
         </p>
 
-        <QrisCard className="mt-6 bg-surface-2 text-left" />
+        <QrisCard className="mt-6 bg-surface-2! text-left" />
 
         <a
           ref={joinRef}
@@ -199,12 +199,12 @@ function DiscordOrderDialog({ url, onClose }: { url: string; onClose: () => void
           target="_blank"
           rel="noreferrer"
           onClick={onClose}
-          className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#5865F2] text-base font-medium text-white transition-[background-color,transform] hover:bg-[#4752c4] active:scale-[0.98]"
+          className="btn-pop mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#5865F2] font-display text-base font-semibold text-white hover:bg-[#4752c4]"
         >
           Join the Discord
           <ArrowUpRight size={17} />
         </a>
-        <button type="button" onClick={onClose} className="mt-3 h-11 w-full rounded-full text-[15px] text-muted transition-colors hover:text-fg">
+        <button type="button" onClick={onClose} className="mt-3 h-11 w-full rounded-full text-[15px] font-semibold text-muted transition-colors hover:bg-surface-2 hover:text-fg">
           Maybe later
         </button>
       </div>

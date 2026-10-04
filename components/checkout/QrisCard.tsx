@@ -22,18 +22,18 @@ export default function QrisCard({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className={`rounded-2xl bg-bg ${className}`}>
+    <div className={`rounded-2xl border-2 border-ink bg-bg ${className}`}>
       <button
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
         className="flex w-full items-center gap-3 p-3.5 text-left"
       >
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gold-soft text-gold">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-brand text-on-brand">
           <QrCode size={18} strokeWidth={1.8} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-medium text-fg">Pay with QRIS</span>
+          <span className="block font-display text-sm font-semibold text-fg">Pay with QRIS</span>
           <span className="block text-xs text-muted">Any bank or e-wallet — GoPay, BCA, Mandiri, BNI, BRI, …</span>
         </span>
         <ChevronDown size={16} className={`shrink-0 text-dim transition-transform ${open ? "rotate-180" : ""}`} />
@@ -41,7 +41,7 @@ export default function QrisCard({
 
       {open && (
         <div className="px-3.5 pb-4">
-          <div className="mx-auto w-full max-w-[280px] overflow-hidden rounded-xl">
+          <div className="mx-auto w-full max-w-[280px] overflow-hidden rounded-xl border-2 border-ink">
             <Image
               src="/qris-poster.jpg"
               alt="QRIS — ARRR STUDIO"
@@ -58,7 +58,7 @@ export default function QrisCard({
           <a
             href="/qris-poster.jpg"
             download="qris-arrr-studio.jpg"
-            className="mx-auto mt-3 flex w-fit items-center gap-1.5 rounded-full border border-line-strong px-3.5 py-1.5 text-xs font-medium text-fg transition-colors hover:bg-surface-2"
+            className="mx-auto mt-3 flex w-fit items-center gap-1.5 rounded-full border-2 border-ink px-3.5 py-1.5 text-xs font-bold text-fg transition-colors hover:bg-brand hover:text-on-brand"
           >
             <Download size={13} /> Save QR image
           </a>

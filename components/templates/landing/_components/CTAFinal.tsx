@@ -1,48 +1,40 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import type { SectionProps } from "@/components/type/landing";
-import { KitVideoPlayer } from "@/components/video/KitVideoPlayer";
 import { Reveal } from "./Motion";
-import { Container, buttonClass } from "./ui";
+import { Container, LogoImage, buttonClass } from "./ui";
 
 /**
- * Penutup sinematik selebar layar (selalu gelap). Video kit diredupkan jadi
- * latar; tanpa video cukup satu cahaya hangat dari bawah.
+ * Penutup: blok kuning besar berbingkai stiker. Selalu memakai token terang
+ * (teks ink di atas kuning) di kedua tema.
  */
-export default function CTAFinal({ t: { cta: t }, kits }: SectionProps) {
-  const reel = kits.find((k) => k.video);
-
+export default function CTAFinal({ t: { cta: t } }: SectionProps) {
   return (
-    <section data-theme="dark" className="relative isolate overflow-hidden bg-black text-fg">
-      {reel?.video ? (
-        <KitVideoPlayer
-          video={reel.video}
-          title={reel.name}
-          mode="view"
-          expandable={false}
-          className="absolute! inset-0 -z-20 bg-black opacity-50"
-        />
-      ) : (
-        <div
-          aria-hidden
-          className="absolute inset-0 -z-20"
-          style={{ background: "radial-gradient(50% 70% at 50% 120%, rgb(232 191 98 / 0.28), transparent 70%)" }}
-        />
-      )}
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-black/40" />
-
-      <Container className="py-32 text-center md:py-48">
+    <section className="bg-bg pb-20 md:pb-28">
+      <Container>
         <Reveal>
-          <h2 className="text-hero mx-auto max-w-4xl text-5xl text-white sm:text-7xl md:text-[6rem]">
-            {t.titleA} <span className="text-white/45">{t.titleGold}</span>
-          </h2>
-          <p className="mx-auto mt-7 max-w-xl text-lg leading-relaxed text-white/70 md:text-xl">{t.desc}</p>
-          <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link href="/register" className={buttonClass("gold", "lg")}>
-              {t.primary}
-            </Link>
-            <a href="#kits" className={buttonClass("light", "lg")}>
-              {t.secondary}
-            </a>
+          <div
+            data-theme="light"
+            className="pop-lg bg-dots relative isolate overflow-hidden rounded-panel bg-brand px-6 py-16 text-center text-fg sm:px-12 md:py-24"
+          >
+            <span aria-hidden className="absolute -left-16 -top-16 -z-10 h-56 w-56 rounded-full border-2 border-ink bg-brand-hover" />
+
+            <span className="pop mx-auto mb-8 flex h-20 w-20 animate-[bob_5s_ease-in-out_infinite] items-center justify-center rounded-3xl bg-[#241a0b]">
+              <LogoImage size={56} className="h-14 w-14 object-contain" />
+            </span>
+            <h2 className="t-hero mx-auto max-w-3xl text-fg">
+              {t.titleA} {t.titleGold}
+            </h2>
+            <p className="mx-auto mt-6 max-w-xl text-lg font-semibold leading-relaxed text-fg/80 md:text-xl">{t.desc}</p>
+            <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
+              <Link href="/register" className={buttonClass("ink", "lg")}>
+                {t.primary}
+                <ArrowRight size={18} strokeWidth={2.5} className="transition-transform group-hover/btn:translate-x-1" />
+              </Link>
+              <a href="#kits" className={buttonClass("outline", "lg")}>
+                {t.secondary}
+              </a>
+            </div>
           </div>
         </Reveal>
       </Container>

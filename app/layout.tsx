@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fredoka, Geist_Mono, Nunito } from "next/font/google";
+import ClickBurst from "@/components/common/ClickBurst";
 import CookieConsent from "@/components/common/CookieConsent";
 import { themeScript } from "@/components/theme/theme";
 import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 
-// satu keluarga huruf untuk judul & teks (Geist variable), mono hanya untuk label kecil & kode
-const sans = Geist({ subsets: ["latin", "vietnamese"], variable: "--font-geist", display: "swap" });
+// gaya cartoony: Fredoka (bulat) untuk judul, Nunito (bulat, ramah) untuk teks, mono hanya untuk kode
+const display = Fredoka({ subsets: ["latin", "latin-ext"], variable: "--font-fredoka", display: "swap" });
+const sans = Nunito({ subsets: ["latin", "latin-ext", "vietnamese"], variable: "--font-nunito", display: "swap" });
 const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
 
 export const metadata: Metadata = {
@@ -23,12 +25,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      data-theme="dark"
+      data-theme="light"
       // matikan smooth scroll sementara saat navigasi (mis. ganti bahasa), supaya
       // scroll ke atas tidak terhenti di tengah dan halaman tampak "turun sendiri"
       data-scroll-behavior="smooth"
       suppressHydrationWarning
-      className={`${sans.variable} ${mono.variable}`}
+      className={`${display.variable} ${sans.variable} ${mono.variable}`}
     >
       <head>
         {/* set tema sebelum paint — cegah flash */}
@@ -37,6 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {children}
         <CookieConsent />
+        <ClickBurst />
       </body>
     </html>
   );
