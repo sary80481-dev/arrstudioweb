@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { ArrowLeft } from "lucide-react";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import { Logo, LogoImage } from "@/components/templates/landing/_components/ui";
+import { KitSlideshow } from "@/components/video/KitSlideshow";
 import { KitVideoPlayer } from "@/components/video/KitVideoPlayer";
 import { listKits } from "@/lib/server/kits";
 
@@ -12,7 +13,7 @@ export const revalidate = 300;
 /** Kit dengan video untuk panel kiri — Firestore belum siap pun halaman tetap tampil */
 async function featuredKit() {
   try {
-    return (await listKits({ publicOnly: true })).find((k) => k.video) ?? null;
+    return (await listKits({ publicOnly: true })).find((k) => k.video || k.gallery.length > 0) ?? null;
   } catch {
     return null;
   }
@@ -36,6 +37,8 @@ export default async function AuthLayout({ children }: { children: ReactNode }) 
             expandable={false}
             className="absolute! inset-0 -z-20 animate-[kenburns_2.4s_ease-out_both] bg-black"
           />
+        ) : kit && kit.gallery.length > 0 ? (
+          <KitSlideshow photos={kit.gallery} title={kit.name} mode="view" controls={false} className="absolute! inset-0 -z-20 bg-black" />
         ) : (
           <div aria-hidden className="absolute inset-0 -z-20 flex items-start justify-center">
             <div className="absolute inset-0" style={{ background: "radial-gradient(45% 50% at 50% 0%, rgb(255 236 190 / 0.2), transparent 70%)" }} />

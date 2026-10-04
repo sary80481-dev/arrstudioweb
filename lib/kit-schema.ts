@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { INTEGRATIONS, KIT_ICON_KEYS, KIT_ID_PATTERN, KIT_STATUSES, VIDEO_HOST_PATTERN, type KitIconKey } from "./kits";
+import { INTEGRATIONS, KIT_ICON_KEYS, KIT_ID_PATTERN, KIT_STATUSES, MAX_GALLERY, VIDEO_HOST_PATTERN, type KitIconKey } from "./kits";
 
 const score = z.number().int().min(0).max(100);
 
@@ -12,6 +12,13 @@ export const KitVideoSchema = z.object({
   width: z.number().int().min(16).max(4096),
   height: z.number().int().min(16).max(4096),
   duration: z.number().min(0).max(600),
+  size: z.number().int().min(1),
+});
+
+export const KitPhotoSchema = z.object({
+  url: blobUrl,
+  width: z.number().int().min(16).max(4096),
+  height: z.number().int().min(16).max(4096),
   size: z.number().int().min(1),
 });
 
@@ -34,6 +41,7 @@ export const KitInputSchema = z.object({
   order: z.number().int().min(0).max(999),
   placesPerLicense: z.number().int().min(1, "At least 1 place").max(100),
   video: KitVideoSchema.nullable(),
+  gallery: z.array(KitPhotoSchema).max(MAX_GALLERY, `Up to ${MAX_GALLERY} photos`),
 });
 
 export const KitPatchSchema = KitInputSchema.omit({ id: true }).partial();

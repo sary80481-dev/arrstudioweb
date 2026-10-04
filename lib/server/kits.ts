@@ -3,7 +3,7 @@ import { FieldValue, type Timestamp } from "firebase-admin/firestore";
 import { db } from "@/lib/firebase/admin";
 import { DEFAULT_PLACES_PER_LICENSE, EMPTY_STATS, slugify, type Kit, type KitInput, type PublicStats } from "@/lib/kits";
 import { DEFAULT_PRICING, type PricingSettings } from "@/lib/pricing";
-import { deleteBlobs, videoFiles } from "./blob";
+import { deleteBlobs, galleryFiles, videoFiles } from "./blob";
 import { removePackage } from "./packages";
 import { revalidateLanding } from "./revalidate";
 import { getPricing } from "./settings";
@@ -33,6 +33,7 @@ export function toKit(id: string, d: KitDoc): Kit {
     order: d.order ?? 0,
     placesPerLicense: d.placesPerLicense ?? DEFAULT_PLACES_PER_LICENSE,
     video: d.video ?? null,
+    gallery: d.gallery ?? [],
     stats: { licenses: d.stats?.licenses ?? 0, activePlaces: d.stats?.activePlaces ?? 0 },
     updatedAt: d.updatedAt?.toDate().toISOString() ?? null,
   };
@@ -79,6 +80,11 @@ export async function updateKit(id: string, patch: Partial<KitInput>): Promise<K
   if (patch.video !== undefined && before.video && before.video.url !== patch.video?.url) {
     await deleteBlobs(videoFiles(before.video));
   }
+  // foto yang dibuang dari galeri tidak dipakai lagi
+  if (patch.gallery) {
+    const keep = new Set(patch.gallery.map((p) => p.url));
+    await deleteBlobs(galleryFiles(before.gallery.filter((p) => !keep.has(p.url))));
+  }
   revalidateLanding();
   return (await getKit(id))!;
 }
@@ -91,7 +97,7 @@ export async function deleteKit(id: string) {
     throw new ApiError(409, "KIT_HAS_LICENSES", "This kit has licenses. Set it to Draft instead of deleting it.");
   }
   await kitsCol().doc(id).delete();
-  await deleteBlobs(videoFiles(kit.video));
+  await deleteBlobs([...videoFiles(kit.video), ...galleryFiles(kit.gallery)]);
   await removePackage(id);
   revalidateLanding();
 }

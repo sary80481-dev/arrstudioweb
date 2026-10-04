@@ -1,5 +1,5 @@
 import "server-only";
-import { VIDEO_HOST_PATTERN, type KitVideo } from "@/lib/kits";
+import { VIDEO_HOST_PATTERN, type KitPhoto, type KitVideo } from "@/lib/kits";
 
 /**
  * Vercel Blob aktif? Store yang dihubungkan dari dashboard sekarang memakai
@@ -58,5 +58,7 @@ export async function deleteBlobs(urls: (string | null | undefined)[]) {
     console.warn("[blob] delete failed:", (err as Error).message);
   }
 }
+
+export const galleryFiles = (g: KitPhoto[] | null | undefined) => (g ?? []).map((p) => p.url);
 
 export const videoFiles = (v: KitVideo | null | undefined) => (v ? [v.url, v.poster] : []);

@@ -71,6 +71,18 @@ export interface KitVideo {
   size: number;
 }
 
+/** Foto showcase — dikompres di browser admin (WebP), diputar sebagai slideshow sinematik di landing */
+export interface KitPhoto {
+  url: string;
+  width: number;
+  height: number;
+  /** byte, setelah kompresi */
+  size: number;
+}
+
+/** Maksimum foto per kit */
+export const MAX_GALLERY = 30;
+
 /** Host tempat video kit boleh berada (dicek juga di skema input) */
 export const VIDEO_HOST_PATTERN = /.public.blob.vercel-storage.com$/;
 
@@ -94,6 +106,8 @@ export interface Kit {
   /** slot place per lisensi single — satu key bisa dipakai di sekian place */
   placesPerLicense: number;
   video: KitVideo | null;
+  /** foto showcase (maks 30); dipakai bila kit tidak punya video */
+  gallery: KitPhoto[];
   stats: KitStats;
   updatedAt: string | null;
 }
@@ -151,6 +165,7 @@ export const DEFAULT_KITS: KitInput[] = [
     order: 1,
     placesPerLicense: 3,
     video: null,
+    gallery: [],
   },
   {
     id: "summitkit",
@@ -171,6 +186,7 @@ export const DEFAULT_KITS: KitInput[] = [
     order: 2,
     placesPerLicense: 3,
     video: null,
+    gallery: [],
   },
 ];
 

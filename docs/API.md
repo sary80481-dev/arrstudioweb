@@ -435,6 +435,10 @@ curl -X POST http://localhost:3000/api/licenses/verify \
 
 ---
 
+### `kits/{id}` — media showcase
+- `video` (opsional): video showcase, dikompres di browser (1080p H.264).
+- `gallery`: array foto (maks 30) `{ url, width, height, size }` — tiap foto dikompres di browser ke WebP (sisi panjang ≤ 1920 px, ±100–350 KB) dan diupload paralel (5 sekaligus) langsung ke Vercel Blob (`kits/<id>/gallery/…`). Dipakai bila kit tidak punya video; di landing diputar sebagai slideshow sinematik (zoom/pan pelan, transisi silang, hanya memuat foto yang tampil + satu berikutnya).
+
 ## 6. Model data Firestore
 
 ### `users/{uid}`

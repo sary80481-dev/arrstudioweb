@@ -292,3 +292,29 @@ html:lang(th) .text-display,
 html:lang(th) .text-label {
   letter-spacing: 0 !important;
 }
+
+/* ─── Slideshow sinematik (KitSlideshow): gerak kamera pelan + transisi silang ─── */
+@keyframes kb-0 {
+  from { transform: scale(1.02) translate3d(0, 0, 0); }
+  to { transform: scale(1.14) translate3d(-1.2%, -0.8%, 0); }
+}
+@keyframes kb-1 {
+  from { transform: scale(1.14) translate3d(1%, 0.8%, 0); }
+  to { transform: scale(1.02) translate3d(0, 0, 0); }
+}
+@keyframes kb-2 {
+  from { transform: scale(1.1) translate3d(-2%, 0, 0); }
+  to { transform: scale(1.1) translate3d(2%, 0, 0); }
+}
+@keyframes kb-3 {
+  from { transform: scale(1.1) translate3d(2%, 0, 0); }
+  to { transform: scale(1.1) translate3d(-2%, 0, 0); }
+}
+@keyframes slide-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slide-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}

@@ -6,6 +6,7 @@ import { Check, ChevronDown, PackageOpen, Search, Star, X } from "lucide-react";
 import { BuyButton } from "@/components/checkout/BuyButton";
 import { PromoCode, Price, type AppliedPromo } from "@/components/checkout/PromoCode";
 import { KitIcon } from "@/components/common/KitIcon";
+import { KitSlideshow } from "@/components/video/KitSlideshow";
 import { KitVideoPlayer } from "@/components/video/KitVideoPlayer";
 import { fmt, type Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries/en";
@@ -153,6 +154,10 @@ function KitCard({ kit, t, lang, onOpen }: { kit: Kit; t: T; lang: Locale; onOpe
         <KitVideoPlayer video={kit.video} title={kit.name} mode="hover" controls={false} expandable={false} className="aspect-[16/10] rounded-[15px] sm:rounded-[18px]">
           <MediaOverlay label={`${t.learnMore}: ${kit.name}`} badge={soon ? t.comingSoon : null} onOpen={onOpen} />
         </KitVideoPlayer>
+      ) : kit.gallery.length > 0 ? (
+        <KitSlideshow photos={kit.gallery} title={kit.name} mode="hover" controls={false} className="aspect-[16/10] rounded-[15px] sm:rounded-[18px]">
+          <MediaOverlay label={`${t.learnMore}: ${kit.name}`} badge={soon ? t.comingSoon : null} onOpen={onOpen} />
+        </KitSlideshow>
       ) : (
         <KitArt kit={kit} className="aspect-[16/10] rounded-[15px] sm:rounded-[18px]">
           <MediaOverlay label={`${t.learnMore}: ${kit.name}`} badge={soon ? t.comingSoon : null} onOpen={onOpen} />
@@ -291,6 +296,8 @@ function KitDialog({ kit, t, lang, onClose }: { kit: Kit; t: T; lang: Locale; on
         <div className="overflow-y-auto">
           {kit.video ? (
             <KitVideoPlayer video={kit.video} title={kit.name} mode="view" className="aspect-video" />
+          ) : kit.gallery.length > 0 ? (
+            <KitSlideshow photos={kit.gallery} title={kit.name} mode="view" className="aspect-video" />
           ) : (
             <KitArt kit={kit} className="aspect-[21/9]" />
           )}

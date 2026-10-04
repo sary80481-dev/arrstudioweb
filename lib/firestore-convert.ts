@@ -27,6 +27,7 @@ export function docToKit(id: string, d: DocumentData): Kit {
     order: d.order ?? 0,
     placesPerLicense: d.placesPerLicense ?? DEFAULT_PLACES_PER_LICENSE,
     video: d.video ?? null,
+    gallery: d.gallery ?? [],
     stats: { licenses: d.stats?.licenses ?? 0, activePlaces: d.stats?.activePlaces ?? 0 },
     updatedAt: iso(d.updatedAt),
   };

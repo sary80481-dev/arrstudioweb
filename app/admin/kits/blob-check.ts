@@ -47,3 +47,15 @@ export async function uploadToBlob(
   });
   return res.url;
 }
+
+/** File di Blob yang diupload tapi tidak jadi dipakai (sheet ditutup tanpa simpan) — best effort */
+export function discardUrls(urls: string[]) {
+  for (let i = 0; i < urls.length; i += 40) {
+    fetch("/api/admin/uploads", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ urls: urls.slice(i, i + 40) }),
+      keepalive: true,
+    }).catch(() => {});
+  }
+}

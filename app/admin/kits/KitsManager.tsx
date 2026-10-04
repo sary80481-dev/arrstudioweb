@@ -6,7 +6,7 @@ import { KitIcon } from "@/components/common/KitIcon";
 import { KitInputSchema } from "@/lib/kit-schema";
 import {
   INTEGRATIONS, KIT_STATUSES, KIT_STATUS_LABEL, defaultConfigPath, formatIDR, slugify,
-  type Kit, type KitInput, type KitStatus, type KitVideo,
+  type Kit, type KitInput, type KitPhoto, type KitStatus, type KitVideo,
 } from "@/lib/kits";
 import { selectKits, useAppSelector } from "@/lib/store/store";
 import {
@@ -15,7 +15,10 @@ import {
 } from "../_components/fields";
 import { DataTable, columnHelper } from "../_components/DataTable";
 import { PackageField } from "./PackageField";
+import { KitSlideshow } from "@/components/video/KitSlideshow";
+import { GalleryField } from "./GalleryField";
 import { VideoField, discardVideos } from "./VideoField";
+import { discardUrls } from "./blob-check";
 
 const col = columnHelper<Kit>();
 
@@ -39,6 +42,7 @@ const emptyKit = (order: number): KitInput => ({
   order,
   placesPerLicense: 3,
   video: null,
+  gallery: [],
 });
 
 export default function KitsManager() {
@@ -208,10 +212,15 @@ function KitSheet({ kit, nextOrder, onClose }: { kit: Kit | null; nextOrder: num
   const [serverError, setServerError] = useState("");
   // video yang diupload selama sheet terbuka — yang tidak jadi disimpan dihapus dari Blob
   const uploads = useRef<KitVideo[]>([]);
+  const photoUploads = useRef<KitPhoto[]>([]);
+  // tab media: video ATAU foto (video menang bila keduanya ada)
+  const [mediaTab, setMediaTab] = useState<"video" | "photos">(() => (kit && !kit.video && kit.gallery.length > 0 ? "photos" : "video"));
 
   const close = useCallback(() => {
     discardVideos(uploads.current);
+    discardUrls(photoUploads.current.map((p) => p.url));
     uploads.current = [];
+    photoUploads.current = [];
     onClose();
   }, [onClose]);
 
@@ -250,6 +259,7 @@ function KitSheet({ kit, nextOrder, onClose }: { kit: Kit | null; nextOrder: num
         await api("PATCH", `/api/admin/kits/${kit.id}`, patch);
       }
       uploads.current = uploads.current.filter((v) => v.url !== parsed.data.video?.url);
+      photoUploads.current = photoUploads.current.filter((p) => !parsed.data.gallery.some((g) => g.url === p.url));
       close();
     } catch (err) {
       setServerError((err as Error).message);
@@ -276,14 +286,57 @@ function KitSheet({ kit, nextOrder, onClose }: { kit: Kit | null; nextOrder: num
 
         <div className="flex-1 space-y-6 overflow-y-auto px-5 py-5">
           <section className={section}>
-            <FieldShell label="Showcase video" error={errors.video} hint="Plays on the landing page, kit card and sign-in screen.">
-              <VideoField
-                kitId={(isNew ? form.id || slugify(form.name) : kit.id) || "draft"}
-                kitName={form.name}
-                value={form.video}
-                onChange={(v) => set("video", v)}
-                onUploaded={(v) => uploads.current.push(v)}
-              />
+            <FieldShell
+              label="Showcase"
+              error={errors.video || errors.gallery}
+              hint={
+                mediaTab === "video"
+                  ? "A video plays on the landing page, kit card and sign-in screen."
+                  : "Photos become a cinematic slideshow on the landing page, kit card and sign-in screen."
+              }
+            >
+              <div role="tablist" aria-label="Showcase type" className="mb-3 inline-flex rounded-md bg-surface-2 p-0.5">
+                {(["video", "photos"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    role="tab"
+                    aria-selected={mediaTab === t}
+                    onClick={() => setMediaTab(t)}
+                    className={`rounded px-3 py-1.5 text-[13px] transition-colors ${mediaTab === t ? "bg-surface font-medium text-fg shadow-sm" : "text-muted hover:text-fg"}`}
+                  >
+                    {t === "video" ? "Video" : `Photos${form.gallery.length ? ` (${form.gallery.length})` : ""}`}
+                  </button>
+                ))}
+              </div>
+              {(() => {
+                const kitId = (isNew ? form.id || slugify(form.name) : kit.id) || "draft";
+                return mediaTab === "video" ? (
+                  <VideoField
+                    kitId={kitId}
+                    kitName={form.name}
+                    value={form.video}
+                    onChange={(v) => set("video", v)}
+                    onUploaded={(v) => uploads.current.push(v)}
+                  />
+                ) : (
+                  <>
+                    <GalleryField
+                      kitId={kitId}
+                      value={form.gallery}
+                      onChange={(update) => setForm((f) => ({ ...f, gallery: update(f.gallery) }))}
+                      onUploaded={(p) => photoUploads.current.push(p)}
+                      disabledHint={form.video ? "A video is also set and takes priority — remove it (Video tab) to show these photos." : undefined}
+                    />
+                    {form.gallery.length > 1 && (
+                      <div className="mt-3">
+                        <p className="mb-1.5 text-xs text-dim">Preview</p>
+                        <KitSlideshow photos={form.gallery} title={form.name || "Preview"} mode="view" className="aspect-video rounded-lg" />
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </FieldShell>
             <FieldShell label="Kit file" hint={isNew ? undefined : "Saved as soon as it uploads — no need to press Save."}>
               {isNew ? (
