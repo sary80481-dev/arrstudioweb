@@ -124,7 +124,7 @@ export default function RegisterPage() {
           <span>
             I agree to the{" "}
             <a href="#" className="text-fg underline decoration-line-strong underline-offset-4 hover:decoration-gold">Terms</a> and{" "}
-            <a href="#" className="text-fg underline decoration-line-strong underline-offset-4 hover:decoration-gold">Privacy Policy</a>.
+            <a href="/privacy" target="_blank" rel="noreferrer" className="text-fg underline decoration-line-strong underline-offset-4 hover:decoration-gold">Privacy Policy</a>.
           </span>
         </label>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Cookie } from "lucide-react";
 import { CONSENT_EVENT, consentLang, consentStrings, readConsent, saveConsent, type Consent } from "@/lib/consent";
@@ -27,7 +28,8 @@ export default function CookieConsent() {
 
   if (!open || pathname.startsWith("/admin")) return null;
 
-  const t = consentStrings[consentLang(pathname.split("/")[1] ?? "")];
+  const lang = consentLang(pathname.split("/")[1] ?? "");
+  const t = consentStrings[lang];
   const choose = (c: Consent) => {
     saveConsent(c);
     setOpen(false);
@@ -46,7 +48,12 @@ export default function CookieConsent() {
         </span>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-fg">{t.title}</p>
-          <p className="mt-1 text-[13px] leading-relaxed text-muted">{t.text}</p>
+          <p className="mt-1 text-[13px] leading-relaxed text-muted">
+            {t.text}{" "}
+            <Link href={`/privacy?lang=${lang === "id" ? "id" : "en"}`} className="whitespace-nowrap text-fg underline underline-offset-2 hover:text-gold">
+              {t.policy}
+            </Link>
+          </p>
         </div>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-2">
