@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   AlertTriangle, ArrowUpRight, BadgeDollarSign, BookOpen,
-  BadgePercent, Globe, KeyRound, LayoutDashboard, LayoutGrid, LogOut, Menu,
+  BadgePercent, Globe, KeyRound, LayoutDashboard, LayoutGrid, LayoutTemplate, LogOut, Menu,
   Package, ScrollText, Users, X,
 } from "lucide-react";
 import ThemeToggle from "@/components/theme/ThemeToggle";
@@ -40,6 +40,7 @@ const nav = [
     group: "Catalog",
     items: [
       { href: "/admin/kits", label: "Kits", icon: Package },
+      { href: "/admin/templates", label: "Web templates", icon: LayoutTemplate },
       { href: "/admin/pricing", label: "Pricing", icon: BadgeDollarSign },
       { href: "/admin/discounts", label: "Discounts", icon: BadgePercent },
     ],

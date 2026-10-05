@@ -341,6 +341,10 @@ Jumlah lisensi di kit & statistik publik ikut berkurang.
 - `POST /api/checkout` menerima `code` opsional; harga akhir selalu dihitung ulang di server. Pemakaian kode (`usedCount`) bertambah saat order lunas.
 - `GET|POST /api/admin/discounts`, `PATCH|DELETE /api/admin/discounts/:code` — kelola kode (koleksi Firestore `discounts/{KODE}`: `type` percent|fixed, `value`, `appliesTo` all|kit|bundle, `active`, `maxUses`, `expiresAt`).
 
+#### Template web
+
+- `GET|POST /api/admin/templates`, `PATCH|DELETE /api/admin/templates/:id` — template web untuk jasa pembuatan web (koleksi Firestore `webTemplates/{id}`, hanya dibaca server: `name`, `service` website|webapp|mobile, `description`, `mode` link|photos, `url`, `device` desktop|phone, `photos` (Blob `templates/{id}/…`), `published`, `order`). Tampil di section Services landing dengan dropdown per layanan.
+
 #### Keamanan & audit
 - `PATCH /api/admin/users` — `{ "uid", "role": "user" | "admin" }`; jadikan/cabut admin. Tidak bisa mengubah peran sendiri; saat dicabut, semua sesi user itu dicabut.
 - Semua aksi admin atas uang, lisensi, diskon, harga, dan peran dicatat di koleksi `auditLogs` (siapa, apa, kapan) dan tampil di **Admin → Audit log**.

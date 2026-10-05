@@ -175,6 +175,11 @@ const ms: Dictionary = {
       { title: "Aplikasi web & sistem", desc: "Papan pemuka, panel admin, sistem penilaian atau tempahan — lengkap dengan log masuk, pangkalan data dan laporan." },
       { title: "Aplikasi mudah alih", desc: "Aplikasi Android & iOS, atau PWA yang dipasang terus dari pelayar, menggunakan backend yang sama dengan laman anda." },
     ],
+    templatesTitle: "Templat sedia ada",
+    templatesDesc: "Pilih titik permulaan — cuba secara langsung atau lihat tangkapan skrin, kemudian kami sesuaikan dengan jenama anda.",
+    templatesFor: "Perkhidmatan",
+    useTemplate: "Guna templat ini",
+    templateLabel: "Templat",
     workTitle: "Hasil terkini",
     work: [
       { name: "Sigit Hardianto", kind: "Laman web portfolio", desc: "Laman peribadi dengan projek, sijil dan aliran hubungan." },

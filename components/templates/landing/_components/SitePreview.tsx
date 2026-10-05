@@ -26,8 +26,8 @@ export function SitePreview({
 }: {
   url: string;
   title: string;
-  /** screenshot di /public, mis. "/previews/arrr-studio.png" */
-  poster: string;
+  /** screenshot di /public (mis. "/previews/arrr-studio.png") atau foto dari Blob; kosong → latar polos */
+  poster?: string | null;
   device?: keyof typeof DEVICES;
   hint?: string;
   className?: string;
@@ -53,7 +53,14 @@ export function SitePreview({
   const frame = (
     <div ref={boxRef} className="relative w-full overflow-hidden bg-surface-2" style={{ aspectRatio: `${1 / ratio}` }}>
       {/* poster tetap ada di bawah iframe → tidak ada layar kosong saat iframe memuat */}
-      <Image src={poster} alt={title} fill sizes={sizes} className="object-cover object-top" />
+      {poster?.startsWith("/") ? (
+        <Image src={poster} alt={title} fill sizes={sizes} className="object-cover object-top" />
+      ) : poster ? (
+        // eslint-disable-next-line @next/next/no-img-element -- foto template dari Blob, sudah WebP terkompres
+        <img src={poster} alt={title} loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover object-top" />
+      ) : (
+        <span className="absolute inset-0 flex items-center justify-center p-6 text-center font-display text-lg font-semibold text-dim">{host}</span>
+      )}
 
       {live ? (
         <>

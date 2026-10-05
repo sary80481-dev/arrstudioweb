@@ -3,6 +3,7 @@ import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries/en";
 import type { IntegrationName, Kit, PublicStats } from "@/lib/kits";
 import type { PricingSettings } from "@/lib/pricing";
+import type { WebTemplate } from "@/lib/web-templates";
 
 /** Props standar untuk setiap section landing */
 export interface SectionProps {
@@ -12,6 +13,8 @@ export interface SectionProps {
   kits: Kit[];
   stats: PublicStats;
   pricing: PricingSettings;
+  /** template web yang dipublikasi (jasa pembuatan web) */
+  templates: WebTemplate[];
 }
 
 export interface NavLink {

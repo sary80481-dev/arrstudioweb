@@ -4,6 +4,7 @@ import LandingPage from "@/components/templates/landing/LandingPage";
 import { hasLocale, locales } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { loadLandingData } from "@/lib/server/kits";
+import { loadLandingTemplates } from "@/lib/server/web-templates";
 import HtmlLang from "@/components/common/HtmlLang";
 
 export function generateStaticParams() {
@@ -32,12 +33,12 @@ export async function generateMetadata({ params }: PageProps<"/[lang]">): Promis
 export default async function Page({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
-  const [t, data] = await Promise.all([getDictionary(lang), loadLandingData()]);
+  const [t, data, templates] = await Promise.all([getDictionary(lang), loadLandingData(), loadLandingTemplates()]);
 
   return (
     <>
       <HtmlLang lang={lang} />
-      <LandingPage lang={lang} t={t} kits={data.kits} stats={data.stats} pricing={data.pricing} />
+      <LandingPage lang={lang} t={t} kits={data.kits} stats={data.stats} pricing={data.pricing} templates={templates} />
     </>
   );
 }

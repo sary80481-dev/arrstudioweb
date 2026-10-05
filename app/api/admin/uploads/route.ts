@@ -50,7 +50,9 @@ export const POST = handle(async (req: Request) => {
       const media = /^kits\/[a-z0-9-]+\/[\w.-]+\.(mp4|webp)$/.test(pathname);
       const kitFile = /^kits\/[a-z0-9-]+\/packages\/[\w.-]+\.rbxmx?$/.test(pathname);
       // foto galeri: sudah dikompres di browser (WebP/JPEG ≤ ±400 KB) → batas kecil
-      const photo = /^kits\/[a-z0-9-]+\/gallery\/[\w.-]+\.(webp|jpg)$/.test(pathname);
+      const photo =
+        /^kits\/[a-z0-9-]+\/gallery\/[\w.-]+\.(webp|jpg)$/.test(pathname) ||
+        /^templates\/[a-z0-9]+\/[\w.-]+\.(webp|jpg)$/.test(pathname);
       if (!media && !kitFile && !photo) throw new ApiError(400, "INVALID_PATH", "Invalid upload path.");
 
       const allowedContentTypes = kitFile

@@ -26,13 +26,16 @@ interface Pending {
  * `onChange` menerima fungsi pembaruan karena upload selesai tidak berurutan.
  */
 export function GalleryField({
-  kitId,
+  folder,
+  max = MAX_GALLERY,
   value,
   onChange,
   onUploaded,
   disabledHint,
 }: {
-  kitId: string;
+  /** folder di Blob, mis. "kits/clubkit/gallery" — harus cocok dengan pola di /api/admin/uploads */
+  folder: string;
+  max?: number;
   value: KitPhoto[];
   onChange: (update: (prev: KitPhoto[]) => KitPhoto[]) => void;
   onUploaded: (p: KitPhoto) => void;
@@ -46,7 +49,7 @@ export function GalleryField({
   const abortRef = useRef(new AbortController());
 
   const active = pending.filter((p) => p.phase !== "error").length;
-  const room = MAX_GALLERY - value.length - active;
+  const room = max - value.length - active;
   const totalSize = value.reduce((n, p) => n + p.size, 0);
 
   const patch = (id: string, change: Partial<Pending>) => setPending((all) => all.map((p) => (p.id === id ? { ...p, ...change } : p)));
@@ -54,7 +57,7 @@ export function GalleryField({
   const processOne = async (file: File, id: string): Promise<KitPhoto> => {
     const c = await compressPhoto(file);
     patch(id, { phase: "upload", progress: 0, preview: URL.createObjectURL(c.blob) });
-    const url = await uploadToBlob(`kits/${kitId}/gallery/${uniqueName(`photo.${c.ext}`)}`, c.blob, c.contentType, abortRef.current.signal, (p) =>
+    const url = await uploadToBlob(`${folder}/${uniqueName(`photo.${c.ext}`)}`, c.blob, c.contentType, abortRef.current.signal, (p) =>
       patch(id, { progress: p })
     );
     const photo: KitPhoto = { url, width: c.width, height: c.height, size: c.blob.size };
@@ -68,7 +71,7 @@ export function GalleryField({
     const files = images.slice(0, Math.max(0, room));
     setNotice(
       files.length < images.length
-        ? `Only ${Math.max(0, room)} more photo${room === 1 ? "" : "s"} fit (max ${MAX_GALLERY}) — the rest were skipped.`
+        ? `Only ${Math.max(0, room)} more photo${room === 1 ? "" : "s"} fit (max ${max}) — the rest were skipped.`
         : ""
     );
     if (files.length === 0) return;
@@ -100,7 +103,7 @@ export function GalleryField({
 
     // masuk ke galeri sesuai urutan pilihan, bukan urutan selesai
     const done = results.filter((r): r is KitPhoto => r !== null);
-    if (done.length) onChange((prev) => [...prev, ...done].slice(0, MAX_GALLERY));
+    if (done.length) onChange((prev) => [...prev, ...done].slice(0, max));
     setPending((all) => {
       for (const p of all) if (p.phase !== "error" && items.some((it) => it.id === p.id) && p.preview) URL.revokeObjectURL(p.preview);
       return all.filter((p) => p.phase === "error" || !items.some((it) => it.id === p.id));
@@ -154,14 +157,14 @@ export function GalleryField({
             {dragging ? <UploadCloud size={18} className="text-gold" /> : <ImagePlus size={18} />}
           </span>
           <span className="mt-3 text-[13px] font-medium text-fg">Drop photos or click to choose</span>
-          <span className="mt-1 text-xs text-dim">Up to {MAX_GALLERY} photos · compressed to WebP in your browser · played as a cinematic slideshow</span>
+          <span className="mt-1 text-xs text-dim">Up to {max} photos · compressed to WebP in your browser · played as a cinematic slideshow</span>
           {picker}
         </label>
       ) : (
         <div onDragOver={(e) => e.preventDefault()} onDrop={onDrop} className="rounded-lg border border-line bg-surface p-3">
           <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-2">
             <p className="mr-auto text-xs text-muted">
-              <span className="tabular-nums text-fg">{value.length}</span> / {MAX_GALLERY} photos
+              <span className="tabular-nums text-fg">{value.length}</span> / {max} photos
               {value.length > 0 && <> · {formatBytes(totalSize)}</>}
               {active > 0 && <span className="text-gold"> · adding {active}…</span>}
             </p>

@@ -322,7 +322,7 @@ function KitSheet({ kit, nextOrder, onClose }: { kit: Kit | null; nextOrder: num
                 ) : (
                   <>
                     <GalleryField
-                      kitId={kitId}
+                      folder={`kits/${kitId}/gallery`}
                       value={form.gallery}
                       onChange={(update) => setForm((f) => ({ ...f, gallery: update(f.gallery) }))}
                       onUploaded={(p) => photoUploads.current.push(p)}

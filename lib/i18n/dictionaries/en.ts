@@ -173,6 +173,11 @@ const en = {
       { title: "Web app & system", desc: "Dashboards, admin panels, grading or booking systems — with login, database and reports." },
       { title: "Mobile app", desc: "Android & iOS apps, or a PWA that installs straight from the browser, on the same backend as your site." },
     ],
+    templatesTitle: "Ready-made templates",
+    templatesDesc: "Pick a starting point — try it live or browse the screenshots, then we tailor it to your brand.",
+    templatesFor: "Service",
+    useTemplate: "Use this template",
+    templateLabel: "Template",
     workTitle: "Recent work",
     work: [
       { name: "Sigit Hardianto", kind: "Portfolio website", desc: "Personal site with projects, certificates and a contact flow." },

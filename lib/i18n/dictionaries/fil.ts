@@ -175,6 +175,11 @@ const fil: Dictionary = {
       { title: "Web app at sistema", desc: "Dashboard, admin panel, grading o booking system — may login, database at report." },
       { title: "Mobile app", desc: "Android at iOS app, o PWA na direktang nai-install mula sa browser, gamit ang parehong backend ng site mo." },
     ],
+    templatesTitle: "Mga handang template",
+    templatesDesc: "Pumili ng panimula — subukan ito nang live o tingnan ang mga screenshot, saka namin iaangkop sa brand mo.",
+    templatesFor: "Serbisyo",
+    useTemplate: "Gamitin ang template na ito",
+    templateLabel: "Template",
     workTitle: "Mga bagong gawa",
     work: [
       { name: "Sigit Hardianto", kind: "Portfolio website", desc: "Personal na site na may projects, certificates at contact flow." },

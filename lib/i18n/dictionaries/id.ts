@@ -175,6 +175,11 @@ const id: Dictionary = {
       { title: "Web app & sistem", desc: "Dashboard, panel admin, sistem penilaian atau booking — lengkap dengan login, database, dan laporan." },
       { title: "Aplikasi mobile", desc: "Aplikasi Android & iOS, atau PWA yang bisa di-install langsung dari browser, memakai backend yang sama dengan web kamu." },
     ],
+    templatesTitle: "Template siap pakai",
+    templatesDesc: "Pilih titik awal — coba langsung atau lihat tangkapan layarnya, lalu kami sesuaikan dengan brand kamu.",
+    templatesFor: "Layanan",
+    useTemplate: "Pakai template ini",
+    templateLabel: "Template",
     workTitle: "Hasil kerja terbaru",
     work: [
       { name: "Sigit Hardianto", kind: "Website portofolio", desc: "Situs pribadi berisi projek, sertifikat, dan alur kontak." },

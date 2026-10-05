@@ -35,7 +35,7 @@ export default function LandingPage(props: SectionProps) {
         <HowItWorks {...props} />
         <License {...props} />
         <Studio {...props} />
-        <Services t={props.t.services} />
+        <Services t={props.t.services} templates={props.templates} />
         <Testimonials t={props.t.testimonials} />
         <Pricing t={props.t.pricing} lang={props.lang} />
         <FAQ {...props} />

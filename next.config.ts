@@ -18,7 +18,8 @@ const fullCsp = [
   `media-src 'self' blob: ${BLOB}`,
   "font-src 'self' data:",
   `connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.midtrans.com ${BLOB} https://vercel.com https://blob.vercel-storage.com`,
-  "frame-src https://*.midtrans.com https://*.vercel.app https://*.up.railway.app",
+  // preview template web (/admin/templates) boleh dari host https mana pun
+  "frame-src https:",
   "worker-src 'self' blob:",
   "form-action 'self' https://*.midtrans.com",
   enforcedCsp,

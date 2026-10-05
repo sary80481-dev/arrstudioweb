@@ -175,6 +175,11 @@ const vi: Dictionary = {
       { title: "Web app & hệ thống", desc: "Dashboard, trang quản trị, hệ thống chấm điểm hoặc đặt lịch — có đăng nhập, cơ sở dữ liệu và báo cáo." },
       { title: "Ứng dụng di động", desc: "Ứng dụng Android & iOS, hoặc PWA cài thẳng từ trình duyệt, dùng chung backend với website của bạn." },
     ],
+    templatesTitle: "Mẫu có sẵn",
+    templatesDesc: "Chọn một điểm khởi đầu — dùng thử trực tiếp hoặc xem ảnh chụp, rồi chúng tôi tùy chỉnh theo thương hiệu của bạn.",
+    templatesFor: "Dịch vụ",
+    useTemplate: "Dùng mẫu này",
+    templateLabel: "Mẫu",
     workTitle: "Dự án gần đây",
     work: [
       { name: "Sigit Hardianto", kind: "Website portfolio", desc: "Trang cá nhân với dự án, chứng chỉ và luồng liên hệ." },
